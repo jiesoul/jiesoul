@@ -1,0 +1,12 @@
+{:path ["src"]
+ :deps 
+ {org.clojure/clojure {:mvn/version "1.11.1"}
+  integrant/integrant {:mvn/version "0.8.0"}
+  metosin/reitit {:mvn/version "0.5.18"}}
+ 
+ :aliases 
+ {:test {:extra-paths ["test"]}
+  :dev {:extra-paths ["dev"]
+        :extra-deps {cider/cider-nrepl {:mvn/version "0.28.5"}}
+        :main-opts []}
+  :build {:deps {}}}}
