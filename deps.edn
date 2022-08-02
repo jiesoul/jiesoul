@@ -1,12 +1,15 @@
-{:path ["src"]
+{:path ["src" "resources"]
  :deps 
  {org.clojure/clojure {:mvn/version "1.11.1"}
+  ring/ring-jetty-adapter {:mvn/version "1.9.5"}
+  selmer/selmer {:mvn/version "1.12.53"}
+  metosin/reitit {:mvn/version "0.5.18"}
   integrant/integrant {:mvn/version "0.8.0"}
-  metosin/reitit {:mvn/version "0.5.18"}}
- 
- :aliases 
- {:test {:extra-paths ["test"]}
+  com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}}
+
+:aliases 
+ {:test {:extra-paths ["test/src"]}
   :dev {:extra-paths ["dev"]
-        :extra-deps {cider/cider-nrepl {:mvn/version "0.28.5"}}
-        :main-opts []}
+        :extra-deps {cider/cider-nrepl {:mvn/version "0.28.5"}
+                     integrant/repl {:mvn/version "0.3.2"}}}
   :build {:deps {}}}}

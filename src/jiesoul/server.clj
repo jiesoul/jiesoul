@@ -1,32 +1,39 @@
 (ns jiesoul.server
   (:require [integrant.core :as ig]
-            [reitit.ring :as ring]
-            [ring.adapter.jetty :as jetty]))
+            [next.jdbc :as jdbc]
+            [ring.adapter.jetty :as jetty]
+            [jiesoul.handler :as handler]
+            [jiesoul.db :as db]))
 
 (def system-config 
-  {:jiesoul/jetty {:port 3000
+  {:adapter/jetty {:port 3000
                    :join? false
-                   :handler #ig/ref :jiesoul/handler}})
+                   :handler (ig/ref :handler/run-app)}
+   :handler/run-app {:db (ig/ref :database.sql/connection)}
+   :database.sql/connection {:dbtype "sqlite" :dbname "jiesoul_db"}})
 
-(defmethod ig/init-key :jiesoul/jetty [_ {:keys [port :join? handler] :as opts}]
-  (let [handler (atom (delay handler))
-        options (-> opts (disssoc :handler) (assoc :join? false))]
-   (println "server is running in port " port)
+(defmethod ig/init-key :adapter/jetty [_ opts]
+  (let [handler (atom (delay (:handler opts)))
+        options (-> opts (dissoc :handler) (assoc :join? false))]
+   (println "server running in port" (:port opts)) 
     {:handler handler
      :server (jetty/run-jetty (fn [req] (@@handler req)) options)}))
 
-(defmethod ig/halt-key! jiesoul/jetty [_ server]
+(defmethod ig/init-key :handler/run-app [_ db]
+  (handler/app db))
+
+(defmethod ig/init-key :database.sql/connection  [_ db-spec]
+  (let [conn (jdbc/get-datasource db-spec)]
+    (db/populate conn (:dbtype db-spec))
+    conn))
+
+(defmethod ig/halt-key! :adapter/jetty [_ server]
   (.stop server))
 
-(defmethod ig/init-key :jiesoul/handler [_ _]
-  (ring/ring-handler 
-   (ring/router 
-    ["/ping" {:get {:handler (fn [_] {:status 200 :body "pong!"})}}])))
-
-(defmethod ig/suspend-key! :jiesoul/jetty [_ {:keys [handler]}]
+(defmethod ig/suspend-key! :adapter/jetty [_ {:keys [handler]}]
   (reset! handler (promise)))
 
-(defmethod ig/resume-key :jiesoul/jetty [keys opts old-opts old-impl]
+(defmethod ig/resume-key :adapter/jetty [key opts old-opts old-impl]
   (if (= (dissoc opts :handler) (dissoc old-opts :handler))
     (do (deliver @(:handler old-impl) (:handler opts))
       old-impl)
