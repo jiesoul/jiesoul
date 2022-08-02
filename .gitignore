@@ -1,6 +1,11 @@
+
+## vscode
 .calva/
 .clj-kondo/
 .cpcache
 .history/
 .lsp
+
+## Mac
+.DS_Store
 
