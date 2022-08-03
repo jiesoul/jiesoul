@@ -2,7 +2,7 @@
   (:require [integrant.core :as ig]
             [next.jdbc :as jdbc]
             [ring.adapter.jetty :as jetty]
-            [jiesoul.handler :as handler]
+            [jiesoul.router :as router]
             [jiesoul.db :as db]))
 
 (def system-config 
@@ -10,7 +10,7 @@
                    :join? false
                    :handler (ig/ref :handler/run-app)}
    :handler/run-app {:db (ig/ref :database.sql/connection)}
-   :database.sql/connection {:dbtype "sqlite" :dbname "jiesoul_db"}})
+   :database.sql/connection {:dbtype "sqlite" :dbname "resources/database/jiesoul_db"}})
 
 (defmethod ig/init-key :adapter/jetty [_ opts]
   (let [handler (atom (delay (:handler opts)))
@@ -20,7 +20,7 @@
      :server (jetty/run-jetty (fn [req] (@@handler req)) options)}))
 
 (defmethod ig/init-key :handler/run-app [_ db]
-  (handler/app db))
+  (router/routes db))
 
 (defmethod ig/init-key :database.sql/connection  [_ db-spec]
   (let [conn (jdbc/get-datasource db-spec)]
