@@ -1,0 +1,2 @@
+{:up ["CREATE TABLE users (id int)"]
+ :down ["DROP TABLE users"]}
