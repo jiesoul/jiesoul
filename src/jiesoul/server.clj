@@ -10,7 +10,7 @@
                    :join? false
                    :handler (ig/ref :handler/run-app)}
    :handler/run-app {:db (ig/ref :database.sql/connection)}
-   :database.sql/connection {:dbtype "sqlite" :dbname "/database/jiesoul_db"}})
+   :database.sql/connection {:dbtype "sqlite" :dbname "resources/database/jiesoul.db"}})
 
 (defmethod ig/init-key :adapter/jetty [_ opts]
   (let [handler (atom (delay (:handler opts)))

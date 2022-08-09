@@ -10,52 +10,57 @@
             [reitit.ring.middleware.parameters :as parameters]
             [reitit.swagger :as swagger]
             [reitit.swagger-ui :as swagger-ui]
-            [selmer.parser :as html]
             [reitit.dev.pretty :as pretty]))
 
 (def asset-version "1")
-(defn template [data-page]
-  (html/render-file "layout/default.html" {:paeg data-page}))
+
+(defn default-handler [req]
+  {:status 200 
+   :body "this is default handler"})
 
 (defn routes [db]
   (ring/ring-handler
    (ring/router
     [["/swagger.json"
       {:get {:no-doc true
-             :swagger {:info {:title "my-api"}
-                       :basePath "/"} ;; prefix for all paths
+             :swagger {:info {:title "my-api"}} ;; prefix for all paths
              :handler (swagger/create-swagger-handler)}}]
-     ["/files"
-      {:swagger {:tags ["files"]}}
-      
-      ["/upload"
-       {:post {:summary "upload a file"
-               :parameters {:multipart {:file multipart/temp-file-part}}
-               :responses {200 {:body {:file multipart/temp-file-part}}}
-               :handler (fn [{{{:keys [file]} :multipart} :parameters}]
-                          {:status 200
-                           :body {:file file}})}}]
+      ["/users"
+       {:swagger {:tags ["users"]}}
 
-      ["/download"
-       {:get {:summary "downloads a file"
-              :swagger {:produces ["image/png"]}
-              :handler (fn [_]
-                         {:status 200
-                          :headers {"Content-Type" "image/png"}
-                          :body (-> "reitit.png"
-                                    (io/resource)
-                                    (io/input-stream))})}}]]
+       ["/" {:get {:summary "get users"
+                   :handler default-handler}
 
-    ;;  ["/users" {:get (fn [{::r/keys [router]}]
-    ;;                    {:status 200
-    ;;                     :body (for [i (range 10)]
-    ;;                             {:uri (-> router 
-    ;;                                       (r/match-by-name ::user {:id i})
-    ;;                                       (r/match->path {:iso "moly"}))})})}]
-    ;;  ["/users/:id" 
-    ;;   {:name ::user
-    ;;    :get (constantly {:status 200 :body "user..."})}]
-     ]
+             :post {:summary "create new user"
+                    :handler default-handler}}]
+
+       ["/:id" {:get {:summary "get a user"
+                      :handler default-handler}
+
+                :put {:summary "update a user info"
+                      :handler default-handler}
+
+                :delete {:summary "delete a user"
+                         :handler default-handler}}]]
+
+      ["/files"
+       {:swagger {:tags ["files"]}}
+
+       ["/upload" {:post {:summary "upload a file"
+                          :parameters {:multipart {:file multipart/temp-file-part}}
+                          :responses {200 {:body {:file multipart/temp-file-part}}}
+                          :handler (fn [{{{:keys [file]} :multipart} :parameters}]
+                                     {:status 200
+                                      :body {:file file}})}}]
+
+       ["/download" {:get {:summary "downloads a file"
+                           :swagger {:produces ["image/png"]}
+                           :handler (fn [_]
+                                      {:status 200
+                                       :headers {"Content-Type" "image/png"}
+                                       :body (-> "reitit.png"
+                                                 (io/resource)
+                                                 (io/input-stream))})}}]]]
 
     {:data {:coercion reitit.coercion.spec/coercion
             :muuntaja m/instance
@@ -77,18 +82,8 @@
                          multipart/multipart-middleware]}
      :exception pretty/exception})
 
-  ;;  (ring/router
-  ;;   ["/api" {:middleware [#(wrap % :api)]}
-  ;;    ["/ping" {:handler handler}]
-  ;;    ["/public/*" (ring/create-resource-handler)]
-  ;;    ["/hello" {:handler (fn [name] (resp/response (str "hello " name)))}]
-
-  ;;    ["/admin" {:middleware [[wrap :admin]]}
-  ;;     ["/db" {:middleware [[wrap :db]]
-  ;;             :handler handler}]]]) 
-
    (ring/routes
-    (swagger-ui/create-swagger-ui-handler {:path "/api-docs"})
+    (swagger-ui/create-swagger-ui-handler {:path "/api-docs/v1"})
     (ring/create-default-handler
      {:not-found (constantly {:status 404 :body "Not Found 404"})
       :method-not-allowed (constantly {:status 405, :body "kosh"})}))))

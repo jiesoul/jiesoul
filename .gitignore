@@ -5,10 +5,10 @@
 .cpcache
 .history/
 .lsp
+.vscode/
 
 ## Mac
 .DS_Store
 
 ## clojure
 .nrepl-port
-

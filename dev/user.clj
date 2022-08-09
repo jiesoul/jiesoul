@@ -1,21 +1,28 @@
 (ns user
-  (:require [integrant.repl :as ig-repl :refer [clear go halt prep init reset reset-all]]
-            [jiesoul.server :as server]))
+  (:require [integrant.repl :as ig-repl]
+            [jiesoul.server :as server]
+            [ragtime.jdbc :as jdbc]
+            [ragtime.repl :as rt-repl]))
 
 (ig-repl/set-prep! (constantly server/system-config))
 
-;; (def go ig-repl/go)
-;; (def halt ig-repl/halt)
-;; (def reset ig-repl/reset)
-;; (def reset-all ig-repl/reset-all)
+(defn load-db-config []
+  {:datastore  (jdbc/sql-database {:connection-uri "jdbc:sqlite:resources/database/jiesoul.db"})
+   :migrations (jdbc/load-resources "migrations")})
 
-;; (def go ig-repl/go)
-;; (def halt ig-repl/halt)
-;; (def reset ig-repl/reset)
-;; (def reset-all ig-repl/reset-all)
+(defn migrate []
+  (rt-repl/migrate (load-db-config)))
 
-;; (comment
-;;   (go)
-;;   (halt)
-;;   (reset)
-;;   (reset-all))
+(defn rollback []
+  (rt-repl/rollback (load-db-config)))
+
+(def go ig-repl/go)
+(def halt ig-repl/halt)
+(def reset ig-repl/reset)
+(def reset-all ig-repl/reset-all)
+
+(comment
+  (go)
+  (halt)
+  (reset)
+  (reset-all))
