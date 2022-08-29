@@ -1,0 +1,12 @@
+/* Reset */
+@import 'tailwindcss/base';
+@import 'reset';
+
+/* Components */
+@import 'tailwindcss/components';
+@import 'buttons';
+@import 'form';
+
+/* Utilities */
+@import 'tailwindcss/utilities';
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9jc3MvdGFpbHdpbmQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBIiwiZmlsZSI6ImFwcC5jc3MiLCJzb3VyY2VzQ29udGVudCI6WyIvKiBSZXNldCAqL1xuQGltcG9ydCAndGFpbHdpbmRjc3MvYmFzZSc7XG5AaW1wb3J0ICdyZXNldCc7XG5cbi8qIENvbXBvbmVudHMgKi9cbkBpbXBvcnQgJ3RhaWx3aW5kY3NzL2NvbXBvbmVudHMnO1xuQGltcG9ydCAnYnV0dG9ucyc7XG5AaW1wb3J0ICdmb3JtJztcblxuLyogVXRpbGl0aWVzICovXG5AaW1wb3J0ICd0YWlsd2luZGNzcy91dGlsaXRpZXMnOyJdfQ== */

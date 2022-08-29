@@ -1,16 +1,12 @@
-(ns cljs.jiesoul.app
-  (:require ["@inertiajs/inertia" :refer [Inertia]]
-            ["@inertiajs/inertia-react" :refer [createInertiaApp]]
-            ["@inertiajs/progress" :refer [InertiaProgress]]
-            [applied-science.js-interop :as j]
+(ns jiesoul.app
+  (:require [jiesoul.pages.dashboard :as dashboard]
+            [jiesoul.pages.login :refer [login]]
+            [jiesoul.shared.layout :refer [layout]]
             [reagent.core :as r]
-            [reagent.dom :as d]
-            [pingcrm.shared.layout :refer [layout]]
-            [jiesoul.pages.login :refer [login]]))
+            [reagent.dom :as d]))
 
-(.init InertiaProgress)
-
-(def pages {"Auth/Login" login})
+(def pages {"Dashboard/Index" dashboard/index
+            "Auth/Login" login})
 
 (defn init! []
   (createInertiaApp
