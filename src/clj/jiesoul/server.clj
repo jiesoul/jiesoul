@@ -1,9 +1,12 @@
 (ns jiesoul.server
   (:require [integrant.core :as ig]
             [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as rs]
             [ring.adapter.jetty :as jetty]
-            [jiesoul.router :as router]
-            [jiesoul.db :as db]))
+            [jiesoul.router :as router]))
+
+(defn app [db]
+  (router/routes (:db db)))
 
 (def system-config 
   {:adapter/jetty {:port 3000
@@ -20,12 +23,11 @@
      :server (jetty/run-jetty (fn [req] (@@handler req)) options)}))
 
 (defmethod ig/init-key :handler/run-app [_ db]
-  (router/routes db))
+  (app db))
 
 (defmethod ig/init-key :database.sql/connection  [_ db-spec]
-  (let [conn (jdbc/get-datasource db-spec)]
-    (db/populate conn (:dbtype db-spec))
-    conn))
+  (let [ds (jdbc/get-datasource db-spec)]
+    (jdbc/with-options ds {:builder-fn rs/as-unqualified-maps})))
 
 (defmethod ig/halt-key! :adapter/jetty [_ server]
   (.stop server))

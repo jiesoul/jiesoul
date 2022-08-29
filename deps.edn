@@ -1,15 +1,23 @@
-{:path ["src" "resources"]
+{:paths ["src/clj" "resources" "public"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         ring/ring-jetty-adapter {:mvn/version "1.9.5"}
-        selmer/selmer {:mvn/version "1.12.53"}
         metosin/reitit {:mvn/version "0.5.18"}
         integrant/integrant {:mvn/version "0.8.0"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
         org.xerial/sqlite-jdbc {:mvn/version "3.39.2.0"}
-        dev.weavejester/ragtime {:mvn/version "0.9.2"}}
+        com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
+        dev.weavejester/ragtime {:mvn/version "0.9.2"}
+        buddy/buddy-auth {:mvn/version "3.0.1"}
+        buddy/buddy-hashers {:mvn/version "1.8.158"}
+        buddy/buddy-sign {:mvn/version "3.4.333"}
+        crypto-password/crypto-password {:mvn/version "0.3.0"}
+        com.github.prestancedesign/inertia-clojure {:mvn/version "0.2.5"}
+        hiccup/hiccup {:mvn/version "1.0.5"}
+        selmer/selmer {:mvn/version "1.12.53"}
+        com.bhauman/figwheel-main {:mvn/version "0.2.18"}}
 
  :aliases {:test {:extra-paths ["test/src"]}
-           :dev {:extra-paths ["dev"]
+           :dev {:extra-paths ["dev/src"]
                  :extra-deps {cider/cider-nrepl {:mvn/version "0.28.5"}
                               integrant/repl {:mvn/version "0.3.2"}}}
            :build {:deps {}}}}

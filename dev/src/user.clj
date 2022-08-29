@@ -1,14 +1,15 @@
 (ns user
   (:require [integrant.repl :as ig-repl]
             [jiesoul.server :as server]
-            [ragtime.jdbc :as jdbc]
-            [ragtime.repl :as rt-repl]))
+            [ragtime.jdbc :as rt-jdbc]
+            [ragtime.repl :as rt-repl]
+            [buddy.hashers :as buddy-hashers]))
 
 (ig-repl/set-prep! (constantly server/system-config))
 
 (defn load-db-config []
-  {:datastore  (jdbc/sql-database {:connection-uri "jdbc:sqlite:resources/database/jiesoul.db"})
-   :migrations (jdbc/load-resources "migrations")})
+  {:datastore  (rt-jdbc/sql-database {:connection-uri "jdbc:sqlite:resources/database/jiesoul.db"})
+   :migrations (rt-jdbc/load-resources "migrations")})
 
 (defn migrate []
   (rt-repl/migrate (load-db-config)))
