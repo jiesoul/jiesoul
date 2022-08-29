@@ -1,0 +1,15 @@
+
+### Login
+POST http://localhost:3000/api/v1/login
+Content-Type: application/json
+
+{
+    "username": "jiesoul",
+    "password": "12345678"
+}
+
+### logout
+
+POST http://localhost:3000/api/v1/logout
+Content-Type: application/json
+Authorization: token 1e1c11861e6b476a32aeef510c548877dcf55e9701ce4d35675d06ef151d3c69

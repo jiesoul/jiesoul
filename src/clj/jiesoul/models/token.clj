@@ -8,3 +8,8 @@
 (defn get-user-token-by-token 
   [db token]
   (sql/get-by-id db :user_token token :token {}))
+
+(defn disable-user-token 
+  [db token]
+  (let [now (java.time.Instant/now)]
+    (sql/update! :user_token {:expires_time now} {:token token})))

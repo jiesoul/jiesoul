@@ -1,5 +1,6 @@
 (ns jiesoul.router
   (:require [clojure.java.io :as io]
+            [reitit.middleware :as middleware]
             [jiesoul.handlers.auth :as auth]
             [jiesoul.middleware.auth :as auth-mw]
             [jiesoul.handlers.dashboard :as dashboard]
@@ -28,28 +29,29 @@
                   {:get {:no-doc true
                          :swagger {:info {:title "my-api"}} ;; prefix for all paths
                          :handler (swagger/create-swagger-handler)}}]
+
                  ["/api/v1"
-                  
-                  [""
-                   {:swagger {:tags "Auth"}}
-                   ["/login" {:post {:summary "User Login"
-                                     :parameters {:body {:username string?, :password string?}}
-                                     :handler (auth/login-authenticate db)}}]
-                   
-                   ["/logout" {:get {:summary "User Logout"
-                                     :middleware [auth-mw/auth-middleware 1]
-                                     :parameters {:headers {:Authorization string?}}
-                                     :handler (auth/logout db)}}]]
-                  
+                  ["/login" {:swagger {:tags ["Auth"]}
+                             :post {:summary "User Login"
+                                    :parameters {:body {:username string?, :password string?}}
+                                    :handler (auth/login-authenticate db)}}]
+
+                  ["/logout" {:swagger {:tags ["Auth"]}
+                              :post {:summary "User Logout"
+                                     :parameters {:header {:authorization string?}}
+                                     :handler (auth/logout db)}}]
+
+
                   ["/users"
                    {:swagger {:tags ["users"]}}
 
                    ["/" {:get {:summary "get users"
-                               :parameters {:headers {:Authorization string?}}
+                               :middleware [[auth-mw/wrap-auth db "admin"]]
+                               :parameters {:header {:Authorization string?}}
                                :handler default-handler}
 
                          :post {:summary "create new user"
-                                :parameters {:headers {:Authorization string?}}
+                                :parameters {:header {:Authorization string?}}
                                 :handler default-handler}}]
 
                    ["/:id" {:get {:summary "get a user"
@@ -100,7 +102,7 @@
                                      coercion/coerce-request-middleware
                            ;; multipart
                                      multipart/multipart-middleware
-                                     
+
                                      mw/exception-middleware]}
                  :exception pretty/exception})
 

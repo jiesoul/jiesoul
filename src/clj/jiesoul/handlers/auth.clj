@@ -1,7 +1,8 @@
 (ns jiesoul.handlers.auth
   (:require [buddy.hashers :as buddy-hashers]
-            [jiesoul.middleware.auth :refer [create-token]]
+            [jiesoul.middleware.auth :refer [create-user-token]]
             [jiesoul.models.users :as user-model]
+            [jiesoul.models.token :as token-model]
             [ring.util.response :as resp]))
 
 (defn login-authenticate [db]
@@ -10,10 +11,12 @@
           password (-> req :body-params :password)
           user (user-model/get-user-by-name db username)]
       (if (and user (buddy-hashers/check password (:password user)))
-        (resp/response  {:token (create-token db user)
-                         :refresh-token (create-token db user {:valid-seconds 7200})})
-        (resp/bad-request {:error "用户名密码错误"})))))
+        (let [token (create-user-token db user)]
+          (resp/response  {:token token}))
+        (resp/bad-request {:error "用户名或密码错误"})))))
 
 (defn logout [db]
   (fn [req]
-    (resp/response {:message "ok"})))
+    (let [token (-> req :parameters :header :authorization)]
+      (token-model/disable-user-token db token)
+      (resp/response {:message "Logout"}))))

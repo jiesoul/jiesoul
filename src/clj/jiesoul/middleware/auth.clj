@@ -15,7 +15,7 @@
   (let [randomdata (nonce/random-bytes 32)]
     (codecs/bytes->hex randomdata)))
 
-(defn create-token
+(defn create-user-token
   "创建 Token"
   [db user & {:keys [valid-seconds] :or {valid-seconds 3600}}]
   (let [create-time (java.time.Instant/now)
@@ -44,7 +44,8 @@
                   :authfn my-authfn
                   :unauthorized-handler my-unauthorized-handler}))
 
-(defn auth-middleware [handler id]
+(defn wrap-auth [handler db role]
   (fn [request]
-    (buddy-auth-middleware/wrap-authentication handler auth-backend)
-    (handler (update request ::acc (fnil conj []) id))))
+    ;; (buddy-auth-middleware/wrap-authentication handler auth-backend)
+    ;; (handler (update request :message "ok"))
+    ))
