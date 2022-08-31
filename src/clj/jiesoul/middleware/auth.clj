@@ -1,11 +1,14 @@
 (ns jiesoul.middleware.auth 
-  (:require [buddy.auth.backends.token :refer [token-backend]]
+  (:require [buddy.auth.backends.token :as backends]
             [buddy.auth.middleware :as buddy-auth-middleware]
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
             [buddy.sign.jwt :as jwt]
             [jiesoul.models.token :as token-model]
-            [ring.util.response :as resp]))
+            [jiesoul.models.users :as user-model]
+            [ring.util.response :as resp]
+            [clojure.string :as str]
+            [taoensso.timbre :as log]))
 
 ;; 盐
 (def private-key "soul")
@@ -14,6 +17,12 @@
   []
   (let [randomdata (nonce/random-bytes 32)]
     (codecs/bytes->hex randomdata)))
+
+(defn parse-header
+  [request token-name]
+  (some->> (-> request :parameters :header :authorization)
+           (re-find (re-pattern (str "^" token-name " (.+)$")))
+           (second)))
 
 (defn create-user-token
   "创建 Token"
@@ -31,21 +40,30 @@
     token))
 
 (defn my-unauthorized-handler
-  [request token-auth-middleware]
-  (-> (resp/response "Unauthorized request")
+  [request message]
+  (-> (resp/bad-request {:message message})
       (assoc :status 403)))
 
 (defn my-authfn
-  [db requeset token]
+  [requeset token]
   (println (str "token: " token)))
 
 (def auth-backend
-  (token-backend {:realm "admin"
-                  :authfn my-authfn
-                  :unauthorized-handler my-unauthorized-handler}))
+  (backends/token-backend {:authfn my-authfn
+                           :unauthorized-handler my-unauthorized-handler}))
 
 (defn wrap-auth [handler db role]
   (fn [request]
-    ;; (buddy-auth-middleware/wrap-authentication handler auth-backend)
-    ;; (handler (update request :message "ok"))
-    ))
+    (let [token (parse-header request "Token")
+          user-token (token-model/get-user-token-by-token db token)
+          now (java.time.Instant/now)]
+      (log/debug "user-token: " user-token)
+      (if (and user-token (.isAfter (java.time.Instant/parse (:expires_time user-token)) now))
+        (let [user-id (:user_id user-token)
+              user (user-model/get-user-by-id db user-id)
+              roles (-> (:roles user) (str/split #",") (set))]
+          (log/debug "roles: " roles)
+          (if (contains? roles role)
+            (handler request)
+            (my-unauthorized-handler request "用户无权限！")))
+        (my-unauthorized-handler request "Token 已过期！！")))))

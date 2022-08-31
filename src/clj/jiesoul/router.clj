@@ -3,7 +3,6 @@
             [reitit.middleware :as middleware]
             [jiesoul.handlers.auth :as auth]
             [jiesoul.middleware.auth :as auth-mw]
-            [jiesoul.handlers.dashboard :as dashboard]
             [jiesoul.middleware :as mw]
             [muuntaja.core :as m]
             [reitit.coercion.spec]
@@ -46,12 +45,12 @@
                    {:swagger {:tags ["users"]}}
 
                    ["/" {:get {:summary "get users"
-                               :middleware [[auth-mw/wrap-auth db "admin"]]
-                               :parameters {:header {:Authorization string?}}
+                               :middleware [[auth-mw/wrap-auth db "user"]]
+                               :parameters {:header {:authorization string?}}
                                :handler default-handler}
 
                          :post {:summary "create new user"
-                                :parameters {:header {:Authorization string?}}
+                                :parameters {:header {:authorization string?}}
                                 :handler default-handler}}]
 
                    ["/:id" {:get {:summary "get a user"
@@ -68,7 +67,7 @@
 
                    ["/upload" {:post {:summary "upload a file"
                                       :parameters {:multipart {:file multipart/temp-file-part}
-                                                   :headers {:Authorization string?}}
+                                                   :headers {:authorization string?}}
                                       :responses {200 {:body {:file multipart/temp-file-part}}}
                                       :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                                                  {:status 200
@@ -76,7 +75,7 @@
 
                    ["/download" {:get {:summary "downloads a file"
                                        :swagger {:produces ["image/png"]}
-                                       :parameters {:headers {:Authorization string?}}
+                                       :parameters {:headers {:authorization string?}}
                                        :handler (fn [_]
                                                   {:status 200
                                                    :headers {"Content-Type" "image/png"}
@@ -109,5 +108,5 @@
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/api-docs/v1"})
     (ring/create-default-handler
-     {:not-found (constantly {:status 404 :body "Not Found 404"})
-      :method-not-allowed (constantly {:status 405, :body "kosh"})}))))
+     {:not-found (constantly {:status 404 :body "未找到"})
+      :method-not-allowed (constantly {:status 405, :body "非法的调用"})}))))

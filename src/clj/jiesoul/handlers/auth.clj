@@ -3,7 +3,9 @@
             [jiesoul.middleware.auth :refer [create-user-token]]
             [jiesoul.models.users :as user-model]
             [jiesoul.models.token :as token-model]
-            [ring.util.response :as resp]))
+            [jiesoul.middleware.auth :refer [parse-header]]
+            [ring.util.response :as resp]
+            [java-time :as jt]))
 
 (defn login-authenticate [db]
   (fn [req]
@@ -17,6 +19,6 @@
 
 (defn logout [db]
   (fn [req]
-    (let [token (-> req :parameters :header :authorization)]
+    (let [token (parse-header req "Token")]
       (token-model/disable-user-token db token)
-      (resp/response {:message "Logout"}))))
+      (resp/response {:message "Logout success!!"}))))

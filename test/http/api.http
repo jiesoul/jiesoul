@@ -12,4 +12,10 @@ Content-Type: application/json
 
 POST http://localhost:3000/api/v1/logout
 Content-Type: application/json
-Authorization: token 1e1c11861e6b476a32aeef510c548877dcf55e9701ce4d35675d06ef151d3c69
+Authorization: Token bf36c75fa308ce771de0bbf37c9a5a1ae8a442c0e86706e4d341b642fb86ac05
+
+### get users
+
+GET http://localhost:3000/api/v1/users/
+Content-Type: application/json
+Authorization: Token f289cc36aaf88be82d8a8ca04f40b6fd1bf119a645bac20af3bebd062c4ff3c8
