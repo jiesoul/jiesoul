@@ -4,8 +4,7 @@
             [jiesoul.models.users :as user-model]
             [jiesoul.models.token :as token-model]
             [jiesoul.middleware.auth :refer [parse-header]]
-            [ring.util.response :as resp]
-            [java-time :as jt]))
+            [ring.util.response :as resp]))
 
 (defn login-authenticate [db]
   (fn [req]

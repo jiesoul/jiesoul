@@ -46,7 +46,8 @@
 
                    ["/" {:get {:summary "get users"
                                :middleware [[auth-mw/wrap-auth db "user"]]
-                               :parameters {:header {:authorization string?}}
+                               :parameters {:header {:authorization string?}
+                                            :query-params {:q string?}}
                                :handler default-handler}
 
                          :post {:summary "create new user"
