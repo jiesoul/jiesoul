@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [reitit.middleware :as middleware]
             [jiesoul.handlers.auth :as auth]
+            [jiesoul.handlers.user :as user]
             [jiesoul.middleware.auth :as auth-mw]
             [jiesoul.middleware :as mw]
             [muuntaja.core :as m]
@@ -33,7 +34,7 @@
                   ["/login" {:swagger {:tags ["Auth"]}
                              :post {:summary "User Login"
                                     :parameters {:body {:username string?, :password string?}}
-                                    :handler (auth/login-authenticate db)}}]
+                                    :handler (auth/login db)}}]
 
                   ["/logout" {:swagger {:tags ["Auth"]}
                               :post {:summary "User Logout"
@@ -46,22 +47,41 @@
 
                    ["/" {:get {:summary "get users"
                                :middleware [[auth-mw/wrap-auth db "user"]]
-                               :parameters {:header {:authorization string?}
-                                            :query-params {:q string?}}
-                               :handler default-handler}
+                               :parameters {:header {:authorization string?}}
+                               :handler (user/get-users db)}
 
                          :post {:summary "create new user"
-                                :parameters {:header {:authorization string?}}
-                                :handler default-handler}}]
+                                :parameters {:header {:authorization string?}
+                                             :body {:username string?
+                                                    :password string?
+                                                    :email string?
+                                                    :age int?
+                                                    :roles string?
+                                                    :nickname string? 
+                                                    :birthday string?}}
+                                :handler (user/create-user! db)}}]
 
                    ["/:id" {:get {:summary "get a user"
-                                  :handler default-handler}
+                                  :middleware [[auth-mw/wrap-auth db "user"]]
+                                  :parameters {:header {:authorization string?}
+                                               :path {:id int?}}
+                                  :handler (user/get-user db)}
 
                             :put {:summary "update a user info"
+                                  :middleware [[auth-mw/wrap-auth db "user"]]
+                                  :parameters {:header {:authorization string?}
+                                               :path {:id int?}}
                                   :handler default-handler}
 
                             :delete {:summary "delete a user"
-                                     :handler default-handler}}]]
+                                     :middleware [[auth-mw/wrap-auth db "user"]]
+                                     :parameters {:header {:authorization string?}
+                                                  :path {:id int?}}
+                                     :handler default-handler}}
+                    ["/update-password" {:post {:parameters {:body {:old-pass string?
+                                                                    :new-pass string?
+                                                                    :con-pass string?}}
+                                                :handler default-handler}}]]]
 
                   ["/files"
                    {:swagger {:tags ["files"]}}

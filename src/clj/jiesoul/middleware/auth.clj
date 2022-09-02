@@ -4,6 +4,7 @@
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
             [buddy.sign.jwt :as jwt]
+            [jiesoul.req-uitls :as req-utils]
             [jiesoul.models.token :as token-model]
             [jiesoul.models.users :as user-model]
             [ring.util.response :as resp]
@@ -17,12 +18,6 @@
   []
   (let [randomdata (nonce/random-bytes 32)]
     (codecs/bytes->hex randomdata)))
-
-(defn parse-header
-  [request token-name]
-  (some->> (-> request :parameters :header :authorization)
-           (re-find (re-pattern (str "^" token-name " (.+)$")))
-           (second)))
 
 (defn create-user-token
   "创建 Token"
@@ -54,7 +49,7 @@
 
 (defn wrap-auth [handler db role]
   (fn [request]
-    (let [token (parse-header request "Token")
+    (let [token (req-utils/parse-header request "Token")
           user-token (token-model/get-user-token-by-token db token)
           now (java.time.Instant/now)]
       (log/debug "user-token: " user-token)
