@@ -5,7 +5,8 @@
             [taoensso.timbre :as log]))
 
 (defn get-users [db]
-  (fn [request] 
+  (fn [req]
+    (log/debug "request params: " (:parameters req))
     (let [users (user-model/get-users db)]
       (resp/response {:data users}))))
 
@@ -15,7 +16,6 @@
 
 (defn get-user [db]
   (fn [req]
-    (log/debug "request params: " (:parameters req))
     (let [id (ru/parse-path req :id)
           user (user-model/get-user-by-id db id)]
       (resp/response {:data user}))))

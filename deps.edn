@@ -3,6 +3,7 @@
         ring/ring-jetty-adapter {:mvn/version "1.9.5"}
         metosin/reitit {:mvn/version "0.5.18"}
         integrant/integrant {:mvn/version "0.8.0"}
+        expound/expound {:mvn/version "0.9.0"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
         org.xerial/sqlite-jdbc {:mvn/version "3.39.2.0"}
         com.github.seancorfield/honeysql {:mvn/version "2.3.911"}

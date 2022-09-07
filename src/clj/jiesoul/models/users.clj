@@ -1,6 +1,5 @@
 (ns jiesoul.models.users
-  (:require [next.jdbc :as jdbc]
-            [next.jdbc.sql :as sql]
+  (:require [next.jdbc.sql :as sql]
             [next.jdbc.result-set :as rs]
             [honey.sql :as hsql]))
 
