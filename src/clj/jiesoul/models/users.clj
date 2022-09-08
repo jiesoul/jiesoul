@@ -1,7 +1,8 @@
 (ns jiesoul.models.users
   (:require [next.jdbc.sql :as sql]
             [next.jdbc.result-set :as rs]
-            [honey.sql :as hsql]))
+            [honey.sql :as hsql]
+            [taoensso.timbre :as log]))
 
 (extend-protocol rs/ReadableColumn
   Integer
@@ -19,6 +20,7 @@
   (sql/get-by-id db :users id))
 
 (defn get-users 
-  [db]
+  [db where]
+  (log/debug "where: " where)
   (let [query (hsql/format {:select [:*] :from [:users]})]
     (sql/query db query)))

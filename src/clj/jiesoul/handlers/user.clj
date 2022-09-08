@@ -2,12 +2,14 @@
   (:require [jiesoul.models.users :as user-model]
             [jiesoul.req-uitls :as ru]
             [ring.util.response :as resp]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [jiesoul.req-uitls :as req-utils]))
 
 (defn get-users [db]
   (fn [req]
     (log/debug "request params: " (:parameters req))
-    (let [users (user-model/get-users db)]
+    (let [where (req-utils/parse-query req)
+          users (user-model/get-users db where)]
       (resp/response {:data users}))))
 
 (defn create-user! [db]
