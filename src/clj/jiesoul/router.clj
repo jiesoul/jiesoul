@@ -1,7 +1,10 @@
 (ns jiesoul.router
   (:require [clojure.java.io :as io]
+            [clojure.spec.alpha :as s]
+            [spec-tools.core :as st]
             [reitit.middleware :as middleware]
             [jiesoul.handlers.auth :as auth]
+            [jiesoul.handlers.user :as user]
             [jiesoul.middleware.auth :as auth-mw]
             [jiesoul.middleware :as mw]
             [muuntaja.core :as m]
@@ -14,13 +17,47 @@
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
             [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]))
+            [reitit.swagger-ui :as swagger-ui]
+            [expound.alpha :as expound]))
+
+(def ^:private header-token-pattern #"^Token (.+)$")
+(def ^:private query-sort-pattern #"^\$sort=(.+)$")
+(def ^:private query-filter-pattern #"^\$filter=(.+)$")
+(def ^:private query-page-pattern #"^\$page=(.+)$")
+(def ^:private query-search-pattern #"^\$rearch=(.+)$")
+
+(s/def ::heander-token
+  (st/spec {:spec #(and (string? %) (re-matches header-token-pattern %))
+            :description "request header Token,pattern: Token xxxxxxx"}))
+
+(s/def ::sort 
+       (st/spec {:spec #(and string? (re-matches query-sort-pattern %))
+                 :description "sort query pattern: $sort=name dec, id desc"}))
+
+(s/def ::filter
+  (st/spec {:spec #(and string? (re-matches query-filter-pattern %))
+            :description "sort query pattern: $filter=filter=name eq 'Milk' and price lt 2.55"}))
+
+(s/def ::page
+  (st/spec {:spec #(and string? (re-matches query-page-pattern %))
+            :description "sort query pattern: $page=page-no eq 1 and page-size eq 2"}))
+
+(s/def ::search
+  (st/spec {:spec #(and string? (re-matches query-search-pattern %))
+            :description "sort query pattern: $sort=name dec, id desc"}))
 
 (def asset-version "1")
 
 (defn default-handler [req]
   {:status 200 
    :body "this is default handler"})
+
+(defn coercion-error-handler [status]
+  (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})
+        handler (exception/create-coercion-handler status)]
+    (fn [exception request]
+      (printer (-> exception ex-data :problems))
+      (handler exception request))))
 
 (defn routes [db]
   (ring/ring-handler
@@ -33,11 +70,11 @@
                   ["/login" {:swagger {:tags ["Auth"]}
                              :post {:summary "User Login"
                                     :parameters {:body {:username string?, :password string?}}
-                                    :handler (auth/login-authenticate db)}}]
+                                    :handler (auth/login db)}}]
 
                   ["/logout" {:swagger {:tags ["Auth"]}
                               :post {:summary "User Logout"
-                                     :parameters {:header {:authorization string?}}
+                                     :parameters {:header {:authorization ::heander-token}}
                                      :handler (auth/logout db)}}]
 
 
@@ -46,29 +83,52 @@
 
                    ["/" {:get {:summary "get users"
                                :middleware [[auth-mw/wrap-auth db "user"]]
-                               :parameters {:header {:authorization string?}
-                                            :query-params {:q string?}}
-                               :handler default-handler}
+                               :parameters {:header {:authorization ::heander-token}
+                                            :query (s/keys :opt-un [::filter ::sort ::page])}
+                               :handler (user/get-users db)}
 
                          :post {:summary "create new user"
-                                :parameters {:header {:authorization string?}}
-                                :handler default-handler}}]
+                                :parameters {:header {:authorization ::heander-token}
+                                             :body {:username string?
+                                                    :password string?
+                                                    :email string?
+                                                    :age int?
+                                                    :roles string?
+                                                    :nickname string? 
+                                                    :birthday string?}}
+                                :handler (user/create-user! db)}}]
 
                    ["/:id" {:get {:summary "get a user"
-                                  :handler default-handler}
+                                  :middleware [[auth-mw/wrap-auth db "user"]]
+                                  :parameters {:header {:authorization ::heander-token}
+                                               :path {:id int?}}
+                                  :handler (user/get-user db)}
 
                             :put {:summary "update a user info"
+                                  :middleware [[auth-mw/wrap-auth db "user"]]
+                                  :parameters {:header {:authorization ::heander-token}
+                                               :path {:id int?}}
                                   :handler default-handler}
 
                             :delete {:summary "delete a user"
-                                     :handler default-handler}}]]
+                                     :middleware [[auth-mw/wrap-auth db "user"]]
+                                     :parameters {:header {:authorization ::heander-token}
+                                                  :path {:id int?}}
+                                     :handler default-handler}}]
+                   ["/:id/update-password" {:post {:summary "update user password"
+                                               :middleware [[auth-mw/wrap-auth db "user"]]
+                                               :parameters {:header {:authorization ::heander-token}
+                                                            :body {:old-pass string?
+                                                                   :new-pass string?
+                                                                   :con-pass string?}}
+                                               :handler default-handler}}]]
 
                   ["/files"
                    {:swagger {:tags ["files"]}}
 
                    ["/upload" {:post {:summary "upload a file"
                                       :parameters {:multipart {:file multipart/temp-file-part}
-                                                   :headers {:authorization string?}}
+                                                   :headers {:authorization ::heander-token}}
                                       :responses {200 {:body {:file multipart/temp-file-part}}}
                                       :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                                                  {:status 200
@@ -76,7 +136,7 @@
 
                    ["/download" {:get {:summary "downloads a file"
                                        :swagger {:produces ["image/png"]}
-                                       :parameters {:headers {:authorization string?}}
+                                       :parameters {:headers {:authorization ::heander-token}}
                                        :handler (fn [_]
                                                   {:status 200
                                                    :headers {"Content-Type" "image/png"}
@@ -93,7 +153,12 @@
                            ;; encoding response body
                                      muuntaja/format-response-middleware
                            ;; exception handling
-                                     exception/exception-middleware
+                                     (exception/create-exception-middleware
+                                      (merge
+                                   ;;     exception/exception-middleware
+                                       mw/exception-middleware
+                                       {:reitit.coercion/request-coercion (coercion-error-handler 400)
+                                        :retiit.coercion/response-coercion (coercion-error-handler 500)}))
                            ;; decoding request body
                                      muuntaja/format-request-middleware
                            ;; coercing response bodys
@@ -103,7 +168,7 @@
                            ;; multipart
                                      multipart/multipart-middleware
 
-                                     mw/exception-middleware]}
+                                     ]}
                  :exception pretty/exception})
 
    (ring/routes

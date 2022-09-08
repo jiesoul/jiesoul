@@ -4,6 +4,7 @@
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
             [buddy.sign.jwt :as jwt]
+            [jiesoul.req-uitls :as req-utils]
             [jiesoul.models.token :as token-model]
             [jiesoul.models.users :as user-model]
             [ring.util.response :as resp]
@@ -18,15 +19,11 @@
   (let [randomdata (nonce/random-bytes 32)]
     (codecs/bytes->hex randomdata)))
 
-(defn parse-header
-  [request token-name]
-  (some->> (-> request :parameters :header :authorization)
-           (re-find (re-pattern (str "^" token-name " (.+)$")))
-           (second)))
+(def defautlt-valid-seconds 3600)
 
 (defn create-user-token
   "创建 Token"
-  [db user & {:keys [valid-seconds] :or {valid-seconds 3600}}]
+  [db user & {:keys [valid-seconds] :or {valid-seconds defautlt-valid-seconds}}]
   (let [create-time (java.time.Instant/now)
         expires-time (.plusSeconds create-time valid-seconds)
         payload (-> user
@@ -54,16 +51,20 @@
 
 (defn wrap-auth [handler db role]
   (fn [request]
-    (let [token (parse-header request "Token")
+    (let [token (req-utils/parse-header request "Token")
           user-token (token-model/get-user-token-by-token db token)
           now (java.time.Instant/now)]
-      (log/debug "user-token: " user-token)
+      (log/info "user-token: " user-token)
       (if (and user-token (.isAfter (java.time.Instant/parse (:expires_time user-token)) now))
         (let [user-id (:user_id user-token)
               user (user-model/get-user-by-id db user-id)
               roles (-> (:roles user) (str/split #",") (set))]
-          (log/debug "roles: " roles)
+          (log/info "user: " user)
           (if (contains? roles role)
-            (handler request)
+            (do
+              (token-model/update-user-token-expires-time db (-> user-token 
+                                                                 (assoc :expires_time (.plusSeconds now defautlt-valid-seconds))))
+              (log/info "user-token expires-time was updated!.")
+              (handler request))
             (my-unauthorized-handler request "用户无权限！")))
         (my-unauthorized-handler request "Token 已过期！！")))))

@@ -1,6 +1,7 @@
 (ns jiesoul.models.token
-  (:require [next.jdbc :as jdbc]
-            [next.jdbc.sql :as sql]))
+  (:require [honey.sql :as hsql]
+            [next.jdbc.sql :as sql]
+            [taoensso.timbre :as log]))
 
 (defn save-user-token [db user-token]
   (sql/insert! db :user_token user-token))
@@ -12,4 +13,9 @@
 (defn disable-user-token 
   [db token]
   (let [now (java.time.Instant/now)]
-    (sql/update! db :user_token {:expires_time now} {:token token})))
+    (sql/update! db :user_token {:expires_time now} {:token token})))(defn update-user-token-expires-time [db arg2]
+  )
+
+(defn update-user-token-expires-time 
+  [db {:keys [id expires_time] :as user-token}]
+  (sql/update! db :user_token {:expires_time expires_time} {:id id}))
