@@ -20,7 +20,7 @@
   (sql/get-by-id db :users id))
 
 (defn get-users 
-  [db where]
-  (log/debug "where: " where)
+  [db opt]
+  (log/debug "where: " opt)
   (let [query (hsql/format {:select [:*] :from [:users]})]
     (sql/query db query)))

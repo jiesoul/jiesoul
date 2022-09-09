@@ -2,7 +2,6 @@
   (:require [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [spec-tools.core :as st]
-            [reitit.middleware :as middleware]
             [jiesoul.handlers.auth :as auth]
             [jiesoul.handlers.user :as user]
             [jiesoul.middleware.auth :as auth-mw]
@@ -12,7 +11,6 @@
             [reitit.dev.pretty :as pretty]
             [reitit.ring :as ring]
             [reitit.ring.coercion :as coercion]
-            [reitit.ring.middleware.exception :as exception]
             [reitit.ring.middleware.multipart :as multipart]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
@@ -57,13 +55,6 @@
 (defn default-handler [req]
   {:status 200 
    :body "this is default handler"})
-
-(defn coercion-error-handler [status]
-  (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})
-        handler (exception/create-coercion-handler status)]
-    (fn [exception request]
-      (printer (-> exception ex-data :problems))
-      (handler exception request))))
 
 (defn routes [db]
   (ring/ring-handler
@@ -160,12 +151,7 @@
                            ;; encoding response body
                          muuntaja/format-response-middleware
                            ;; exception handling
-                         (exception/create-exception-middleware
-                          (merge
-                           exception/exception-middleware
-                           mw/exception-middleware
-                           {:reitit.coercion/request-coercion (coercion-error-handler 400)
-                            :retiit.coercion/response-coercion (coercion-error-handler 500)}))
+                         mw/exception-middleware
                            ;; decoding request body
                          muuntaja/format-request-middleware
                            ;; coercing response bodys
