@@ -1,4 +1,4 @@
-CREATE TABLE article_tag_referenced
+CREATE TABLE article_tag
 -- 文章标签
 (
     atr_Id INTEGER PRIMARY KEY,  -- 引用id

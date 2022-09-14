@@ -19,36 +19,55 @@
             [expound.alpha :as expound]))
 
 (def token-regex #"^Token (.+)$")
-(defn valid-token? [s] (re-matches token-regex s))
 (s/def ::header-token
   (st/spec {:description "请求头部Token格式为：Token xxxxxxxxx"
-            :spec (s/and string? valid-token?)}))
+            :spec (s/and string? #(re-matches token-regex %))}))
 (expound/defmsg ::header-token "请求头部Token格式为：Token xxxxxxxxx")
 
 (def query-sort-regex #"^\$sort=(.+)$")
-(defn valid-sort? [s] (re-matches query-sort-regex s))
 (s/def ::sort 
        (st/spec {:description "排序请求格式为：$sort=xxx,xxx"
-                 :spec (s/and string? valid-sort?)}))
+                 :spec (s/and string? #(re-matches query-sort-regex %))}))
 (expound/defmsg ::sort "排序请求格式为：$sort=xxx,xxx")
 
 (def query-filter-regex #"^\$filter=(.+)$")
-(defn valid-filter? [s] (re-matches query-filter-regex s))
 (s/def ::filter 
        (st/spec {:description "过滤格式： $filter=xxxx eq 'xx' and xxx = x"
-                 :spec (s/and string? valid-filter?)}))
+                 :spec (s/and string? #(re-matches query-filter-regex %))}))
 (expound/defmsg ::filter "过滤格式： $filter=xxxx eq 'xx' and xxx = x")
 
 (def query-page-regex #"^\$page=(\d+)&\$pre_page=(\d+)$")
-(defn valid-page? [s] (re-matches query-page-regex s))
 (s/def ::page 
        (st/spec {:description "分页格式为： $page=x&$pre_page=x"
-                 :spec (s/and string? valid-page?)}))
+                 :spec (s/and string? #(re-matches query-page-regex %))}))
 (expound/defmsg ::page "分页格式为： $page=x&$pre_page=x")
 
 (def query-search-regex #"^\$rearch=(.+)$")
-(defn valid-search? [s] (re-matches query-search-regex s))
-(s/def ::search (s/and string? valid-search?))
+(s/def ::search (s/and string? #(re-matches query-filter-regex %)))
+
+(s/def ::query (s/keys :opt-un [::filter ::sort ::page]))
+
+(def email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
+(s/def ::email 
+       (st/spec {:spec (s/and string? #(re-matches email-regex %))}))
+
+(s/def ::id int?)
+(s/def ::name string?)
+(s/def ::password string?)
+(s/def ::age int?)
+(s/def ::roles string?)
+(s/def ::nickname string?)
+(s/def ::birthday string?)
+
+(s/def ::create-user (s/keys :req-un [::name ::password ::email ::roles] :opt-un [::age ::nickname ::birthday]))
+(s/def ::update-user (s/keys :req-un [::id ::age ::nickname ::birthday]))
+
+(s/def ::old-password string?)
+(s/def ::new-password string?)
+(s/def ::confirm-password string?)
+(s/def ::update-password (s/keys :req-un [::id ::old-password ::new-password ::confirm-password]))
+
+
 
 (def asset-version "1")
 
@@ -65,61 +84,73 @@
              :handler (swagger/create-swagger-handler)}}]
 
      ["/api/v1"
-      ["/login" {:swagger {:tags ["Auth"]}
-                 :post {:summary "User Login"
+      ["/login" {:swagger {:tags ["验证"]}
+                 :post {:summary "用户登录"
                         :parameters {:body {:username string?, :password string?}}
                         :handler (auth/login db)}}]
 
-      ["/logout" {:swagger {:tags ["Auth"]}
-                  :post {:summary "User Logout"
+      ["/logout" {:swagger {:tags ["验证"]}
+                  :post {:summary "用户退出"
                          :parameters {:header {:authorization ::header-token}}
                          :handler (auth/logout db)}}]
 
-
+      ;; user 相关API
       ["/users"
-       {:swagger {:tags ["users"]}}
+       {:swagger {:tags ["用户"]}}
 
-       ["/" {:get {:summary "get users"
+       ["/" {:get {:summary "查询用户"
                    :middleware [[auth-mw/wrap-auth db "user"]]
                    :parameters {:header {:authorization ::header-token}
-                                :query (s/keys :opt-un [::filter ::sort ::page])}
+                                :query ::query}
                    :handler (user/get-users db)}
 
-             :post {:summary "create new user"
+             :post {:summary "创建用户"
                     :parameters {:header {:authorization ::header-token}
-                                 :body {:username string?
-                                        :password string?
-                                        :email string?
-                                        :age int?
-                                        :roles string?
-                                        :nickname string?
-                                        :birthday string?}}
-                    :handler (user/create-user! db)}}]
+                                 :body {:user ::create-user}}
+                    :handler (user/create-user db)}}]
 
-       ["/:id" {:get {:summary "get a user"
+       ["/:id" {:get {:summary "查看用户信息"
                       :middleware [[auth-mw/wrap-auth db "user"]]
                       :parameters {:header {:authorization ::header-token}
                                    :path {:id int?}}
                       :handler (user/get-user db)}
 
-                :put {:summary "update a user info"
+                :put {:summary "更新用户信息"
                       :middleware [[auth-mw/wrap-auth db "user"]]
                       :parameters {:header {:authorization ::header-token}
-                                   :path {:id int?}}
-                      :handler default-handler}
+                                   :path {:id ::id}
+                                   :body {:user ::update-user}}
+                      :handler (user/update-user-info db)}
 
-                :delete {:summary "delete a user"
+                :delete {:summary "删除用户"
                          :middleware [[auth-mw/wrap-auth db "user"]]
                          :parameters {:header {:authorization ::header-token}
-                                      :path {:id int?}}
-                         :handler default-handler}}]
-       ["/:id/update-password" {:post {:summary "update user password"
+                                      :path {:id ::id}}
+                         :handler (user/delete-user db)}}]
+
+       ["/:id/update-password" {:post {:summary "修改密码"
                                        :middleware [[auth-mw/wrap-auth db "user"]]
                                        :parameters {:header {:authorization ::header-token}
-                                                    :body {:old-pass string?
-                                                           :new-pass string?
-                                                           :con-pass string?}}
-                                       :handler default-handler}}]]
+                                                    :path {:id ::id}
+                                                    :body {:update-password ::update-password}}
+                                       :handler (user/update-password db)}}]]
+
+      ["/categories"
+       {:swagger {:tags ["分类"]}}
+       ["/" {:post {:summary "查询分类"
+                    :middleware [[auth-mw/wrap-auth db "user"]]
+                    :parameters {:header {:authorization ::header-token}
+                                 :query ::query}
+                    :handler default-handler}}]]
+
+      ["/tags"
+       {:swagger {:tags ["标签"]}}]
+
+      ["/articles"
+       {:swagger {:tags ["文章"]}}]
+
+      ["/discusses"
+       {:swagger {:tags ["讨论"]}}]
 
       ["/files"
        {:swagger {:tags ["files"]}}

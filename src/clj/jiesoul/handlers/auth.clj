@@ -12,7 +12,6 @@
     (let [username (ru/parse-body req :username)
           password (ru/parse-body req :password)
           user (user-model/get-user-by-name db username)]
-      (log/debug "req body: " (get-in req [:body]))
       (log/debug "username: " username " password: " password " is loading.")
       (if (and user (buddy-hashers/check password (:password user)))
         (let [token (create-user-token db user)]

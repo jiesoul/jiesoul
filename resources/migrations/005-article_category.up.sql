@@ -1,4 +1,4 @@
-CREATE TABLE article_category_referenced
+CREATE TABLE article_category
 -- 文章分类
 (
     acr_id INTEGER PRIMARY KEY,  -- 引用id

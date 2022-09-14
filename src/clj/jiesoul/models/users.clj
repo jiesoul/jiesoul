@@ -1,15 +1,19 @@
 (ns jiesoul.models.users
   (:require [next.jdbc.sql :as sql]
-            [next.jdbc.result-set :as rs]
             [honey.sql :as hsql]
             [taoensso.timbre :as log]))
 
-(extend-protocol rs/ReadableColumn
-  Integer
-  (read-column-by-index [x mrs i]
-    (if (= (.getColumnName mrs i) "owner")
-      (not (zero? x))
-      x)))
+(defn create-user! 
+  [db user]
+  (sql/insert! db :users user))
+
+(defn update-user! 
+  [db {:keys [id] :as user}]
+  (sql/update! db :users (dissoc user :id) {:id id}))
+
+(defn update-user-password!
+  [db {:keys [id password]}]
+  (sql/update! db :user {:password password} {:id id}))
 
 (defn get-user-by-name 
   [db username]
@@ -24,3 +28,7 @@
   (log/debug "where: " opt)
   (let [query (hsql/format {:select [:*] :from [:users]})]
     (sql/query db query)))
+
+(defn delete-user!
+  [db id]
+  (sql/delete! db :users {:id id}))
