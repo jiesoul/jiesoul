@@ -134,13 +134,17 @@
                                                     :path {:id ::id}
                                                     :body {:update-password ::update-password}}
                                        :handler (user/update-password db)}}]]
-
+      ;; 分类API
       ["/categories"
        {:swagger {:tags ["分类"]}}
-       ["/" {:post {:summary "查询分类"
+       ["/" {:get {:summary "查询分类"
+                   :middleware [[auth-mw/wrap-auth db "user"]]
+                   :parameters {:header {:authorization ::header-token}
+                                :query ::query}}
+             :post {:summary "创建分类"
                     :middleware [[auth-mw/wrap-auth db "user"]]
                     :parameters {:header {:authorization ::header-token}
-                                 :query ::query}
+                                 :body {:category ::category}}
                     :handler default-handler}}]]
 
       ["/tags"

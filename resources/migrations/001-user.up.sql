@@ -2,7 +2,7 @@ CREATE TABLE users
 -- 用户
 (
     id INTEGER PRIMARY KEY NOT NULL,   -- 用户ID
-    username VARCHAR(128),                 -- 用户名
+    username VARCHAR(128) unique,                 -- 用户名
     nickname VARCHAR(128),             -- 用户昵称
     password VARCHAR(64),                        -- 用户密码
     email VARCHAR(64),                      -- 用户邮箱

@@ -1,9 +1,9 @@
 CREATE TABLE article
 -- 文章
 (
-    article_id INTEGER PRIMARY KEY,     -- 博文ID
+    id INTEGER PRIMARY KEY,     -- 博文ID
     push_data DATETIME,                 -- 发布日期
-    article_user VARCHAR(32),           -- 发表用户
+    author VARCHAR(32),           -- 发表用户
     title VARCHAR(1024),                -- 博文标题
     like_count INT,                     -- 点赞数
     comment_count INT,                  -- 评论数
