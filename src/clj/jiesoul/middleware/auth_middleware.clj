@@ -1,12 +1,12 @@
-(ns jiesoul.middleware.auth 
+(ns jiesoul.middleware.auth-middleware
   (:require [buddy.auth.backends.token :as backends]
             [buddy.auth.middleware :as buddy-auth-middleware]
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
             [buddy.sign.jwt :as jwt]
             [jiesoul.req-uitls :as req-utils]
-            [jiesoul.models.token :as token-model]
-            [jiesoul.models.users :as user-model]
+            [jiesoul.models.token-model :as token-model]
+            [jiesoul.models.users-model :as user-model]
             [ring.util.response :as resp]
             [clojure.string :as str]
             [taoensso.timbre :as log]))

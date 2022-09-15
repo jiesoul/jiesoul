@@ -1,5 +1,5 @@
-(ns jiesoul.handlers.user
-  (:require [jiesoul.models.users :as user-model]
+(ns jiesoul.handlers.user-handler
+  (:require [jiesoul.models.users-model :as user-model]
             [jiesoul.req-uitls :as ru]
             [ring.util.response :as resp]
             [taoensso.timbre :as log]

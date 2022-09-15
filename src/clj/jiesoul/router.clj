@@ -2,10 +2,11 @@
   (:require [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [spec-tools.core :as st]
-            [jiesoul.handlers.auth :as auth]
-            [jiesoul.handlers.user :as user]
-            [jiesoul.middleware.auth :as auth-mw]
+            [jiesoul.middleware.auth-middleware :as auth-mw]
             [jiesoul.middleware :as mw]
+            [jiesoul.handlers.auth-handler :as auth]
+            [jiesoul.handlers.user-handler :as user]
+            [jiesoul.handlers.category-handler :as category]
             [muuntaja.core :as m]
             [reitit.coercion.spec]
             [reitit.dev.pretty :as pretty]
@@ -52,12 +53,16 @@
        (st/spec {:spec (s/and string? #(re-matches email-regex %))}))
 
 (s/def ::id int?)
+(s/def ::pid int?)
 (s/def ::name string?)
 (s/def ::password string?)
 (s/def ::age int?)
 (s/def ::roles string?)
 (s/def ::nickname string?)
 (s/def ::birthday string?)
+
+(s/def ::alias-name string?)
+(s/def ::description string?)
 
 (s/def ::create-user (s/keys :req-un [::name ::password ::email ::roles] :opt-un [::age ::nickname ::birthday]))
 (s/def ::update-user (s/keys :req-un [::id ::age ::nickname ::birthday]))
@@ -68,6 +73,7 @@
 (s/def ::update-password (s/keys :req-un [::id ::old-password ::new-password ::confirm-password]))
 
 
+(s/def ::create-category (s/keys :req-un [::name ::pid] :opt-un [::alias-name ::description]))
 
 (def asset-version "1")
 
@@ -140,12 +146,14 @@
        ["/" {:get {:summary "查询分类"
                    :middleware [[auth-mw/wrap-auth db "user"]]
                    :parameters {:header {:authorization ::header-token}
-                                :query ::query}}
+                                :query ::query}
+                   :handler (category/get-categories db)}
+             
              :post {:summary "创建分类"
                     :middleware [[auth-mw/wrap-auth db "user"]]
                     :parameters {:header {:authorization ::header-token}
-                                 :body {:category ::category}}
-                    :handler default-handler}}]]
+                                 :body {:category ::create-category}}
+                    :handler (category/create-category db)}}]]
 
       ["/tags"
        {:swagger {:tags ["标签"]}}]

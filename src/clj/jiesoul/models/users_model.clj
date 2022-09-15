@@ -1,4 +1,4 @@
-(ns jiesoul.models.users
+(ns jiesoul.models.users-model
   (:require [next.jdbc.sql :as sql]
             [honey.sql :as hsql]
             [taoensso.timbre :as log]))

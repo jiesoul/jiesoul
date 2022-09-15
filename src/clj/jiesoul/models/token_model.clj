@@ -1,4 +1,4 @@
-(ns jiesoul.models.token
+(ns jiesoul.models.token-model
   (:require [honey.sql :as hsql]
             [next.jdbc.sql :as sql]
             [taoensso.timbre :as log]))

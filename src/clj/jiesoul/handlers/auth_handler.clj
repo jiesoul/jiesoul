@@ -1,8 +1,8 @@
-(ns jiesoul.handlers.auth
+(ns jiesoul.handlers.auth-handler
   (:require [buddy.hashers :as buddy-hashers]
-            [jiesoul.middleware.auth :refer [create-user-token]]
-            [jiesoul.models.token :as token-model]
-            [jiesoul.models.users :as user-model]
+            [jiesoul.middleware.auth-middleware :refer [create-user-token]]
+            [jiesoul.models.token-model :as token-model]
+            [jiesoul.models.users-model :as user-model]
             [jiesoul.req-uitls :as ru]
             [ring.util.response :as resp]
             [taoensso.timbre :as log]))

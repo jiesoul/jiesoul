@@ -1,0 +1,1 @@
+(ns jiesoul.models.category-model)

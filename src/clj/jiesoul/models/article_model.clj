@@ -1,0 +1,1 @@
+(ns jiesoul.models.article-model)
