@@ -15,12 +15,16 @@
       (log/debug "username: " username " password: " password " is loading.")
       (if (and user (buddy-hashers/check password (:password user)))
         (let [token (create-user-token db user)]
-          (resp/response  {:data {:token token
+          (resp/response  {:status :ok
+                           :message "login ok"
+                           :data {:token token
                                   :user (dissoc user :password)}}))
-        (resp/bad-request {:error "用户名或密码错误"})))))
+        (resp/bad-request {:status :error
+                           :message "用户名或密码错误"})))))
 
 (defn logout [db]
   (fn [req]
     (let [token (ru/parse-header req "Token")]
       (token-model/disable-user-token db token)
-      (resp/response {:message "Logout success!!"}))))
+      (resp/response {:status :ok
+                      :message "Logout success!!"}))))

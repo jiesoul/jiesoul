@@ -25,19 +25,19 @@
             :spec (s/and string? #(re-matches token-regex %))}))
 (expound/defmsg ::header-token "请求头部Token格式为：Token xxxxxxxxx")
 
-(def query-sort-regex #"^\$sort=(.+)$")
+(def query-sort-regex #"^\$sort( )?=( )?(.+)$")
 (s/def ::sort 
        (st/spec {:description "排序请求格式为：$sort=xxx,xxx"
                  :spec (s/and string? #(re-matches query-sort-regex %))}))
 (expound/defmsg ::sort "排序请求格式为：$sort=xxx,xxx")
 
-(def query-filter-regex #"^\$filter=(.+)$")
+(def query-filter-regex #"^\$filter( )?=( )?(.+)$")
 (s/def ::filter 
-       (st/spec {:description "过滤格式： $filter=xxxx eq 'xx' and xxx = x"
+       (st/spec {:description "过滤格式： $filter = xxxx eq 'xx' and xxx = x"
                  :spec (s/and string? #(re-matches query-filter-regex %))}))
 (expound/defmsg ::filter "过滤格式： $filter=xxxx eq 'xx' and xxx = x")
 
-(def query-page-regex #"^\$page=(\d+)&\$pre_page=(\d+)$")
+(def query-page-regex #"^page=(\d+)&pre_page=(\d+)$")
 (s/def ::page 
        (st/spec {:description "分页格式为： $page=x&$pre_page=x"
                  :spec (s/and string? #(re-matches query-page-regex %))}))
@@ -104,7 +104,7 @@
       ["/users"
        {:swagger {:tags ["用户"]}}
 
-       ["/" {:get {:summary "查询用户"
+       ["" {:get {:summary "查询用户"
                    :middleware [[auth-mw/wrap-auth db "user"]]
                    :parameters {:header {:authorization ::header-token}
                                 :query ::query}

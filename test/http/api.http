@@ -16,6 +16,12 @@ Authorization: Token 9ae1761567c586067e7b96f7e49bc17f52e8ea491e7e719df00ed91c06f
 
 ### get users
 
-GET http://localhost:3000/api/v1/users?$sort=id
+GET 'http://localhost:3000/api/v1/users?$filter=username%20eq%20'jiesoul'
 Content-Type: application/json
-Authorization: Token 9ae1761567c586067e7b96f7e49bc17f52e8ea491e7e719df00ed91c06feda01
+Authorization: Token 77a9063b421dd5be29f373004ce3d61457ecc0f7eb54971de0ef3b44f9a83ba2
+
+
+curl -X 'GET' \
+  'http://localhost:3000/api/v1/users?filter=%24filter%3Dusername%20eq%20'\''jiesoul'\''' \
+  -H 'accept: application/json' \
+  -H 'authorization: Token ad752d14da6c8e17957a37082352f4c04008e316894ed48ca5320a9566937432'

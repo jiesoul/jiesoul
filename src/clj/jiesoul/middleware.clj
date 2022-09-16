@@ -11,11 +11,11 @@
 (derive ::horror ::exception)
 
 (defn handler [message exception request]
-  {:status 500
-   :body {:message message
-          :exception (.getClass exception)
-          :data {ex-data exception}
-          :uri (:uri request)}})
+  {:eroor  {:code 500
+            :message message
+            :exception (.getClass exception)
+            :details {ex-data exception}
+            :uri (:uri request)}})
 
 (defn coercion-error-handler [status]
   (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})

@@ -8,9 +8,10 @@
 (defn get-users [db]
   (fn [req]
     (log/debug "request params: " (:parameters req))
-    (let [where (ru/parse-query req)
-          users (user-model/get-users db where)]
-      (resp/response {:data users}))))
+    (let [opt (ru/parse-query req)
+          users (user-model/get-users db opt)]
+      (resp/response {:status :ok
+                      :data {:users users}}))))
 
 (defn create-user [db]
   (fn [req] 
