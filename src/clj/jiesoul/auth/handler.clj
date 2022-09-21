@@ -1,8 +1,8 @@
-(ns jiesoul.handlers.auth-handler
+(ns jiesoul.auth.handler
   (:require [buddy.hashers :as buddy-hashers]
-            [jiesoul.middleware.auth-middleware :refer [create-user-token]]
-            [jiesoul.models.token-model :as token-model]
-            [jiesoul.models.users-model :as user-model]
+            [jiesoul.auth.middleware :refer [create-user-token]]
+            [jiesoul.auth.user-token-db :as user-token-db]
+            [jiesoul.user.db :as user-db]
             [jiesoul.req-uitls :as ru]
             [ring.util.response :as resp]
             [taoensso.timbre :as log]))
@@ -11,7 +11,7 @@
   (fn [req]
     (let [username (ru/parse-body req :username)
           password (ru/parse-body req :password)
-          user (user-model/get-user-by-name db username)]
+          user (user-db/get-user-by-name db username)]
       (log/debug "username: " username " password: " password " is loading.")
       (if (and user (buddy-hashers/check password (:password user)))
         (let [token (create-user-token db user)]
@@ -25,6 +25,6 @@
 (defn logout [db]
   (fn [req]
     (let [token (ru/parse-header req "Token")]
-      (token-model/disable-user-token db token)
+      (user-token-db/disable-user-token db token)
       (resp/response {:status :ok
                       :message "Logout success!!"}))))

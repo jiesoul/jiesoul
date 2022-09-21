@@ -1,6 +1,5 @@
-(ns jiesoul.models.token-model
-  (:require [honey.sql :as hsql]
-            [next.jdbc.sql :as sql]
+(ns jiesoul.auth.user-token-db
+  (:require [next.jdbc.sql :as sql]
             [taoensso.timbre :as log]))
 
 (defn save-user-token [db user-token]

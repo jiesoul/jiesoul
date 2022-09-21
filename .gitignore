@@ -16,3 +16,4 @@
 .shadow-cljs/
 node_modules/
 public/js
+resources/database/jiesoul.db

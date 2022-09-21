@@ -1,7 +1,7 @@
-(ns jiesoul.models.users-model
+(ns jiesoul.user.db
   (:require [next.jdbc.sql :as sql]
-            [honey.sql :as hsql]
             [taoensso.timbre :as log]
+            [jiesoul.db-utils :as du]
             [clojure.string :as str]))
 
 (defn create-user! 
@@ -27,14 +27,8 @@
 (defn get-users 
   [db opt]
   (log/debug "opt: " opt)
-  (let [{:keys [sort filter page]} opt
-        s "select * from users"
-        v []
-        [s v] (if (seq? filter) [s v] [(str s " where " (first filter)) (into v (second filter))])
-        [s v] (if (empty? sort) [s v] [(str s " order by " sort) v])
-        [s v] (if (empty? page) [s v] [(str s " limit ? offset ? ") (into v page)])]
-    (log/debug "sql str: " (into [s] v))
-    (sql/query db (into [s] v))))
+  (let [s "select * from users"]
+    (sql/query db (du/opt-to-sql s opt))))
 
 (defn delete-user!
   [db id]

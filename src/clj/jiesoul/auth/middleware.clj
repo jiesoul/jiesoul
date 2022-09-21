@@ -1,12 +1,12 @@
-(ns jiesoul.middleware.auth-middleware
+(ns jiesoul.auth.middleware
   (:require [buddy.auth.backends.token :as backends]
             [buddy.auth.middleware :as buddy-auth-middleware]
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
             [buddy.sign.jwt :as jwt]
             [jiesoul.req-uitls :as req-utils]
-            [jiesoul.models.token-model :as token-model]
-            [jiesoul.models.users-model :as user-model]
+            [jiesoul.auth.user-token-db :as user-token-db]
+            [jiesoul.user.db :as user-model]
             [ring.util.response :as resp]
             [clojure.string :as str]
             [taoensso.timbre :as log]))
@@ -30,7 +30,7 @@
                     (select-keys [:id :roles])
                     (assoc :exp expires-time))
         token (random-token)
-        _ (token-model/save-user-token db {:user_id (:id user)
+        _ (user-token-db/save-user-token db {:user_id (:id user)
                                            :token token 
                                            :create_time create-time
                                            :expires_time expires-time})]
@@ -52,7 +52,7 @@
 (defn wrap-auth [handler db role]
   (fn [request]
     (let [token (req-utils/parse-header request "Token")
-          user-token (token-model/get-user-token-by-token db token)
+          user-token (user-token-db/get-user-token-by-token db token)
           now (java.time.Instant/now)]
       (log/info "user-token: " user-token)
       (if (and user-token (.isAfter (java.time.Instant/parse (:expires_time user-token)) now))
@@ -62,7 +62,7 @@
           (log/info "user: " user)
           (if (contains? roles role)
             (do
-              (token-model/update-user-token-expires-time db (-> user-token 
+              (user-token-db/update-user-token-expires-time db (-> user-token 
                                                                  (assoc :expires_time (.plusSeconds now defautlt-valid-seconds))))
               (log/info "user-token expires-time was updated!.")
               (handler request))
