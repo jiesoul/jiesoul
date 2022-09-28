@@ -90,19 +90,42 @@
   {:status 200 
    :body "this is default handler"})
 
+(defn config [db]
+  {:data {:coercion reitit.coercion.spec/coercion
+          :muuntaja m/instance
+          :middleware [;; query-params & form-params
+                       parameters/parameters-middleware
+                           ;; content-negotiation
+                       muuntaja/format-negotiate-middleware
+                           ;; encoding response body
+                       muuntaja/format-response-middleware
+                           ;; exception handling
+                       mw/exception-middleware
+                           ;; decoding request body
+                       muuntaja/format-request-middleware
+                           ;; coercing response bodys
+                       coercion/coerce-response-middleware
+                           ;; coercing request parameters
+                       coercion/coerce-request-middleware
+                           ;; multipart
+                       multipart/multipart-middleware]}
+   :exception pretty/exception})
+
 (defn routes [db]
   (ring/ring-handler
    (ring/router
+  
     [["/swagger.json"
       {:get {:no-doc true
              :swagger {:info {:title "my-api"}} ;; prefix for all paths
              :handler (swagger/create-swagger-handler)}}]
-
-     ["/api/v1"
+      
       ["/login" {:swagger {:tags ["验证"]}
+                 :get {:summary "用户登录页面"
+                       :handler (auth/login db)}
                  :post {:summary "用户登录"
                         :parameters {:body {:username string?, :password string?}}
-                        :handler (auth/login db)}}]
+                        :handler (auth/login-auth db)}}]
 
       ["/logout" {:swagger {:tags ["验证"]}
                   :post {:summary "用户退出"
@@ -187,7 +210,13 @@
                          :handler (category/delete-category! db)}}]]
 
       ["/tags"
-       {:swagger {:tags ["标签"]}}]
+       {:swagger {:tags ["标签"]}}
+       
+       ["/" {:get {:summary "查询标签"
+                   :parameters {:header {:authorization ::header-token}
+                                :query ::query}
+                   :middleware [[auth-mw/wrap-auth db "user"]]
+                   :handler (default-handler db)}}]]
 
       ["/articles"
        {:swagger {:tags ["文章"]}}]
@@ -214,27 +243,9 @@
                                        :headers {"Content-Type" "image/png"}
                                        :body (-> "reitit.png"
                                                  (io/resource)
-                                                 (io/input-stream))})}}]]]]
+                                                 (io/input-stream))})}}]]]
 
-    {:data {:coercion reitit.coercion.spec/coercion
-            :muuntaja m/instance
-            :middleware [;; query-params & form-params
-                         parameters/parameters-middleware
-                           ;; content-negotiation
-                         muuntaja/format-negotiate-middleware
-                           ;; encoding response body
-                         muuntaja/format-response-middleware
-                           ;; exception handling
-                         mw/exception-middleware
-                           ;; decoding request body
-                         muuntaja/format-request-middleware
-                           ;; coercing response bodys
-                         coercion/coerce-response-middleware
-                           ;; coercing request parameters
-                         coercion/coerce-request-middleware
-                           ;; multipart
-                         multipart/multipart-middleware]}
-     :exception pretty/exception})
+    (config db))
 
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/api-docs/v1"})

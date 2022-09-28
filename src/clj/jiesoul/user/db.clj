@@ -18,7 +18,7 @@
 
 (defn get-user-by-name 
   [db username]
-  (sql/get-by-id db :users username :username {}))
+  (sql/get-by-id db :users username :username ""))
 
 (defn get-user-by-id 
   [db id]

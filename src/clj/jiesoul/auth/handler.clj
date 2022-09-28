@@ -5,9 +5,13 @@
             [jiesoul.user.db :as user-db]
             [jiesoul.req-uitls :as ru]
             [ring.util.response :as resp]
+            [inertia.middleware :as inertia]
             [taoensso.timbre :as log]))
 
 (defn login [db]
+  (inertia/render "Auth/Login"))
+
+(defn login-auth [db]
   (fn [req]
     (let [username (ru/parse-body req :username)
           password (ru/parse-body req :password)
@@ -19,12 +23,11 @@
                            :message "login ok"
                            :data {:token token
                                   :user (dissoc user :password)}}))
-        (resp/bad-request {:status :error
+        (resp/response {:status :error
                            :message "用户名或密码错误"})))))
 
 (defn logout [db]
   (fn [req]
     (let [token (ru/parse-header req "Token")]
       (user-token-db/disable-user-token db token)
-      (resp/response {:status :ok
-                      :message "Logout success!!"}))))
+      (resp/redirect "/login"))))
