@@ -1,9 +1,7 @@
 (ns jiesoul.auth.middleware
   (:require [buddy.auth.backends.token :as backends]
-            [buddy.auth.middleware :as buddy-auth-middleware]
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
-            [buddy.sign.jwt :as jwt]
             [jiesoul.req-uitls :as req-utils]
             [jiesoul.auth.user-token-db :as user-token-db]
             [jiesoul.user.db :as user-model]

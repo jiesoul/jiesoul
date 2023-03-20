@@ -2,8 +2,7 @@
   (:require [integrant.repl :as ig-repl]
             [jiesoul.server :as server]
             [ragtime.jdbc :as rt-jdbc]
-            [ragtime.repl :as rt-repl]
-            [buddy.hashers :as buddy-hashers]))
+            [ragtime.repl :as rt-repl]))
 
 (ig-repl/set-prep! (constantly server/system-config))
 
@@ -22,7 +21,7 @@
 (def reset ig-repl/reset)
 (def reset-all ig-repl/reset-all)
 
-(comment
+#_(comment
   (go)
   (halt)
   (reset)
