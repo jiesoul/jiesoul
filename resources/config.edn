@@ -1,0 +1,24 @@
+{:backend/ds #profile {:dev {:dbtype "sqlite" :dbname "resources/data/jiesoul.db"}}
+ 
+ :backend/profile #profile {:prod :prod 
+                            :dev :dev 
+                            :test :test}
+ 
+ :backend/options {:jwt {:exp #profile {:prod 1000
+                                        :dev 2000
+                                        :test 5000}}}
+ 
+ :backend/env {:profile #ig/ref :backend/profile
+               :data-dir "resources/data"
+               :options #ig/ref :backend/options
+               :ds #ig/ref :backend/ds}
+ 
+ :backend/jetty {:port #profile {:dev #long #or [#env PORT 3000]
+                                 :prod #long #or [#env PORT 3001]}
+                 :join? false 
+                 :env #ig/ref :backend/env}
+ 
+ :backend/nrepl {:bind #profile {:prod "0.0.0.0"
+                                 :dev "localhost"}
+                 :port #profile {:dev #long #or [#env PORT 3010]
+                                 :prod #lang #or [#env PORT 3011]}}}

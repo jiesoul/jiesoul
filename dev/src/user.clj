@@ -1,10 +1,20 @@
 (ns user
   (:require [integrant.repl :as ig-repl]
-            [jiesoul.server :as server]
+            [integrant.repl.state :as state]
+            [jiesoul.core :as core]
             [ragtime.jdbc :as rt-jdbc]
             [ragtime.repl :as rt-repl]))
 
-(ig-repl/set-prep! (constantly server/system-config))
+(ig-repl/set-prep! core/system-config)
+
+(defn system [] (or state/system (throw (ex-info "System not running" {}))))
+
+(defn env [] (:backend/env (system)))
+
+(defn profile [] (:backend/env (system)))
+
+(defn my-dummy-reset []
+  (ig-repl/reset))
 
 (defn load-db-config []
   {:datastore  (rt-jdbc/sql-database {:connection-uri "jdbc:sqlite:resources/database/jiesoul.db"})
@@ -22,7 +32,8 @@
 (def reset-all ig-repl/reset-all)
 
 #_(comment
-  (go)
-  (halt)
-  (reset)
-  (reset-all))
+    (user/system)
+    (user/env)
+    (ig-repl/reset)
+    (+ 1 2)
+    )

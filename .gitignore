@@ -1,3 +1,6 @@
+## IDEA
+.idea/
+jiesoul.iml
 
 ## vscode
 .calva/
@@ -16,3 +19,5 @@
 node_modules/
 public/js
 resources/database/jiesoul.db
+
+logs/
