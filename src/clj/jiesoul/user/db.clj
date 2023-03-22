@@ -1,8 +1,7 @@
 (ns jiesoul.user.db
-  (:require [next.jdbc.sql :as sql]
-            [taoensso.timbre :as log]
-            [jiesoul.db-utils :as du]
-            [clojure.string :as str]))
+  (:require [jiesoul.db-utils :as du]
+            [next.jdbc.sql :as sql]
+            [taoensso.timbre :as log]))
 
 (defn create-user! 
   [db user]

@@ -4,7 +4,7 @@
             [buddy.core.nonce :as nonce]
             [jiesoul.req-uitls :as req-utils]
             [jiesoul.auth.user-token-db :as user-token-db]
-            [jiesoul.user.db :as user-model]
+            [jiesoul.user.db :as user-db]
             [ring.util.response :as resp]
             [clojure.string :as str]
             [taoensso.timbre :as log]))
@@ -21,17 +21,14 @@
 
 (defn create-user-token
   "创建 Token"
-  [db user & {:keys [valid-seconds] :or {valid-seconds defautlt-valid-seconds}}]
+  [db user-id & {:keys [valid-seconds] :or {valid-seconds defautlt-valid-seconds}}]
   (let [create-time (java.time.Instant/now)
         expires-time (.plusSeconds create-time valid-seconds)
-        payload (-> user
-                    (select-keys [:id :roles])
-                    (assoc :exp expires-time))
         token (random-token)
-        _ (user-token-db/save-user-token db {:user_id (:id user)
-                                           :token token 
-                                           :create_time create-time
-                                           :expires_time expires-time})]
+        _ (user-token-db/save-user-token db {:user_id user-id
+                                             :token token
+                                             :create_time create-time
+                                             :expires_time expires-time})]
     token))
 
 (defn my-unauthorized-handler
@@ -47,22 +44,23 @@
   (backends/token-backend {:authfn my-authfn
                            :unauthorized-handler my-unauthorized-handler}))
 
-(defn wrap-auth [handler db role]
+(defn wrap-auth [handler env role]
   (fn [request]
-    (let [token (req-utils/parse-header request "Token")
+    (let [db (:db env)
+          token (req-utils/parse-header request "Token")
           user-token (user-token-db/get-user-token-by-token db token)
           now (java.time.Instant/now)]
-      (log/info "user-token: " user-token)
-      (if (and user-token (.isAfter (java.time.Instant/parse (:expires_time user-token)) now))
-        (let [user-id (:user_id user-token)
-              user (user-model/get-user-by-id db user-id)
-              roles (-> (:roles user) (str/split #",") (set))]
-          (log/info "user: " user)
+      (log/debug "user-token: " user-token)
+      (if (and user-token (.isAfter (java.time.Instant/parse (:user_token/expires_time user-token)) now))
+        (let [user-id (:user_token/user_id user-token)
+              user (user-db/get-user-by-id db user-id)
+              _ (log/debug "auth user: " user)
+              roles (-> (:users/roles user) (str/split #",") (set))]
           (if (contains? roles role)
             (do
-              (user-token-db/update-user-token-expires-time db (-> user-token 
-                                                                 (assoc :expires_time (.plusSeconds now defautlt-valid-seconds))))
-              (log/info "user-token expires-time was updated!.")
+              (user-token-db/update-user-token-expires-time db (-> user-token
+                                                                   (assoc :user_token/expires_time (.plusSeconds now defautlt-valid-seconds))))
+              (log/debug "user-token expires-time was updated!.")
               (handler request))
             (my-unauthorized-handler request "用户无权限！")))
         (my-unauthorized-handler request "Token 已过期！！")))))

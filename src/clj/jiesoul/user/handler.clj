@@ -5,10 +5,11 @@
             [taoensso.timbre :as log]
             [buddy.hashers :as buddy-hashers]))
 
-(defn get-users [db]
+(defn get-users [env]
   (fn [req]
     (log/debug "request params: " (:parameters req))
-    (let [opt (ru/parse-query req)
+    (let [db (:db env)
+          opt (ru/parse-query req)
           users (db/get-users db opt)]
       (resp/response {:status :ok
                       :data {:users users}}))))
@@ -18,9 +19,9 @@
     (let [user (ru/parse-body req :user)
           create-time (java.time.Instant/now)
           password (:password user)
-          new-user (db/create-user! db (assoc user 
-                                                      :create_time create-time
-                                                      :password (buddy-hashers/derive password)))]
+          new-user (db/create-user! db (assoc user
+                                              :create_time create-time
+                                              :password (buddy-hashers/derive password)))]
       (log/debug "new user: " new-user)
       (resp/response {:message "成功创建用户"
                       :data {:user new-user}}))))

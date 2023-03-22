@@ -14,21 +14,21 @@
             [jiesoul.webserver :as ws])
   (:gen-class))
 
-(defmethod ig/init-key :backend/ds  [_ db-spec]
-  (let [ds (jdbc/get-datasource db-spec)]
-    (jdbc/with-options ds {:builder-fn rs/as-unqualified-maps})))
-
 (defn env-value [key default]
   (some-> (or (System/getenv (name key)) default)))
 
-(defmethod aero/reader `ig/ref [_ _ value] (ig/ref value))
+(defmethod aero/reader 'ig/ref [_ _ value] (ig/ref value))
+
+(defmethod ig/init-key :backend/db  [_ {:keys [db] :as env}]
+  (log/debug "Enter ig/init-key :backend/db ")
+  env)
 
 (defmethod ig/init-key :backend/profile [_ profile]
   profile)
 
-(defmethod ig/init-key :backend/env [_ {:keys [_profile data-dir] :as m}]
-  (log/debug "Enter ig/init-key :backend/env")
-  m)
+(defmethod ig/init-key :backend/env [_ env]
+  (log/debug "Enter ig/init-key :backend/env " env)
+  env)
 
 (defmethod ig/halt-key! :backend/env [_ this]
   (log/debug "Enter ig/halt-key! :backend/env")
@@ -75,20 +75,22 @@
   old-impl)
 
 (defn read-config [profile]
+  (log/debug "Enter read config " profile)
   (let [local-config (let [file (io/file "config-local.edn")]
                            #_{:clj-kondo/ignore [:missing-else-branch]}
                            (if (.exists file) (edn/read-string (slurp file))))]
-    (cond-> (aero/read-config (io/resource "config.edn"){:profile profile})
+    (cond-> (aero/read-config (io/resource "config.edn") {:profile profile})
             local-config (p/deep-merge local-config))))
 
 (defn system-config [myprofile]
   (log/debug "Enter system config read...")
   (let [profile (or myprofile (some-> (System/getenv "PROFILE") keyword) :dev)
-        _ (log/info "IUsing profile " profile)
+        _ (log/info "I using profile " profile)
         config (read-config profile)]
     config))
 
 (defn system-config-start []
+  (log/debug "Enter system-config-start")
   (system-config nil))
 
 (defn -main []

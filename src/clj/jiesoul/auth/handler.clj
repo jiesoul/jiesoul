@@ -10,14 +10,16 @@
 (defn login-auth
   "login to backend."
   [env username password]
-  (log/debug "Enter login. username: " username " password: " password)
-  (let [user (user-db/get-user-by-name env username)]
-    (if (and user (buddy-hashers/check password (:password user)))
-      (let [token (create-user-token env user)]
+  (log/debug "Enter login auth. username: " username " password: " password "env: " env)
+  (let [db (:db env)
+        user (user-db/get-user-by-name db username)]
+    (log/debug "user: " user)
+    (if (and user (buddy-hashers/check password (:users/password user)))
+      (let [token (create-user-token db (:users/id user))]
         (resp/response  {:status :ok
                          :message "login ok"
                          :data {:token token
-                                :user (dissoc user :password)}}))
+                                :user (dissoc user :users/password)}}))
       (resp/response {:status :error
                       :message "用户名或密码错误"}))))
 

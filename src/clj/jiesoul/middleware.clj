@@ -1,9 +1,8 @@
 (ns jiesoul.middleware
   (:require [expound.alpha :as expound]
             [reitit.ring.middleware.exception :as exception]
-            [taoensso.timbre :as log]
-            [ring.util.response :as resp]
-            [spec-tools.core :as st]))
+            [clojure.tools.logging :as log]
+            [ring.util.response :as resp]))
 
 (derive ::error ::exception)
 (derive ::failure ::exception)

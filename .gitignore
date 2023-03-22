@@ -21,3 +21,4 @@ public/js
 resources/database/jiesoul.db
 
 logs/
+package-lock.json

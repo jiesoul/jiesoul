@@ -5,7 +5,7 @@
             [ragtime.jdbc :as rt-jdbc]
             [ragtime.repl :as rt-repl]))
 
-(ig-repl/set-prep! core/system-config)
+(ig-repl/set-prep! core/system-config-start)
 
 (defn system [] (or state/system (throw (ex-info "System not running" {}))))
 

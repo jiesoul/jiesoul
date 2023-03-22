@@ -1,6 +1,6 @@
 (ns jiesoul.req-uitls 
   (:require [clojure.string :as str]
-            [taoensso.timbre :as log]))
+            [clojure.tools.logging :as log]))
 
 (defn parse-header
   [request token-name]
@@ -64,8 +64,8 @@
 (defn page-convert
   [req]
   (let [page (-> req
-               (get-str-by-key :page)
-               (str/split #"&"))
+                 (get-str-by-key :page)
+                 (str/split #"&"))
         [no size] (->> page
                        (map #(str/split % #"="))
                        (map second)
