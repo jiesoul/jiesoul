@@ -18,7 +18,7 @@ jiesoul.iml
 .shadow-cljs/
 node_modules/
 public/js
-resources/database/jiesoul.db
+resources/data/jiesoul.db
 
 logs/
 package-lock.json

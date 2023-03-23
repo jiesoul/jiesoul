@@ -1,1 +1,0 @@
-delete from users where user_name = 'jiesoul';

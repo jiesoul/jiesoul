@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [test])
   (:require [clojure.tools.build.api :as b]))
 
-(def lib `karimarttila/webstore)
-(def main `jiesoul.server)
+(def lib 'karimarttila/webstore)
+(def main 'backend.server)
 (def class-dir "targer/classes")
 
 (defn- uber-opts [opts]

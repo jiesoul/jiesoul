@@ -1,4 +1,4 @@
-{:backend/db #profile {:dev {:dbtype "sqlite" :dbname "resources/database/jiesoul.db"}}
+{:backend/db #profile {:dev {:dbtype "sqlite" :dbname "resources/data/jiesoul.db"}}
  
  :backend/profile #profile {:prod :prod 
                             :dev :dev 

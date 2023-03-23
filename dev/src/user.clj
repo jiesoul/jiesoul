@@ -1,7 +1,7 @@
 (ns user
   (:require [integrant.repl :as ig-repl]
             [integrant.repl.state :as state]
-            [jiesoul.core :as core]
+            [bakcend.core :as core]
             [ragtime.jdbc :as rt-jdbc]
             [ragtime.repl :as rt-repl]))
 
@@ -17,7 +17,7 @@
   (ig-repl/reset))
 
 (defn load-db-config []
-  {:datastore  (rt-jdbc/sql-database {:connection-uri "jdbc:sqlite:resources/database/jiesoul.db"})
+  {:datastore  (rt-jdbc/sql-database {:connection-uri "jdbc:sqlite:resources/data/jiesoul.db"})
    :migrations (rt-jdbc/load-resources "migrations")})
 
 (defn migrate []
