@@ -4,10 +4,14 @@
             [reagent.dom :as r-dom]
             [day8.re-frame.http-fx]
             [reagent-dev-tools.core :as dev-tools]
+            [reitit.coercion.spec :as rss]
             [reitit.frontend :as rf]
             [reitit.frontend.controllers :as rfc]
             [reitit.frontend.easy :as rfe]
-            [frontend.util :as f-util]))
+            [frontend.util :as f-util]
+            [frontend.state :as f-state]
+            [frontend.routes.index :as f-index]
+            [frontend.routes.login :as f-login]))
 
 (re-frame/reg-event-db
  ::initialize-db
@@ -48,26 +52,26 @@
               (assoc-in [:token] nil))
       :fx [[:dispatch [::f-state/navigate ::f-state/login]]]})))
 
-#_(re-frame/reg-event-fx
-   ::f-state/logout
-   (fn [cofx [_]]
-     {:db (assoc (:db cofx) :token nil)
-      :fx [[:dispatch [::f-state/navigate ::f-state/home]]]}))
-
 (defn home-page []
   (let [token @(re-frame/subscribe [::f-state/token])]
     (f-util/clog "Enter home-page")
-    ;; [f-index/landing-page]
-    #_(if jwt 
-        (re-frame/dispatch [::f-state/navigate ::f-state/product-group])
-        [:div 
-         (welcome)
-         (f-util/debug-panel {:token token})])))
+    [f-index/landing-page]
+    [:div
+     [:p "welcome to frontend"]
+     ]))
 
 (re-frame/reg-fx 
  ::navigate!
  (fn [route]
-   (apply ref/push-state route)))
+   (apply rfe/push-state route)))
+
+(defn href 
+  "Return relative url for given route. Url can be used in HTML links"
+  ([k] (href k nil nil))
+  ([k params] (href k params nil))
+  ([k params query]
+   (rfe/href k params query)))
+
 
 (def routes-dev 
   ["/"
@@ -77,7 +81,13 @@
      :link-text "Home"
      :controllers
      [{:start (fn [& params] (js/console.log (str "Entering home page, params:" params)))
-       :stop (fn [& params] (js/console.log (str "Leaving home page, params: " params)))}]}]])
+       :stop (fn [& params] (js/console.log (str "Leaving home page, params: " params)))}]}]
+   ["login"
+    {:name ::f-state/login 
+     :view f-login/login
+     :link-text "Login"
+     :controllers [{:start (fn [& params] (js/console.log (str "Entering login, params: " params)))
+                    :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]])
 
 (def routes routes-dev)
 

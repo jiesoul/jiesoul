@@ -1,7 +1,7 @@
 (ns user
   (:require [integrant.repl :as ig-repl]
             [integrant.repl.state :as state]
-            [bakcend.core :as core]
+            [backend.core :as core]
             [ragtime.jdbc :as rt-jdbc]
             [ragtime.repl :as rt-repl]))
 
