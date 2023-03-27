@@ -41,7 +41,7 @@
              (= "/" new-match) (-> (assoc :login-status nil)
                                    (assoc :user nil))))))
 
-(re-frame/reg-evnet-fx
+(re-frame/reg-event-fx
  ::f-state/logout 
  (fn [cofx [_]]
    (let [db (:db cofx)]
@@ -134,7 +134,7 @@
   (r-dom/render [router-component {:router router}]
                 (.getElementById js/document "root")))
 
-(defn ^:export init []
+(defn ^:export init! []
   (js/console.log "Enter init")
   (re-frame/dispatch-sync [::initialize-db])
   (dev-tools/start! {:state-atom re-frame.db/app-db})

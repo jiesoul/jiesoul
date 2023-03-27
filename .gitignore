@@ -22,3 +22,4 @@ resources/data/jiesoul.db
 
 logs/
 package-lock.json
+dev-resources/

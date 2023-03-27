@@ -1,9 +1,10 @@
 (ns frontend.routes.login 
-  (:require [reagent.core :as r]
-            [re-frame.core :as re-frame]
-            [frontend.http :as f-http]
+  (:require [frontend.http :as f-http]
             [frontend.state :as f-state]
-            [frontend.util :as f-uitl]))
+            [re-frame.core :as re-frame]
+            [frontend.util :as f-uitl]
+            [reagent.core :as r]
+            [frontend.util :as f-util]))
 
 (defn empty-creds []
   {:username "" :password ""})
@@ -45,7 +46,7 @@
 (defn login []
   (let [login-data (r/atom (empty-creds))]
     (fn []
-      (let [_ (f-uitl/clog"Enter login")
+      (let [_ (f-uitl/clog "Enter login")
             title "You need to login"
             {:keys [ret _msg]} @(re-frame/subscribe [::login-response])
             _ (when (= ret :ok) (re-frame/dispatch [::f-state/navigate ::f-state/product-group]))
@@ -61,8 +62,8 @@
           [:div {:classname "flex grow w-1/2 p-4"}
            [:from 
             [:div.mt-3
-             [f-util/input "Username" :username "text" login-data]
-             [f-util/input "Password" :password "password" login-data]
+             (f-util/input "Username" :username "text" login-data)
+             (f-util/input "Password" :password "password" login-data)
              [:div.flex.flex-col.justify-center.items-center.mt-5
               [:button {:classname "login-button"
                         :on-click (fn [e]
