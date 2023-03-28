@@ -1,5 +1,5 @@
-(ns backend.user.db
-  (:require [backend.db-utils :as du]
+(ns backend.db.user-db
+  (:require [backend.util.db-util :as du]
             [next.jdbc.sql :as sql]
             [taoensso.timbre :as log]))
 

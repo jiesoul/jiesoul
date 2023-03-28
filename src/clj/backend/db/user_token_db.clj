@@ -1,4 +1,4 @@
-(ns backend.auth.user-token-db
+(ns backend.db.user-token-db
   (:require [next.jdbc.sql :as sql]))
 
 (defn save-user-token [db user-token]

@@ -1,4 +1,4 @@
-(ns backend.db-utils)
+(ns backend.util.db-util)
 
 (defn populate 
   [db db-type]

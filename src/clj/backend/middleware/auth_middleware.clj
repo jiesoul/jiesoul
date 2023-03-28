@@ -1,10 +1,10 @@
-(ns backend.auth.middleware
+(ns backend.middleware.auth-middleware
   (:require [buddy.auth.backends.token :as backends]
             [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
-            [backend.req-uitls :as req-utils]
-            [backend.auth.user-token-db :as user-token-db]
-            [backend.user.db :as user-db]
+            [backend.util.req-uitl :as req-util]
+            [backend.db.user-token-db :as user-token-db]
+            [backend.db.user-db :as user-db]
             [ring.util.response :as resp]
             [clojure.string :as str]
             [taoensso.timbre :as log]))
@@ -47,7 +47,7 @@
 (defn wrap-auth [handler env role]
   (fn [request]
     (let [db (:db env)
-          token (req-utils/parse-header request "Token")
+          token (req-util/parse-header request "Token")
           user-token (user-token-db/get-user-token-by-token db token)
           now (java.time.Instant/now)]
       (log/debug "user-token: " user-token)

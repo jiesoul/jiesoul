@@ -1,6 +1,6 @@
-(ns backend.category.db
+(ns backend.db.category-db
   (:require [next.jdbc.sql :as sql]
-            [backend.db-utils :as du]))
+            [backend.util.db-util :as du]))
 
 (defn query [db opt]
   (let [s "select * from category "]
