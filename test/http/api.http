@@ -10,18 +10,15 @@ Content-Type: application/json
 
 ### logout
 
-POST http://localhost:3000/api/v1/logout
+POST http://127.0.0.1:3000/api/v1/logout
 Content-Type: application/json
-Authorization: Token 9ae1761567c586067e7b96f7e49bc17f52e8ea491e7e719df00ed91c06feda01
+Authorization: Token 754b2a1d96fcf7a0ff97f7a049f2f5aebbf8c6d36d360d605a6c0dcf1cec5f92
 
 ### get users
 
-GET 'http://localhost:3000/api/v1/users?$filter=username eq 'jiesoul'
+GET http://localhost:3000/api/v1/users
 Content-Type: application/json
-Authorization: Token f668c1412bb63aa8b0509ab29ecf7a88145cacaef65128a922167f75031a0053
+Authorization: Token a5427f8e694977d84e3afef9b7614ec22c10f7366b65fea13d11f0355d4b1a5b
 
 
-curl -X 'GET' \
-  'http://localhost:3000/api/v1/users?filter=%24filter%3Dusername%20eq%20'\''jiesoul'\''' \
-  -H 'accept: application/json' \
-  -H 'authorization: Token ad752d14da6c8e17957a37082352f4c04008e316894ed48ca5320a9566937432'
+curl -X 'GET' 'http://127.0.0.1:3000/api/v1/users' -H 'accept: application/json' -H 'authorization: Token d0d63c900a606189c59f71edd7f9e8ba13515e515cafb78f091bb3325b35f718'

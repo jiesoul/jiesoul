@@ -3,6 +3,13 @@
             [next.jdbc.sql :as sql]
             [taoensso.timbre :as log]))
 
+(defn query-users
+  [db opt]
+  (let [s "select * from users"
+        sql (du/opt-to-sql s opt)
+        _ (log/debug "sql: " sql)]
+    (sql/query db sql)))
+
 (defn create-user! 
   [db user]
   (sql/insert! db :users user))
@@ -22,12 +29,6 @@
 (defn get-user-by-id 
   [db id]
   (sql/get-by-id db :users id))
-
-(defn get-users 
-  [db opt]
-  (log/debug "opt: " opt)
-  (let [s "select * from users"]
-    (sql/query db (du/opt-to-sql s opt))))
 
 (defn delete-user!
   [db id]

@@ -33,7 +33,8 @@
 
 (defn my-unauthorized-handler
   [request message]
-  (-> (resp/bad-request {:message message})
+  (-> (resp/bad-request {:status :failed
+                         :message message})
       (assoc :status 403)))
 
 (defn my-authfn
@@ -57,10 +58,9 @@
               _ (log/debug "auth user: " user)
               roles (-> (:users/roles user) (str/split #",") (set))]
           (if (contains? roles role)
-            (do
-              (user-token-db/update-user-token-expires-time db (-> user-token
-                                                                   (assoc :user_token/expires_time (.plusSeconds now defautlt-valid-seconds))))
-              (log/debug "user-token expires-time was updated!.")
+            (let [id (:user_token/id user-token)
+                  _ (user-token-db/update-user-token-expires-time db id (.plusSeconds now defautlt-valid-seconds))
+                  _ (log/debug "update user token expires time " id)]
               (handler request))
             (my-unauthorized-handler request "用户无权限！")))
         (my-unauthorized-handler request "Token 已过期！！")))))

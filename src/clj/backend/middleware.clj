@@ -27,11 +27,13 @@
 ;;         500 (error status "服务端错误" exception request)))))
 
 (defn handler [message exception request]
-  {:eroor  {:code 500
-            :message message
-            :exception (.getClass exception)
-            :details {ex-data exception}
-            :uri (:uri request)}})
+  (let [error {:eroor  {:code 500
+                        :message message
+                        :exception (.getClass exception)
+                        :data {ex-data exception}
+                        :uri (:uri request)}}
+        _ (log/error "found error: " error)]
+    error))
 
 (defn coercion-error-handler [status]
   (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})
@@ -42,7 +44,7 @@
 
 (def exception-middleware
   (exception/create-exception-middleware
-   (merge 
+   (merge
     exception/default-handlers
     {;; ex-data with :type ::error
      ::error (partial handler "error")
@@ -60,5 +62,5 @@
      ::exception/default (partial handler "未知错误")
 
      ::exception/wrap (fn [handler e request]
-                        (println "ERROR " (pr-str (:uri request)))
+                        (log/error "ERROR " (pr-str (:uri request)))
                         (handler e request))})))

@@ -1,6 +1,7 @@
 (ns backend.util.req-uitl 
   (:require [clojure.string :as str]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.walk :as walk]))
 
 (defn parse-header
   [request token-name]
@@ -27,54 +28,52 @@
   (-> req :parameters :query key))
 
 (defn sort-convert 
-  [req]
-  (if-let [sort (get-str-by-key req :sort)]
-    (-> sort
-        (sub-query))
-    ""))
+  [query-params]
+  (let [sort (get query-params :sort)]
+    sort))
 
 (defn op-convert
   [s]
-  (log/debug "s: " s)
   (loop [sql s w "" v []]
-    (if (empty? sql)
-      [w v]
+    (if (seq sql)
       (let [fst (first sql)
             snd (second sql)
             [ssql ww vv] (case fst
-                           "eq" [(nnext sql) (str w " = ?") (conj v (subs snd 1 (dec (count snd))))]
-                           "like" [(nnext sql) (str w " like ?") (conj v (str "%" (subs snd 1 (dec (count snd))) "%"))]
+                           "eq" [(nnext sql) (str w " = ?  ") (conj v snd)]
+                           "like" [(nnext sql) (str w " like ? ") (conj v (str "%" snd "%"))]
                            "ne" [(nnext sql) (str w " != ?") (conj v snd)]
-                           "gt" [(nnext sql) (str w " > ?") (conj v snd)]
-                           "ge" [(nnext sql) (str w " >= ?") (conj v snd)]
-                           "lt" [(nnext sql) (str w " < ?") (conj v snd)]
-                           "le" [(nnext sql) (str w " <= ?") (conj v snd)]
-                           [(next sql) (str w fst) v])]
-        (recur ssql ww vv)))))
+                           "gt" [(nnext sql) (str w " > ? ") (conj v snd)]
+                           "ge" [(nnext sql) (str w " >= ? ") (conj v snd)]
+                           "lt" [(nnext sql) (str w " < ? ") (conj v snd)]
+                           "le" [(nnext sql) (str w " <= ? ") (conj v snd)]
+                           [(next sql) (str w " " fst " ") v])]
+        (recur ssql ww vv))
+      [w v])))
 
 (defn filter-convert 
-  [req]
-  (if-let [filter (get-str-by-key req :filter)]
+  [query]
+  (if-let [filter (get query :filter)]
     (-> filter
-        sub-query
         (str/split #" +")
         op-convert)
-    []))
+    nil))
 
 (defn page-convert
-  [req]
-  (let [page (-> req
-                 (get-str-by-key :page)
-                 (str/split #"&"))
-        [no size] (->> page
-                       (map #(str/split % #"="))
-                       (map second)
-                       (map #(Integer/parseInt %)))
-        offset (* (dec no) size)]
-    [size offset]))
+  [query]
+  (let [page (or (get query :page) 1)
+        per-page (or (get query :per_page) 10)]
+    [per-page (* per-page (dec page))]))
+
+(defn search-convert
+  [query]
+  "")
+
 
 (defn parse-query
   [req]
-  {:sort (sort-convert req)
-   :filter (filter-convert req)
-   :page (page-convert req)})
+  (let [query (get-in req [:parameters :query])
+        _ (log/debug "parameters query " query)]
+    {:sort (sort-convert query)
+     :filter (filter-convert query)
+     :page (page-convert query)
+     :q (search-convert query)}))

@@ -13,13 +13,13 @@
             [reitit.swagger :as reitit-swagger]
             [reitit.swagger-ui :as reitit-swagger-ui]
             [ring.util.http-response :as ring-response]
+            [backend.middleware :refer [exception-middleware]]
             [backend.util.req-uitl :as req-util]
             [backend.handler.auth-handler :as auth-handler]
             [backend.handler.category-handler :as category-handler]
             [backend.handler.user-handler :as user-handler]
             [backend.handler.tag-handler :as tag-handler]
-            [backend.handler.article-handler :as article-handler]
-            [backend.db.article-comment-db :as article-comment-db]))
+            [backend.handler.article-handler :as article-handler]))
 
 (defn make-response [response-value]
   (if (= (:ret response-value) :ok)
@@ -32,6 +32,13 @@
 (def page-regex #"^page=(\d+)&pre_page=(\d+)$")
 (def search-regex #"^\$rearch=(.+)$")
 (def email-reg "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,63}$")
+
+(def Query [:map 
+            [:page {:optional true} pos-int?]
+            [:per-page {:optional true} pos-int?]
+            [:sort {:optional true} string?]
+            [:filter {:optional true} string?]
+            [:q {:optional true} string?]])
 
 (def Create-User [:map 
                   [:username string?]
@@ -116,9 +123,10 @@
                         :url "/swagger.json"})}}]
      
      ["/api/v1"
-      [""
-       {:swagger {:tags ["Auth"]}}
 
+      ;; backend api
+      ["" 
+       {:swagger {:tags ["Auth"]}}
        ["/login" {:post {:summary "login to the web site"
                          :parameters {:body [:map
                                              [:username string?]
@@ -128,28 +136,29 @@
                                           {:keys [username password]} body]
                                       (auth-handler/login-auth env username password)))}}]
 
-       ["/logout" {:post {:summary "用户退出"
+       ["/logout" {:post {:summary "user logout"
                           :handler (auth-handler/logout env)}}]]
 
-      ["/users"
-       {:swagger {:tags ["用户"]}}
+      ["/users" 
+       {:swagger {:tags ["User"]}}
 
-       ["" {:get {:summary "查询用户"
-                  :middleware [[auth-mw/wrap-auth env "user"]]
+       ["" {:get {:summary "Query users"
+                  :middleware [
+                               [auth-mw/wrap-auth env "user"]]
                   :parameters {:header {:authorization Token}
-                               :query [:map]}
+                               :query Query}
                   :handler (fn [req]
                              (let [opt (req-util/parse-query req)]
                                (user-handler/query-users env opt)))}
 
-            :post {:summary "创建用户"
+            :post {:summary "New user"
                    :parameters {:header {:authorization Token}
                                 :body [:map [:user Create-User]]}
                    :handler (fn [req]
                               (let [user (req-util/parse-body req :user)]
                                 (user-handler/create-user! env user)))}}]
 
-       ["/:id" {:get {:summary "查看用户信息"
+       ["/:id" {:get {:summary "Get a user"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]}
@@ -157,7 +166,7 @@
                                  (let [id (req-util/parse-path req :id)]
                                    (user-handler/get-user env id)))}
 
-                :put {:summary "更新用户信息"
+                :put {:summary "Update a user"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :body [:map [:user Update-User]]}
@@ -165,7 +174,7 @@
                                  (let [id (req-util/parse-path req :id)]
                                    (user-handler/update-user! env id)))}
 
-                :delete {:summary "删除用户"
+                :delete {:summary "Delete a user"
                          :middleware [[auth-mw/wrap-auth env "user"]]
                          :parameters {:header {:authorization Token}
                                       :path [:map [:id pos-int?]]}
@@ -173,7 +182,7 @@
                                     (let [id (req-util/parse-path req :id)]
                                       (user-handler/delete-user! env id)))}}]
 
-       ["/:id/password" {:patch {:summary "修改密码"
+       ["/:id/password" {:patch {:summary "Update a user passwrod"
                                  :middleware [[auth-mw/wrap-auth env "user"]]
                                  :parameters {:header {:authorization Token}
                                               :body [:map [:update-password Update-Password]]}
@@ -181,18 +190,18 @@
                                             (let [update-password (req-util/parse-body req :update-password)]
                                               (user-handler/update-user-password! env update-password)))}}]]
 
-      ["/categories"
-       {:swagger {:tags ["分类"]}}
+      ["/categories" 
+       {:swagger {:tags ["Category"]}}
 
-       ["" {:get {:summary "查询分类"
+       ["" {:get {:summary "Query categories"
                   :middleware [[auth-mw/wrap-auth env "user"]]
                   :parameters {:header {:authorization Token}
-                               :query [:map]}
+                               :query Query}
                   :handler (fn [req]
                              (let [opt (req-util/parse-query req)]
                                (category-handler/query-categories env opt)))}
 
-            :post {:summary "创建分类"
+            :post {:summary "New a category"
                    :middleware [[auth-mw/wrap-auth env "user"]]
                    :parameters {:header {:authorization Token}
                                 :body [:map [:category Create-Category]]}
@@ -201,7 +210,7 @@
                                 (category-handler/create-category! env category)))}}]
 
 
-       ["/:id" {:get {:summary "查看分类"
+       ["/:id" {:get {:summary "Get a category"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]}
@@ -209,7 +218,7 @@
                                  (let [id (req-util/parse-path req :id)]
                                    (category-handler/get-category env id)))}
 
-                :put {:summary "更新分类"
+                :put {:summary "Update a category"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]
@@ -218,7 +227,7 @@
                                  (let [category (req-util/parse-body req :category)]
                                    (category-handler/update-category! env category)))}
 
-                :delete {:summary "删除分类"
+                :delete {:summary "Delete a category"
                          :middleware [[auth-mw/wrap-auth env "user"]]
                          :parameters {:header {:authorization Token}
                                       :path [:map [:id pos-int?]]}
@@ -227,17 +236,17 @@
                                       (category-handler/delete-category! env id)))}}]]
 
       ["/tags"
-       {:swagger {:tags ["标签"]}}
+       {:swagger {:tags ["Tag"]}}
 
-       ["" {:get {:summary "查询"
+       ["" {:get {:summary "Query tags"
                   :middleware [[auth-mw/wrap-auth env "user"]]
                   :parameters {:header {:authorization Token}
-                               :query [:map]}
+                               :query Query}
                   :handler (fn [req]
                              (let [opt (req-util/parse-query req)]
                                (tag-handler/query-tags env opt)))}
 
-            :post {:summary "创建"
+            :post {:summary "New a tag"
                    :middleware [[auth-mw/wrap-auth env "user"]]
                    :parameters {:header {:authorization Token}
                                 :body [:map [:tag Create-Tag]]}
@@ -246,7 +255,7 @@
                                 (tag-handler/create-tag! env tag)))}}]
 
 
-       ["/:id" {:get {:summary "获取"
+       ["/:id" {:get {:summary "Get a tag"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]}
@@ -254,7 +263,7 @@
                                  (let [id (req-util/parse-path req :id)]
                                    (tag-handler/get-tag env id)))}
 
-                :put {:summary "更新"
+                :put {:summary "Update a tag"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]
@@ -263,7 +272,7 @@
                                  (let [tag (req-util/parse-body req :tag)]
                                    (tag-handler/update-tag! env tag)))}
 
-                :delete {:summary "删除"
+                :delete {:summary "Delete a tag"
                          :middleware [[auth-mw/wrap-auth env "user"]]
                          :parameters {:header {:authorization Token}
                                       :path [:map [:id pos-int?]]}
@@ -271,18 +280,18 @@
                                     (let [id (req-util/parse-path req :id)]
                                       (tag-handler/delete-tag! env id)))}}]]
 
-      ["/articls"
-       {:swagger {:tags ["Articles"]}}
+      ["/articles"
+       {:swagger {:tags ["Article"]}}
 
-       ["" {:get {:summary "查询"
+       ["" {:get {:summary "Query articles"
                   :middleware [[auth-mw/wrap-auth env "user"]]
                   :parameters {:header {:authorization Token}
-                               :query [:map]}
+                               :query Query}
                   :handler (fn [req]
                              (let [opt (req-util/parse-query req)]
                                (article-handler/query-articles env opt)))}
 
-            :post {:summary "创建"
+            :post {:summary "New a article"
                    :middleware [[auth-mw/wrap-auth env "user"]]
                    :parameters {:header {:authorization Token}
                                 :body [:map [:article Create-Article]]}
@@ -291,7 +300,7 @@
                                 (article-handler/create-article! env article)))}}]
 
 
-       ["/:id" {:get {:summary "获取"
+       ["/:id" {:get {:summary "Get a article"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]}
@@ -299,7 +308,7 @@
                                  (let [id (req-util/parse-path req :id)]
                                    (article-handler/get-article env id)))}
 
-                :put {:summary "更新"
+                :put {:summary "Update a article"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]
@@ -308,7 +317,7 @@
                                  (let [article (req-util/parse-body req :article)]
                                    (article-handler/update-article! env article)))}
 
-                :delete {:summary "删除"
+                :delete {:summary "Delete a article"
                          :middleware [[auth-mw/wrap-auth env "user"]]
                          :parameters {:header {:authorization Token}
                                       :path [:map [:id pos-int?]]}
@@ -316,7 +325,7 @@
                                     (let [id (req-util/parse-path req :id)]
                                       (article-handler/delete-article! env id)))}}]
 
-       ["/:id/comments" {:get {:summary "Query comments of the article"
+       ["/:id/comments" {:get {:summary "Query the comments of a article"
                                :middleware [[auth-mw/wrap-auth env "user"]]
                                :parameters {:header {:authorization Token}
                                             :path [:map [:id pos-int?]]}
@@ -327,21 +336,29 @@
       ["/aricles/comments" 
        {:swagger {:tags ["Articles Comments"]}}
 
-       ["" {:get {:summary "Query all article comments"
+       ["" {:get {:summary "Query all articles comments"
                   :middleware [[auth-mw/wrap-auth env "user"]]
                   :parameters {:header {:authorization Token}
-                               :query [:map]}
+                               :query Query}
                   :handler (fn [req]
                              (let [query (req-util/parse-query req)]
                                (article-handler/query-articles-comments env query)))}}]
        
-       ["/:id" {:get {:summary "Get a article comment by id"
+       ["/:id" {:get {:summary "Get a article comment"
                       :middleware [[auth-mw/wrap-auth env "user"]]
                       :parameters {:header {:authorization Token}
                                    :path [:map [:id pos-int?]]}
                       :handler (fn [req]
                                  (let [id (req-util/parse-path req :id)]
-                                   (article-handler/get-articles-comments-by-id env id)))}}]]
+                                   (article-handler/get-articles-comments-by-id env id)))}
+                
+                :delete {:summary "Delete a article comment"
+                         :middleware [[auth-mw/wrap-auth env "user"]]
+                         :parameters {:header {:authorization Token}
+                                      :path [:map [:id pos-int?]]}
+                         :handler (fn [req]
+                                    (let [id (req-util/parse-path req :id)]
+                                      (article-handler/delete-articles-comments-by-id env id)))}}]]
 
 
       ;; ["/files"
@@ -379,7 +396,8 @@
                                                    :strip-extra-keys true
                                                    :default-values true
                                                    :options nil})
-                                       :middleware [reitit-swagger/swagger-feature
+                                       :middleware [exception-middleware
+                                                    reitit-swagger/swagger-feature
                                                     reitit-parameters/parameters-middleware
                                                     reitit-muuntaja/format-negotiate-middleware
                                                     reitit-muuntaja/format-response-middleware

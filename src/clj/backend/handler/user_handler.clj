@@ -5,9 +5,9 @@
             [buddy.hashers :as buddy-hashers]))
 
 (defn query-users [env opt]
-  (log/debug "query users request params: " (:parameters opt))
+  (log/debug "query users request params: "  opt)
   (let [db (:db env)
-        users (user-db/get-users db opt)]
+        users (user-db/query-users db opt)]
     (resp/response {:status :ok
                     :data {:users users}})))
 
