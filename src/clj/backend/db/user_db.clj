@@ -19,7 +19,7 @@
   (sql/update! db :users (dissoc user :id) {:id id}))
 
 (defn update-user-password!
-  [db {:keys [id password]}]
+  [db id password]
   (sql/update! db :user {:password password} {:id id}))
 
 (defn get-user-by-name 

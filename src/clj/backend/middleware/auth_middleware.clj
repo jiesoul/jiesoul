@@ -51,11 +51,11 @@
           token (req-util/parse-header request "Token")
           user-token (user-token-db/get-user-token-by-token db token)
           now (java.time.Instant/now)]
-      (log/debug "user-token: " user-token)
+      (log/debug "user-token: " (select-keys user-token [:user_token/user_id :user_token/token]) )
       (if (and user-token (.isAfter (java.time.Instant/parse (:user_token/expires_time user-token)) now))
         (let [user-id (:user_token/user_id user-token)
               user (user-db/get-user-by-id db user-id)
-              _ (log/debug "auth user: " user)
+              _ (log/debug "auth user: " user-id (:users/username user))
               roles (-> (:users/roles user) (str/split #",") (set))]
           (if (contains? roles role)
             (let [id (:user_token/id user-token)

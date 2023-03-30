@@ -1,6 +1,6 @@
 (ns backend.handler.user-handler
   (:require [backend.db.user-db :as user-db]
-            [ring.util.response :as resp]
+            [backend.util.resp-util :as resp-util]
             [taoensso.timbre :as log]
             [buddy.hashers :as buddy-hashers]))
 
@@ -8,8 +8,7 @@
   (log/debug "query users request params: "  opt)
   (let [db (:db env)
         users (user-db/query-users db opt)]
-    (resp/response {:status :ok
-                    :data {:users users}})))
+    (resp-util/ok {:users users})))
 
 (defn create-user! [env user]
   (log/debug "Create user " user)
@@ -19,29 +18,24 @@
         new-user (user-db/create-user! db (assoc user
                                                  :create_time create-time
                                                  :password (buddy-hashers/derive password)))]
-    (resp/response {:status :ok
-                    :data {:user new-user}})))
+    (resp-util/ok {:user new-user})))
 
 (defn update-user! [env user]
   (log/debug "update user " user)
   (let [db (:db env)
         db-user (user-db/get-user-by-id db (:id user))]
     (if db-user
-      (do
-        (user-db/update-user! db user)
-        (resp/response {:status :ok}))
-      (resp/bad-request {:status :failed
-                         :message "无效的用户ID"}))))
+      (let [_ (user-db/update-user! db user)]
+        (resp-util/ok {}))
+      (resp-util/failed "无效的用户ID"))))
 
 (defn get-user [env id]
   (log/debug "get user id" id)
   (let [db (:db env)
         user (user-db/get-user-by-id db id)]
     (if user
-      (resp/response {:status :ok
-                      :data user})
-      (resp/bad-request {:status :failed
-                         :message "无效的用户ID"}))))
+      (resp-util/ok {:user (dissoc user :users/password)})
+      (resp-util/failed "无效的用户ID"))))
 
 (defn delete-user! [env id]
   (log/debug "Delete user id " id)
@@ -50,24 +44,21 @@
     (if user
       (do
         (user-db/delete-user! db id)
-        (resp/response {:status :failed
-                        :message "成功删除用户"}))
-      (resp/bad-request {:status :failed
-                         :message "无效的用户ID"}))))
+        (resp-util/ok {}))
+      (resp-util/failed "无效的用户ID"))))
 
-(defn update-user-password! [env {:keys [id old-password new-password confirm-password]}]
-  (log/debug "Update user password " id)
+(defn update-user-password! [env {:keys [id old-password new-password confirm-password] :as update-password}]
+  (log/debug "Update user password " update-password)
   (let [db (:db env)]
     (if (not= new-password confirm-password)
-      (resp/bad-request {:status :failed
-                         :message "新密码与确认密码不一致"})
-      (let [user (user-db/get-user-by-id db id)]
-        (if (and user (buddy-hashers/check old-password (:password user)))
+      (resp-util/failed "新密码与确认密码不一致")
+      (if-let [user (user-db/get-user-by-id db id)]
+        (if (buddy-hashers/check old-password (:users/password user))
           (do
-            (user-db/update-user-password! db {:id id :password new-password})
-            (resp/response {:status :ok
-                            :messsage "密码修改成功"}))
-          (resp/bad-request {:status :failed
-                             :message "旧密码错误或用户不存在"}))))))
+            (log/debug "user: " user)
+            (user-db/update-user-password! db id new-password)
+            (resp-util/ok {}))
+          (resp-util/failed "旧密码错误或用户不存在"))
+        (resp-util/failed "旧密码错误或用户不存在")))))
 
 
