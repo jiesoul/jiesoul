@@ -4,7 +4,7 @@
 
 (defn query [db opt]
   (let [s "select * from article_comment "]
-  (sql/query db :article_comment (du/opt-to-sql s opt))))
+  (sql/query db (du/opt-to-sql s opt))))
 
 (defn create! [db article_comment]
   (sql/insert! db :article_comment article_comment))

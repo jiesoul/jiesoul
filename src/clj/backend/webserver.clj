@@ -31,17 +31,18 @@
 (def sort-regex #"^\$sort( )?=( )?(.+)$")
 (def filter-regex #"^\$filter( )?=( )?(.+)$")
 (def page-regex #"^page=(\d+)&pre_page=(\d+)$")
-(def search-regex #"^\$rearch=(.+)$")
+(def search-regex #"^\$q=(.+)$")
 (def email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
 
-(s/def ::email (s/and string? #(re-matches email-regex %)))
+(s/def ::email-type (s/and string? #(re-matches email-regex %)))
+(s/def ::not-empty-string (s/and string? #(> (count %) 0)))
+(s/def ::password-type (s/and string? #(>= (count %) 8)))
+
 (s/def ::token (s/and string? #(re-matches #"^Token (.+)$" %)))
-(s/def ::not-empty-string (s/and string? #(zero? (count %))))
 (s/def ::id pos-int?)
 (s/def ::pid pos-int?)
 (s/def ::name ::not-empty-string)
 (s/def ::description string?)
-(s/def ::password (s/and ::not-empty-string #(>= (count %) 8)))
 
 (s/def ::page pos-int?)
 (s/def ::per-page pos-int?)
@@ -54,6 +55,7 @@
 (s/def ::username string?)
 (s/def ::nickname string?)
 (s/def ::birthday string?)
+(s/def ::password ::password-type)
 (s/def ::age pos-int?)
 (s/def ::avatar string?)
 (s/def ::phone string?)
@@ -61,9 +63,9 @@
   (s/keys :req-un [::id ::nickname ::birthday]
           :opt-un [::password ::age ::avatar ::phone]))
 
-(s/def ::old-password ::not-empty-string)
-(s/def ::new-password ::not-empty-string)
-(s/def ::confirm-password ::not-empty-string)
+(s/def ::old-password ::password-type)
+(s/def ::new-password ::password-type)
+(s/def ::confirm-password ::password-type)
 (s/def ::UserPassword 
   (s/keys :req-un [::id ::old-password ::new-password ::confirm-password]))
 
@@ -86,7 +88,7 @@
 (s/def ::article-id pos-int?)
 (s/def ::category-id pos-int?)
 (s/def ::title ::not-empty-string)
-(s/def ::author pos-int?)
+(s/def ::author ::id)
 (s/def ::article-summary string?)
 (s/def ::content-html string?)
 (s/def ::content-md string?)
@@ -104,10 +106,6 @@
   (s/keys :req-un [::id ::article-id ::content ::pid]))
 
 (def asset-version "1")
-
-(defn default-handler [req]
-  {:status 200 
-   :body "this is default handler"})
 
 (defn routes [env]
   "Routes."
@@ -145,13 +143,12 @@
        {:swagger {:tags ["User"]}}
 
        ["" {:get {:summary "Query users"
-                  :middleware [
-                               [auth-mw/wrap-auth env "user"]]
+                  :middleware [[auth-mw/wrap-auth env "user"]]
                   :parameters {:header {:authorization ::token}
                                :query ::query}
                   :handler (fn [req]
-                             (let [opt (req-util/parse-query req)]
-                               (user-handler/query-users env opt)))}}]
+                             (let [query (req-util/parse-query req)]
+                               (user-handler/query-users env query)))}}]
 
        ["/:id" {:get {:summary "Get a user"
                       :middleware [[auth-mw/wrap-auth env "user"]]
@@ -185,7 +182,6 @@
                                               :path {:id pos-int?}
                                               :body {:update-password ::UserPassword}}
                                  :handler (fn [req]
-                                            (log/debug "update a user password.........." req)
                                             (let [update-password (req-util/parse-body req :update-password)]
                                               (user-handler/update-user-password! env update-password)))}}]]
 
@@ -197,8 +193,8 @@
                   :parameters {:header {:authorization ::token}
                                :query ::query}
                   :handler (fn [req]
-                             (let [opt (req-util/parse-query req)]
-                               (category-handler/query-categories env opt)))}
+                             (let [query (req-util/parse-query req)]
+                               (category-handler/query-categories env query)))}
 
             :post {:summary "New a category"
                    :middleware [[auth-mw/wrap-auth env "user"]]

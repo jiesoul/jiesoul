@@ -1,10 +1,10 @@
 (ns backend.handler.auth-handler
-  (:require [buddy.hashers :as buddy-hashers]
-            [backend.middleware.auth-middleware :refer [create-user-token]]
+  (:require [backend.db.user-db :as user-db]
             [backend.db.user-token-db :as user-token-db]
-            [backend.db.user-db :as user-db]
-            [backend.util.req-uitl :as ru]
-            [ring.util.response :as resp]
+            [backend.middleware.auth-middleware :refer [create-user-token]]
+            [backend.util.req-uitl :as req-util]
+            [backend.util.resp-util :as resp-util]
+            [buddy.hashers :as buddy-hashers]
             [clojure.tools.logging :as log]))
 
 (defn login-auth
@@ -16,15 +16,13 @@
     (log/debug "user: " user)
     (if (and user (buddy-hashers/check password (:users/password user)))
       (let [token (create-user-token db (:users/id user))]
-        (resp/response  {:status :ok
-                         :data {:token token
-                                :user (dissoc user :users/password)}}))
-      (resp/response {:status :failed
-                      :message "用户名或密码错误"}))))
+        (resp-util/ok   {:token token
+                         :user (dissoc user :users/password)}))
+      (resp-util/failed "用户名或密码错误"))))
 
 (defn logout [env]
   (fn [req]
     (let [db (:db env)
-          token (ru/parse-header req "Token")]
+          token (req-util/parse-header req "Token")]
       (user-token-db/disable-user-token db token)
-      (resp/response {:status :ok}))))
+      (resp-util/ok {}))))

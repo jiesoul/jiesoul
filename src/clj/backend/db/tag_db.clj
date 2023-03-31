@@ -4,7 +4,7 @@
 
 (defn query [db opt]
   (let [s "select * from tag "]
-  (sql/query db :tag (du/opt-to-sql s opt))))
+  (sql/query db (du/opt-to-sql s opt))))
 
 (defn create! [db tag]
   (sql/insert! db :tag tag))

@@ -27,53 +27,10 @@
   [req key]
   (-> req :parameters :query key))
 
-(defn sort-convert 
-  [query-params]
-  (let [sort (get query-params :sort)]
-    sort))
-
-(defn op-convert
-  [s]
-  (loop [sql s w "" v []]
-    (if (seq sql)
-      (let [fst (first sql)
-            snd (second sql)
-            [ssql ww vv] (case fst
-                           "eq" [(nnext sql) (str w " = ?  ") (conj v snd)]
-                           "like" [(nnext sql) (str w " like ? ") (conj v (str "%" snd "%"))]
-                           "ne" [(nnext sql) (str w " != ?") (conj v snd)]
-                           "gt" [(nnext sql) (str w " > ? ") (conj v snd)]
-                           "ge" [(nnext sql) (str w " >= ? ") (conj v snd)]
-                           "lt" [(nnext sql) (str w " < ? ") (conj v snd)]
-                           "le" [(nnext sql) (str w " <= ? ") (conj v snd)]
-                           [(next sql) (str w " " fst " ") v])]
-        (recur ssql ww vv))
-      [w v])))
-
-(defn filter-convert 
-  [query]
-  (if-let [filter (get query :filter)]
-    (-> filter
-        (str/split #" +")
-        op-convert)
-    nil))
-
-(defn page-convert
-  [query]
-  (let [page (or (get query :page) 1)
-        per-page (or (get query :per_page) 10)]
-    [per-page (* per-page (dec page))]))
-
-(defn search-convert
-  [query]
-  "")
 
 
 (defn parse-query
   [req]
   (let [query (get-in req [:parameters :query])
         _ (log/debug "parameters query " query)]
-    {:sort (sort-convert query)
-     :filter (filter-convert query)
-     :page (page-convert query)
-     :q (search-convert query)}))
+    query))

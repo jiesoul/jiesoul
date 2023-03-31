@@ -4,10 +4,10 @@
             [taoensso.timbre :as log]))
 
 (defn query-users
-  [db opt]
+  [db query]
   (let [s "select * from users"
-        sql (du/opt-to-sql s opt)
-        _ (log/debug "sql: " sql)]
+        sql (du/opt-to-sql s query)
+        _ (log/info "query user sql: " sql)]
     (sql/query db sql)))
 
 (defn create-user! 
@@ -20,7 +20,7 @@
 
 (defn update-user-password!
   [db id password]
-  (sql/update! db :user {:password password} {:id id}))
+  (sql/update! db :users {:password password} {:id id}))
 
 (defn get-user-by-name 
   [db username]

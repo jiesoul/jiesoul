@@ -1,10 +1,13 @@
 (ns backend.db.category-db
   (:require [next.jdbc.sql :as sql]
-            [backend.util.db-util :as du]))
+            [backend.util.db-util :as du]
+            [clojure.tools.logging :as log]))
 
-(defn query [db opt]
-  (let [s "select * from category "]
-  (sql/query db :category (du/opt-to-sql s opt))))
+(defn query-categories [db query]
+  (let [s "select * from category "
+        sql (du/opt-to-sql s query)
+        _ (log/info "query categories sql: " sql)]
+    (sql/query db sql)))
 
 (defn create! [db category]
   (sql/insert! db :category category))

@@ -5,7 +5,7 @@
 
 (defn query [db opt]
   (let [s "select * from article "]
-    (sql/query db :article (du/opt-to-sql s opt))))
+    (sql/query db (du/opt-to-sql s opt))))
 
 (defn create! [db {:keys [detail] :as article}]
   (with-open [con (jdbc/get-connection db)]

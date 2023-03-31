@@ -2,36 +2,35 @@
   (:require [backend.db.article-db :as article-db]
             [clojure.tools.logging :as log]
             [ring.util.response :as resp]
-            [backend.db.article-comment-db :as article-comment-db]))
+            [backend.db.article-comment-db :as article-comment-db]
+            [backend.util.resp-util :as resp-util]))
 
 (defn query-articles [{:keys [db]} opt]
   (log/debug "Query articles " opt)
   (let [articles (article-db/query db opt)]
-    (resp/response {:status :ok
-                    :data {:articles articles}})))
+    (resp-util/ok {:articles articles
+                   :query opt})))
 
 (defn create-article! [{:keys [db]} article]
   (log/debug "Creatge article " article)
   (let [create-time (java.time.Instant/now)
         _ (article-db/create! db (assoc article :create_time create-time))]
-    (resp/response {:status :ok
-                    :data {}})))
+    (resp-util/ok {})))
 
 (defn get-article [{:keys [db]} id]
   (log/debug "Get article " id)
   (let [article (article-db/get-by-id db id)]
-    (resp/response {:status :ok
-                    :data {:article article}})))
+    (resp-util/ok {:article article})))
 
 (defn update-article! [{:keys [db]} article]
   (log/debug "Update article " article)
   (let [_ (article-db/update! db article)]
-    (resp/response {:status :ok})))
+    (resp-util/ok {})))
 
 (defn delete-article! [{:keys [db]} id]
   (log/debug "Delete article " id)
   (let [_ (article-db/delete! db id)]
-    (resp/response {:status :ok})))
+    (resp-util/ok {})))
 
 (defn get-comments-by-article-id [{:keys [db]} article-id]
   (log/debug "Get comments by article id " article-id)

@@ -4,11 +4,12 @@
             [taoensso.timbre :as log]
             [buddy.hashers :as buddy-hashers]))
 
-(defn query-users [env opt]
-  (log/debug "query users request params: "  opt)
+(defn query-users [env query]
+  (log/debug "query users request params: "  query)
   (let [db (:db env)
-        users (user-db/query-users db opt)]
-    (resp-util/ok {:users users})))
+        users (user-db/query-users db query)]
+    (resp-util/ok {:users (map #(dissoc % :users/password) users)
+                   :query query})))
 
 (defn create-user! [env user]
   (log/debug "Create user " user)
@@ -23,9 +24,10 @@
 (defn update-user! [env user]
   (log/debug "update user " user)
   (let [db (:db env)
-        db-user (user-db/get-user-by-id db (:id user))]
+        db-user (user-db/get-user-by-id db (:id user))
+        password (:passowrd user)]
     (if db-user
-      (let [_ (user-db/update-user! db user)]
+      (let [_ (user-db/update-user! db (assoc user :password (buddy-hashers/derive password)))]
         (resp-util/ok {}))
       (resp-util/failed "无效的用户ID"))))
 
@@ -52,13 +54,14 @@
   (let [db (:db env)]
     (if (not= new-password confirm-password)
       (resp-util/failed "新密码与确认密码不一致")
-      (if-let [user (user-db/get-user-by-id db id)]
-        (if (buddy-hashers/check old-password (:users/password user))
-          (do
-            (log/debug "user: " user)
-            (user-db/update-user-password! db id new-password)
-            (resp-util/ok {}))
-          (resp-util/failed "旧密码错误或用户不存在"))
-        (resp-util/failed "旧密码错误或用户不存在")))))
+      (if (= old-password new-password)
+        (resp-util/failed "new password and old password is same")
+        (if-let [user (user-db/get-user-by-id db id)]
+          (if (buddy-hashers/check old-password (:users/password user))
+            (do
+              (user-db/update-user-password! db id (buddy-hashers/derive new-password))
+              (resp-util/ok {}))
+            (resp-util/failed "旧密码错误"))
+          (resp-util/failed "用户不存在"))))))
 
 
