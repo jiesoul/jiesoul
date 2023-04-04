@@ -1,4 +1,4 @@
-(ns frontend.header 
+(ns frontend.shared.header 
   (:require [re-frame.core :as re-frame]
             [cljs.pprint]
             [frontend.state :as f-state]))

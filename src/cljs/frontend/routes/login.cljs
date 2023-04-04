@@ -43,6 +43,18 @@
    (f-uitl/clog "login-user, user-data" user-data)
    (f-http/http-post db "/api/login" user-data ::login-ret-ok ::login-reg-failed)))
 
+(re-frame/reg-event-fx
+ ::f-state/logout
+ (fn [cofx [_]]
+   (let [db (:db cofx)]
+     {:db (-> db
+              (assoc-in [:login] nil)
+              (assoc-in [:username] nil)
+              (assoc-in [:login-status] nil)
+              (assoc-in [:token] nil))
+      :fx [[:dispatch [::f-state/navigate ::f-state/login]]]})))
+
+
 (defn login []
   (let [login-data (r/atom (empty-creds))]
     (fn []

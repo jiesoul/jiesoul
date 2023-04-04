@@ -2,7 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [frontend.state :as f-state]))
 
-(defn landing-page []
+(defn home-page []
   [:div.app
    [:div
     [:div.p-4

@@ -1,4 +1,4 @@
-(ns jiesoul.shared.buttons)
+(ns frontend.shared.buttons)
 
 (defn loading-button [{:keys [loading class]} & children]
   (let [class (str class " flex items-center focus:outline-none"

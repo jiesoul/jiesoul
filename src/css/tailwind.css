@@ -1,5 +1,9 @@
 /* Reset */
-@import 'tailwindcss/base';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import 'tailwindcss/base';
 @import 'reset';
 
 /* Components */
@@ -8,4 +12,4 @@
 @import 'form';
 
 /* Utilities */
-@import 'tailwindcss/utilities';
+@import 'tailwindcss/utilities'; */

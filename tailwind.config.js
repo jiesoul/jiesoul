@@ -1,9 +1,15 @@
+const colors = require('tailwindcss/colors')
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 module.exports = {
     content: [
-        "./src/**/*.cljs"
+        "./src/**/*.{html,js,cljs}"
     ],
     theme: {
-        extend: {},
+        extend: {
+            
+        },
     },
+    
     plugins: [],
 }

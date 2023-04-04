@@ -1,4 +1,4 @@
-(ns jiesoul.shared.form-input)
+(ns frontend.shared.form-input)
 
 (defn select-input
   [{:keys [label name class errors] :as props} & children]

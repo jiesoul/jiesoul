@@ -1,8 +1,8 @@
-(ns jiesoul.shared.layout
-  (:require [jiesoul.shared.bottom-header :refer [bottom-header]]
-            [jiesoul.shared.flash-messages :refer [flash-messages]]
-            [jiesoul.shared.top-header :refer [top-header]]
-            ;; [jiesoul.shared.menu :refer [main-menu]]
+(ns frontend.shared.layout
+  (:require [frontend.shared.bottom-header :refer [bottom-header]]
+            [frontend.shared.flash-messages :refer [flash-messages]]
+            [frontend.shared.top-header :refer [top-header]]
+            ;; [frontend.shared.menu :refer [main-menu]]
             ))
 
 (defn layout

@@ -1,13 +1,12 @@
-{:deps {:alias [:shadow-cljs :frontend]} 
- 
+{:dependencies []
+
+ :deps {:alias [:shadow-cljs :common :frontend]}
+ :dev-http {3001 "public"}
  :builds {:app {:target :browser
                 :output-dir "public/js"
                 :asset-path "/js"
-                :modules {:main {:entities [frontend.main]}}
+                :module-hash-names true
+                :modules {:main {:init-fn frontend.main/init!}}
                 :build-hooks [(shadow.cljs.build-report/hook)]
-                :dev-http {8000 "public"}
                 :devtools {:watch-dir "public"
-                           :preloads [hashp.core]}
-                :release {:output-dir "prod-resources/public/js"
-                          :compile-options {:source-map "prod-resources/public/js/main.js.map"
-                                            :optimizations :advanced}}}}}
+                           :preloads [hashp.core]}}}}
