@@ -1,7 +1,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
-    content: ['./public/js/main.*.js'],
+    content: ['./public/js/*.js'],
     theme: {
         screens: {
             sm: '480px',
@@ -19,5 +19,7 @@ module.exports = {
           }
     },
     variants: {},
-    plugins: [],
+    plugins: [
+        require('@tailwindcss/forms'),
+    ],
 }
