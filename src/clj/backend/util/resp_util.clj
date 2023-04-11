@@ -7,4 +7,4 @@
 
 (defn failed [msg]
   (resp/bad-request {:status :failed
-                     :message msg}))
+                     :msg msg}))

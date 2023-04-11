@@ -1,20 +1,17 @@
 (ns backend.webserver
-  (:require [clojure.tools.logging :as log]
-            [backend.middleware.auth-middleware :as auth-mw]
+  (:require [backend.middleware.auth-middleware :as auth-mw]
             [muuntaja.core :as mu-core]
             [reitit.coercion.spec]
             [clojure.spec.alpha :as s] 
-            [spec-tools.core :as spec]
             [reitit.ring :as reitit-ring]
             [reitit.ring.coercion :as reitit-coercion]
             [reitit.ring.middleware.dev]
-            [reitit.ring.middleware.exception :as reitit-exception]
             [reitit.ring.middleware.muuntaja :as reitit-muuntaja]
             [reitit.ring.middleware.parameters :as reitit-parameters]
             [reitit.swagger :as reitit-swagger]
             [reitit.swagger-ui :as reitit-swagger-ui]
             [ring.util.http-response :as ring-response]
-            [backend.middleware :refer [exception-middleware]]
+            [backend.middleware :refer [exception-middleware wrap-cors]]
             [backend.util.req-uitl :as req-util]
             [backend.handler.auth-handler :as auth-handler]
             [backend.handler.category-handler :as category-handler]
@@ -386,7 +383,8 @@
    (reitit-ring/ring-handler
     (reitit-ring/router routes {:data {:muuntaja mu-core/instance
                                        :coercion reitit.coercion.spec/coercion
-                                       :middleware [reitit-swagger/swagger-feature
+                                       :middleware [wrap-cors
+                                                    reitit-swagger/swagger-feature
                                                     reitit-parameters/parameters-middleware
                                                     reitit-muuntaja/format-negotiate-middleware
                                                     reitit-muuntaja/format-response-middleware

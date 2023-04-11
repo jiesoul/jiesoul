@@ -1,8 +1,18 @@
 (ns backend.middleware
   (:require [expound.alpha :as expound]
             [reitit.ring.middleware.exception :as exception]
-            [clojure.tools.logging :as log]
-            [ring.util.response :as resp]))
+            [clojure.tools.logging :as log]))
+
+(defn wrap-cors
+  "Wrap the server response with new headers to allow Cross Origin."
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (-> response
+          (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
+          (assoc-in [:headers "Access-Control-Allow-Headers"] "x-requested-with, content-type")
+          (assoc-in [:headers "Access-Control-Allow-Methods"] "*")))))
+
 
 (derive ::error ::exception)
 (derive ::failure ::exception)

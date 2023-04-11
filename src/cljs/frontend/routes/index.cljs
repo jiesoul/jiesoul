@@ -7,16 +7,16 @@
   [:div {:class "flex flex-col mx-auto w-full"}
    [nav]
    [:div {:class "relative"}
-    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center bg-green-400"}
+    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center"}
      [:h2 {:class "text-4xl"} "The First Tile"]
      {:p "Scroll Down"}]
-    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center bg-green-600 text-white"}
+    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center text-white"}
      [:h2 {:class "text-4xl"} "The First Tile"]
      {:p "Scroll Down"}]
-    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center bg-green-600 text-white"}
+    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center text-white"}
      [:h2 {:class "text-4xl"} "The First Tile"]
      {:p "Scroll Down"}]
-    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center bg-green-800 text-white"}
+    [:div {:class "sticky top-0 h-screen flex flex-col items-center justify-center text-white"}
      [:h2 {:class "text-4xl"} "The First Tile"]
      {:p "Scroll Down"}]]
    [:div {:class "w-24 md:w-auto h-screen p-6"}
