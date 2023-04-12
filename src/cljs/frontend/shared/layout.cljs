@@ -1,22 +1,21 @@
 (ns frontend.shared.layout
-  (:require [frontend.shared.bottom-header :refer [bottom-header]]
-            [frontend.shared.flash-messages :refer [flash-messages]]
-            [frontend.shared.top-header :refer [top-header]]
-            ;; [frontend.shared.menu :refer [main-menu]]
-            ))
+  (:require [frontend.shared.header :refer [header-dash nav-home]]
+            [frontend.shared.sidebar :refer [sidebar-dash]]
+            [frontend.shared.footer :refer [footer-home]]))
 
-(defn layout
+(defn layout-dash
   [children]
-  [:div
-   [:div {:class "md:flex md:flex-col"}
-    [:div {:class "md:h-screen md:flex md:flex-col"}
-     [:div {:class "md:flex md:flex-shrink-0"}
-      [top-header]
-      [:f> bottom-header]]
-     [:div {:class "flex flex-grow overflow-hidden"}
-      ;; [:f> main-menu {:class "flex-shrink-0 hidden w-56 p-12 overflow-y-auto bg-indigo-800 md:block"}]
-      ;; To reset scroll region (https://inertiajs.com/pages#scroll-regions) add
-      ;; `scroll-region="true"` to div below
-      [:div {:class "w-full px-4 py-8 overflow-hidden overflow-y-auto md:p-12"}
-       [:f> flash-messages]
-       children]]]]])
+  [:div {:class "flex h-screen bg-gray-200 font-boboto"}
+   [sidebar-dash]
+   [:div {:class "flex-1 flex flex-col w-full overflow-x-hidden"}
+    [header-dash]
+    [:main {:class "flex-1 overflow-x-hidden overflow-y-auto bg-gray-200"}
+     [:div {:class "container mx-auto px-6 py-8"}
+      children]]]])
+
+(defn layout-home 
+  [children]
+  [:div {:class "flex flex-col mx-auto w-full"}
+   [nav-home]
+   children
+   [footer-home]])

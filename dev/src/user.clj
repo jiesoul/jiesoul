@@ -3,8 +3,7 @@
             [integrant.repl.state :as state]
             [backend.core :as core]
             [ragtime.jdbc :as rt-jdbc]
-            [ragtime.repl :as rt-repl]
-            [com.jakemccrary.test-refresh :as test-refresh]))
+            [ragtime.repl :as rt-repl]))
 
 (ig-repl/set-prep! core/system-config-start)
 

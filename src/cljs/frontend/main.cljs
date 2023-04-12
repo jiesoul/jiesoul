@@ -2,6 +2,7 @@
   (:require [day8.re-frame.http-fx]
             [frontend.routes.index :as f-index]
             [frontend.routes.login :as f-login]
+            [frontend.routes.dashboard :as dashboard]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]
@@ -41,8 +42,6 @@
        (= "/" new-match) (-> (assoc :login-status nil)
                              (assoc :user nil))))))
 
-
-
 (re-frame/reg-fx
  ::navigate!
  (fn [route]
@@ -54,7 +53,6 @@
   ([k params] (href k params nil))
   ([k params query]
    (rfe/href k params query)))
-
 
 (def routes
   ["/"
@@ -70,7 +68,14 @@
      :view f-login/login
      :link-text "Login"
      :controllers [{:start (fn [& params] (js/console.log (str "Entering login, params: " params)))
-                    :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]])
+                    :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+   ["dashboard"
+    {:name ::f-state/dashboard
+     :view dashboard/index
+     :link-text "dashboard"
+     :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                    :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]
+     }]])
 
 (defn on-navigate [new-match]
   (f-util/clog "on-navigate, new-match" new-match)

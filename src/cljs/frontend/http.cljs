@@ -16,7 +16,7 @@
                        :uri uri 
                        :headers (get-headers db)
                        :format (ajax/json-request-format)
-                       :response-format (ajax/json-response-format {:keyword? true})
+                       :response-format (ajax/json-response-format {:keywords? true})
                        :on-success [on-success]
                        :on-failure [on-failure]}
                       data (assoc :params data))]
