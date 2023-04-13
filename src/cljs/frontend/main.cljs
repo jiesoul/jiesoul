@@ -3,6 +3,7 @@
             [frontend.routes.index :as f-index]
             [frontend.routes.login :as f-login]
             [frontend.routes.dashboard :as dashboard]
+            [frontend.routes.category :as category]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]
@@ -21,10 +22,7 @@
     :token nil
     :debug true
     :login-status nil
-    :username nil
-    :product-groups nil
-    :products nil
-    :product nil}))
+    :login-user nil}))
 
 (re-frame/reg-event-fx
  ::f-state/navigate
@@ -56,26 +54,27 @@
 
 (def routes
   ["/"
-   [""
-    {:name ::f-state/home
-     :view f-index/home-page
-     :link-text "Home"
-     :controllers
-     [{:start (fn [& params] (js/console.log (str "Entering home page, params:" params)))
-       :stop (fn [& params] (js/console.log (str "Leaving home page, params: " params)))}]}]
-   ["login"
-    {:name ::f-state/login
-     :view f-login/login
-     :link-text "Login"
-     :controllers [{:start (fn [& params] (js/console.log (str "Entering login, params: " params)))
-                    :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
-   ["dashboard"
-    {:name ::f-state/dashboard
-     :view dashboard/index
-     :link-text "dashboard"
-     :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
-                    :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]
-     }]])
+   ["" {:name ::f-state/home
+        :view f-index/home-page
+        :link-text "Home"
+        :controllers [{:start (fn [& params] (js/console.log (str "Entering home page, params:" params)))
+                       :stop (fn [& params] (js/console.log (str "Leaving home page, params: " params)))}]}]
+   
+   ["login" {:name ::f-state/login
+             :view f-login/login
+             :link-text "Login"
+             :controllers [{:start (fn [& params] (js/console.log (str "Entering login, params: " params)))
+                            :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+   
+   ["dashboard" {:name ::f-state/dashboard
+                 :view dashboard/index
+                 :link-text "dashboard"
+                 :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                                :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+   
+   ["categories" {:name ::f-state/categories 
+                  :view category/index 
+                  :link-text "categories"}]])
 
 (defn on-navigate [new-match]
   (f-util/clog "on-navigate, new-match" new-match)

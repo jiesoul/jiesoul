@@ -5,7 +5,7 @@
 
 (defn header-dash []
   (fn []
-    (let []
+    (let [login-user @(re-frame/subscribe [::f-state/login-user])]
       [:header {:class "flex items-center justify-between px-6 py-4 bg-white border-b-4 border-indigo-600"}
        [:div {:class "flex items-center"}
         [:div {:class "relative mx-4 lg:mx-0"}
@@ -14,34 +14,53 @@
                   :type "text"
                   :placeholder "Search"}]]]
        [:div {:class "flex items-center"}
-        [:a {:class ""} "jiesoul"]]])))
+        [:a {:class ""} (when login-user (:users/username login-user))]]])))
 
 (defn nav-home []
   (fn []
-    [:nav {:class "flex items-center justify-between flex-wrap bg-teal-500 p-6"}
-     [:div {:class "flex items-center flex-shrink-0 text-white mr-6"}
-      [:span {:class "font-semibold text-xl tracking-tight"}
-       "Site"]]
-     [:div {:class "block lg:hidden"}
-      ]
-     [:div {:class "w-full block flex-grow lg:flex lg:items-center lg:w-auto"}
-      [:div {:class "ext-sm lg:flex-grow"}
-       [:a {:class "block mt-4 lg:inline-block lg:mt-0 text-teal-400 hover:text-white mr-4"
-            :href "#"}
-        "Blog"]
-       [:a {:class "block mt-4 lg:inline-block lg:mt-0 text-teal-400 hover:text-white mr-4"
-            :href "#"}
-        "Docs"]
-       [:a {:class "block mt-4 lg:inline-block lg:mt-0 text-teal-400 hover:text-white mr-4"
-            :href "#"}
-        "Examples"]]]
-     [:div
-      [:button {:class "inline-block text-sm px-4 py-2 leading-none border rounded 
-                        text-white border-white hover:border-transparent hover:text-teal-500 
-                        hover:bg-white mt-4 lg:mt-0"
+    [:nav {:class "bg-white border-gray-200 dark:bg-gray-900"}
+     [:div {:class "max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"}
+      [:a {:href "/"
+           :class "flex items-center"}
+       [:span {:class "self-center text-2xl font-semibold whitespace-nowrap dark:text-white"}
+        "Site"]]
+      [:button {:data-collapse-toggle "navbar-default"
                 :type "button"
-                :date-ripple-ligth true
-                :on-click (fn [e]
-                            (.preventDefault e)
-                            (re-frame/dispatch [::f-state/navigate ::f-state/login]))}
-       "Login"]]]))
+                :class "inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden 
+                        hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 
+                        dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                :aria-controls "navbar-default"
+                :aria-expanded "false"}
+       [:span {:class "sr-only"} "Open main menu"]
+       [:svg {:class "w-6 h-6"
+              :aria-hidden "true"
+              :fill "currentColor"
+              :view-box "0 0 20 20"
+              :xmlns "http://www.w3.org/2000/svg"}
+        [:path {:fill-path "evenodd"
+                :d "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 
+                    1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                :clip-rule "evenodd"}]]]
+      
+      [:div {:class "hidden w-full md:block md:w-auto"
+             :id "navbar-default"}
+       [:ul {:class "flex flex-row font-medium mt-0 mr-6 space-x-8 text-xl"}
+        [:li 
+         [:a {:class "text-gray-900 dark:text-white hover:underline"
+              :href "#"}
+          "Blog"]]
+        [:li 
+         [:a {:class "text-gray-900 dark:text-white hover:underline"
+              :href "#"}
+          "Docs"]]
+        [:li 
+         [:a {:class "text-gray-900 dark:text-white hover:underline"
+              :href "#"}
+          "Examples"]]]]
+      [:div
+       [:a {:class "text-sm  text-blue-600 dark:text-blue-500 hover:underline"
+            :href "#"
+            :on-click (fn [e]
+                        (.preventDefault e)
+                        (re-frame/dispatch [::f-state/navigate ::f-state/login]))}
+        "Login"]]]]))

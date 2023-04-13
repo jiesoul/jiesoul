@@ -15,6 +15,7 @@
    (-> db 
        (assoc-in [:login :response] res-body)
        (assoc-in [:token] (:token (:data res-body)))
+       (assoc-in [:login-user] (:user (:data res-body)))
        (assoc-in [:login-status] :logged-in))))
 
 (re-frame/reg-event-db

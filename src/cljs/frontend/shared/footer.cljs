@@ -26,7 +26,7 @@
            :href "#"}
        "Contact Me"]]]]
        
-       [:hr {:class "my-8 border-blue-gray-50"}]
+       [:hr {:class "my-8 border-blue-gray-50 m-6"}]
        [:p {:class "block text-center font-sans text-base font-normal 
                     leading-relaxed text-blue-gray-900 antialiased"}
         "© 2023 "]])

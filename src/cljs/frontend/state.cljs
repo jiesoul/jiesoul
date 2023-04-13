@@ -12,9 +12,9 @@
    (:token db)))
 
 (re-frame/reg-sub
- ::username
+ ::login-user
  (fn [db]
-   (:username db)))
+   (:login-user db)))
 
 (re-frame/reg-sub
  ::login-status
