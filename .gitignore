@@ -18,6 +18,7 @@ jiesoul.iml
 .shadow-cljs/
 node_modules/
 public/js
+public/css
 resources/data/jiesoul.db
 
 logs/

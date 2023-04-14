@@ -1,7 +1,31 @@
 (ns frontend.shared.header 
   (:require [re-frame.core :as re-frame]
             [cljs.pprint]
-            [frontend.state :as f-state]))
+            [frontend.state :as f-state]
+            [frontend.shared.svg :as svg]
+            [reagent.core :as r]))
+
+(def css-user-dropdown-li-a "block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white")
+(def user-dropdown-show? (r/atom true))
+
+(defn user-dropdown []
+  [:div {:id "user-dropdown"
+         :hidden @user-dropdown-show?
+         :class "z-50 relative bg-white divide-y divide-gray-100 rounded-lg shadow w-44 
+                 dark:bg-gray-700 dark:divide-gray-600"}
+   [:div {:class "px-4 py-3 text-sm text-gray-900 dark:text-white"}
+    [:ul {:class "py-2 text-sm text-gray-700 dark:text-gray-200"}
+     [:li>a {:class css-user-dropdown-li-a
+             :href "#"}
+      "Dashboard"]
+     [:li>a {:class css-user-dropdown-li-a
+             :href "#"}
+      "Setting"]]
+    [:div {:class "py-1"}
+     [:a {:href "#"
+          :class "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
+                  dark:text-gray-200 dark:hover:text-white"}
+      "Sign out"]]]])
 
 (defn header-dash []
   (fn []
@@ -13,8 +37,16 @@
          [:input {:class "w-32 pl-10 pr-4 rounded-md form-input sm:w-64 focus:border-indigo-600"
                   :type "text"
                   :placeholder "Search"}]]]
-       [:div {:class "flex items-center"}
-        [:a {:class ""} (when login-user (:users/username login-user))]]])))
+       [:div {:class "flex items-center space-x-4"}
+        (if login-user
+         [:img {:class "w-10 h-10 rounded-full" 
+                :src (:users/avatar login-user)}]
+          (svg/user-avatar))
+        [:div {:class "font-medium dark:text-white"}
+         [:a {:class ""
+              :on-click #(swap! user-dropdown-show? not)} 
+          (when login-user (:users/username login-user))]]]
+       (user-dropdown)])))
 
 (defn nav-home []
   (fn []

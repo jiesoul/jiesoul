@@ -2,6 +2,11 @@
  (:require [frontend.util :as f-util]
            [ajax.core :as ajax :refer []]))
 
+(def api-base "http://localhost:3000/api/v1")
+
+(defn api-uri [route]
+  (str api-base route))
+
 (defn get-headers [db]
   (let [token (get-in db [:token])
         ret (cond-> {:Accept "application/json" :Content-Type "application/json"}

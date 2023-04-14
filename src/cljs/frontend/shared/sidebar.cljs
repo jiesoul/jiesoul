@@ -1,9 +1,14 @@
 (ns frontend.shared.sidebar 
   (:require [reagent.core :as r]
             [re-frame.core :as re-frame]
-            [frontend.state :as f-state]))
+            [frontend.state :as f-state]
+            [frontend.shared.svg :as svg]))
 
-(def articles-h (r/atom true))
+(def articles-nav-show? (r/atom true))
+
+(def css-sidebar-li-a-top "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25")
+(def css-sidebar-li-a-second "flex items-center w-full p-2 text-gray-100 transition duration-75 
+                              rounded-lg pl-11 group hover:bg-gray-700 dark:text-white dark:hover:bg-gray-100")
 
 (defn active? [uri path]
   (if (= path uri) true false))
@@ -24,18 +29,17 @@
           [:span {:class "mx-2 text-2xl font-semibold text-white"} "Dashboard"]]] 
         
         [:ul {:class "mt-10"} 
-         [:li>a {:class "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
+         [:li>a {:class css-sidebar-li-a-top
                  :href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/dashboard])
-                 :active #(active? "/dashboard" path)}
+                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/dashboard])}
           [:span {:class "mx-3"} "Dashboard"]] 
          
-         [:li>a {:class "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
+         [:li>a {:class css-sidebar-li-a-top
                  :href "#"
                  :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/categories])}
           [:span {:class "mx-3"} "Categories"]]
          
-         [:li>a {:class "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
+         [:li>a {:class css-sidebar-li-a-top
                  :href "#"
                  :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/tags])}
           [:span {:class "mx-3"} "Tags"]]
@@ -43,41 +47,30 @@
          [:li 
           [:button {:type "button"
                     :class "flex items-center w-full px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
-                    :on-click #(swap! articles-h not)}
+                    :on-click #(swap! articles-nav-show? not)}
            [:span {:class "mx-3"
                    :sidebartoggleitem "true"} "Articles"]
-           [:svg {:sidebartoggleitem "true"
-                  :class "w-6 h-6"
-                  :fill "currentColor"
-                  :view-box "0 0 20 20"
-                  :xmlns "http://www.w3.org/2000/svg"}
-            [:path {:fill-rule "evenodd"
-                    :d "M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 
-                    1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    :clip-rule "evenodd"}]]]
+           (svg/chevron-up)]
           [:ul {:class "py-2 space-y-2"
-                :hidden @articles-h} 
+                :hidden @articles-nav-show?} 
            [:li>a {:href "#"
                    :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/articles])
-                   :class "flex items-center w-full p-2 text-gray-100 transition duration-75 
-                           rounded-lg pl-11 group hover:bg-gray-700 dark:text-white dark:hover:bg-gray-100"}
+                   :class css-sidebar-li-a-second}
             "Article"] 
            [:li>a {:href "#"
                    :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/articles-comments])
-                   :class "flex items-center w-full p-2 text-gray-100 transition duration-75 
-                           rounded-lg pl-11 group hover:bg-gray-700 dark:text-white dark:hover:bg-gray-100"}
+                   :class css-sidebar-li-a-second}
             "Comment"]]]
          
-         
-         [:li>a {:class "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
+         [:li>a {:class css-sidebar-li-a-top
                  :href "/"}
           [:span {:class "mx-3"} "Users"]]
          
-         [:li>a {:class "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
+         [:li>a {:class css-sidebar-li-a-top
                  :href "/"}
           [:span {:class "mx-3"} "Users Tokens"]]
          
-         [:li>a {:class "flex items-center px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
+         [:li>a {:class css-sidebar-li-a-top
                  :href "/"}
           [:span {:class "mx-3"} "Api Tokens"]]
 

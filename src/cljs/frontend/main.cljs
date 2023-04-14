@@ -22,7 +22,8 @@
     :token nil
     :debug true
     :login-status nil
-    :login-user nil}))
+    :login-user nil
+    :modal-backdrop? false}))
 
 (re-frame/reg-event-fx
  ::f-state/navigate

@@ -12,6 +12,21 @@
    (:token db)))
 
 (re-frame/reg-sub
+ ::modal-backdrop-show?
+ (fn [db]
+   (:modal-backdrop-show? db)))
+
+(re-frame/reg-sub
+ ::modal-show?
+ (fn [db] 
+   (:modal-show? db)))
+
+(re-frame/reg-sub 
+ ::modal-status 
+ (fn [db]
+   (:modal-status db)))
+
+(re-frame/reg-sub
  ::login-user
  (fn [db]
    (:login-user db)))

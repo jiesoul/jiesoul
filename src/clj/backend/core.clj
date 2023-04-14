@@ -2,9 +2,7 @@
   (:require [integrant.core :as ig]
             [integrant.repl :as ig-repl]
             [clojure.pprint]
-            [clojure.tools.logging :as log]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]
+            [clojure.tools.logging :as log] 
             [ring.adapter.jetty :as jetty]
             [nrepl.server :as nrepl]
             [aero.core :as aero]
@@ -19,7 +17,7 @@
 
 (defmethod aero/reader 'ig/ref [_ _ value] (ig/ref value))
 
-(defmethod ig/init-key :backend/db  [_ {:keys [db] :as env}]
+(defmethod ig/init-key :backend/db  [_ {:keys [] :as env}]
   (log/debug "Enter ig/init-key :backend/db ")
   env)
 
@@ -64,7 +62,8 @@
 (defmethod ig/halt-key! :backend/nrepl [_ this]
   (log/debug "Enter ig/halt-key! :backend/nrepl")
   (if this 
-    (nrepl/stop-server this)))
+    (nrepl/stop-server this)
+    _))
 
 (defmethod ig/suspend-key! :backend/nrepl [_ this]
   (log/debug "Enter ig/suspend-key! :backend/nrepl")
