@@ -2,7 +2,7 @@
  (:require [frontend.util :as f-util]
            [ajax.core :as ajax :refer []]))
 
-(def api-base "http://localhost:3000/api/v1")
+(def ^:private api-base "http://localhost:3000/api/v1")
 
 (defn api-uri [route]
   (str api-base route))
@@ -10,7 +10,7 @@
 (defn get-headers [db]
   (let [token (get-in db [:token])
         ret (cond-> {:Accept "application/json" :Content-Type "application/json"}
-                    token (assoc :x-token token))
+                    token (assoc :authorization (str "Token " token)))
         _ (f-util/clog "get-headers, ret" ret)]
     ret))
 
@@ -18,7 +18,7 @@
   (f-util/clog "http, uri" uri)
   (let [xhrio (cond-> {:debug true
                        :method method
-                       :uri uri 
+                       :uri uri
                        :headers (get-headers db)
                        :format (ajax/json-request-format)
                        :response-format (ajax/json-response-format {:keywords? true})

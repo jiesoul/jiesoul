@@ -383,17 +383,19 @@
    (reitit-ring/ring-handler
     (reitit-ring/router routes {:data {:muuntaja mu-core/instance
                                        :coercion reitit.coercion.spec/coercion
-                                       :middleware [wrap-cors
+                                       :middleware [;; 跨站
+                                                    wrap-cors
                                                     reitit-swagger/swagger-feature
                                                     reitit-parameters/parameters-middleware
                                                     reitit-muuntaja/format-negotiate-middleware
                                                     reitit-muuntaja/format-response-middleware
                                                     exception-middleware
                                                     reitit-muuntaja/format-request-middleware
-                                                      ;; coercing response bodys
+                                                    ;; coercing response bodys
                                                     reitit-coercion/coerce-response-middleware
-                                                      ;; coercing request parameters
-                                                    reitit-coercion/coerce-request-middleware]}})
+                                                    ;; coercing request parameters
+                                                    reitit-coercion/coerce-request-middleware
+                                                    ]}})
 
     (reitit-ring/routes
     ;;  (reitit-swagger-ui/create-swagger-ui-handler {:path "/api-docs/v1"})

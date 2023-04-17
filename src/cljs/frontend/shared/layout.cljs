@@ -4,6 +4,7 @@
             [frontend.shared.header :refer [header-dash nav-home]]
             [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.modals :refer [modal]]
+            [frontend.shared.toast :refer [toast-success toast-dranger toast-warning]]
             [re-frame.core :as re-frame]
             [frontend.state :as f-state]))
 
@@ -20,8 +21,7 @@
          [modal]
          [:div {:class "container mx-auto px-4 py-4"}
           children]]]
-       [:div {:modal-backdrop true
-              :class (str (if modal-backdrop-show? "" "hidden ") "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40")}]]
+       [:div {:class (str (if modal-backdrop-show? "" "hidden ") "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40")}]]
       [login])))
 
 (defn layout-home 

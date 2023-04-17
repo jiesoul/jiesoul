@@ -2,6 +2,9 @@
   (:require [re-frame.core :as re-frame]
             [cljs.pprint]))
 
+(defn get-value [d]
+  (-> d .-target .-value))
+
 (defn valid?
   [[_ v]]
   (and (string? v) (seq v)))

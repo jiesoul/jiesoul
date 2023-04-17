@@ -25,6 +25,29 @@
     :login-user nil
     :modal-backdrop? false}))
 
+(re-frame/reg-event-db
+ ::f-state/set-toast-success
+ (fn [db [_ success]]
+   (assoc db :toast-success success)))
+
+(re-frame/reg-event-db
+ ::f-state/set-toast-dranger
+ (fn [db [_ success]]
+   (assoc db :toast-dranger success)))
+
+(re-frame/reg-event-db
+ ::f-state/set-toast-warning
+ (fn [db [_ success]]
+   (assoc db :toast-warning success)))
+
+(re-frame/reg-event-db
+ ::f-state/clean-toast
+ (fn [db _]
+   (-> db 
+       (assoc :toast-success nil)
+       (assoc :toast-dranger nil)
+       (assoc :toast-warning nil))))
+
 (re-frame/reg-event-fx
  ::f-state/navigate
  (fn [_ [_ & route]]
