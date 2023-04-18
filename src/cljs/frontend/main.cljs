@@ -23,7 +23,8 @@
     :debug true
     :login-status nil
     :login-user nil
-    :modal-backdrop? false}))
+    :modal-backdrop? false
+    :categories nil}))
 
 (re-frame/reg-event-db
  ::f-state/set-toast-success

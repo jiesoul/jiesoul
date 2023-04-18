@@ -1,31 +1,40 @@
 (ns frontend.routes.category 
-  (:require [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
+  (:require [frontend.http :as f-http]
+            [frontend.routes.category :as category]
+            [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
             [frontend.shared.buttons :refer [new-button query-button]]
             [frontend.shared.form-input :refer [text-input-backend]]
             [frontend.shared.layout :refer [layout-dash]]
             [frontend.shared.modals :as  modals]
+            [frontend.shared.msg :refer [resp-message]]
             [frontend.shared.page :refer [page-backend]]
-            [frontend.shared.tables :refer [table-dash]]
+            [frontend.shared.tables :refer [table-dash]] 
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]
-            [reagent.core :as r]
-            [frontend.routes.category :as category]
-            [frontend.shared.toast :refer [toast]]
-            [frontend.http :as f-http]
-            [frontend.state :as f-state]))
+            [reagent.core :as r]))
 
 (def name-error (r/atom nil))
 
 (re-frame/reg-sub
+ ::categories-resp
+ (fn [db]
+   (get-in db [:categories :resp])))
+
+(re-frame/reg-event-db
+ ::clean-categories-resp
+ (fn [db _]
+   (assoc-in db [:categories :resp] nil)))
+
+(re-frame/reg-sub
  ::add-modal-show?
  (fn [db]
-   (:add-modal-show? db)))
+   (get-in db [:categories :add-modal-show?])))
 
 (re-frame/reg-event-db
  ::show-add-modal 
  (fn [db [_ show?]]
    (-> db 
-       (assoc :add-modal-show? show?)
+       (assoc-in [:categories :add-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-sub
@@ -37,26 +46,42 @@
  ::show-update-modal
  (fn [db [_ show?]]
    (-> db
-       (assoc :update-modal-show? show?)
+       (assoc-in [:categories :update-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-event-db
  ::add-category-ok 
  (fn [db [_ resp]]
    (f-util/clog "add category ok: " resp)
-   (assoc db :toast-success "添加成功")))
+   (assoc-in db [:categories :resp] {:status "ok"
+                                     :message "添加成功"})))
 
 (re-frame/reg-event-db
  ::add-category-failed
  (fn [db [_ resp]]
    (f-util/clog "add category failed: " resp)
-   (assoc db :failed resp)))
+   (assoc-in db [:categories :resp] (:response resp))))
 
 (re-frame/reg-event-fx 
  ::add-category
  (fn [{:keys [db]} [_ category]]
    (f-util/clog "add category: " category)
    (f-http/http-post db (f-http/api-uri "/categories") {:category category} ::add-category-ok ::add-category-failed)))
+
+(re-frame/reg-event-db
+ ::query-categories-ok
+ (fn [db [_ resp]]
+   (assoc-in db [:categories :list] (:data resp))))
+
+(re-frame/reg-event-db
+ ::query-categories-ok-failed
+ (fn [db [_ resp]]))
+
+(re-frame/reg-event-fx
+ ::query-categories
+ (fn [_ [_ data]]
+   (f-util/clog "query categories")
+   (f-http/http-get (f-http/api-uri "/categories") {} ::query-categories-ok ::query-categories-ok-failed)))
 
 (def css-thead-tr-th "px-6 py-3 border-b border-gray-500 bg-gray-50
                       text-xs leading-4 font-medium text-gray-500 tracking-wider")
@@ -72,9 +97,11 @@
       (reset! name-error nil))))
 
 (defn add-form []
-  (let [category (r/atom {})]
-    [:form
+  (let [category (r/atom {})
+        resp-msg (re-frame/subscribe [::categories-resp])]
+    [:form 
      [:div {:class "grid gap-4 mb-6 sm:grid-cols-2"}
+      
       [:div 
        (text-input-backend {:label "Name"
                             :name "name"
@@ -88,13 +115,13 @@
       [:div 
        (text-input-backend {:label "Description"
                             :name "descrtiption" 
-                            :on-chchange #(swap! category assoc :description (f-util/get-value %))})]]
-     [toast]
-     [:div {:class "flex justify-between items-center space-x-4"}
+                            :on-chchange #(swap! category assoc :description (f-util/get-value %))})]]  
+     (resp-message @resp-msg)
+     [:div {:class "flex justify-center items-center space-x-4 mt-4"} 
       [:button {:type "submit"
                 :class "text-white bg-red-700 hover:bg-red-800 focus:ring-4 
                       focus:outline-none focus:ring-red-300 font-medium rounded-lg 
-                      text-sm px-5 py-2.5 text-center dark:bg-red-600 
+                      text-sm px-5 py-2.5 items-center dark:bg-red-600 
                       dark:hover:bg-red-700 dark:focus:ring-red-800"
                 :on-click #(re-frame/dispatch [::add-category @category])}
        "Add"]]]))
@@ -118,7 +145,8 @@
 
 (defn index [] 
   (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
-        update-modal-show? @(re-frame/subscribe [::update-modal-show?])] 
+        update-modal-show? @(re-frame/subscribe [::update-modal-show?])
+        q-data (r/atom {:per-page 10 :page 1})] 
     (layout-dash
      [:<>
       (breadcrumb-dash ["Categories"])
@@ -128,24 +156,24 @@
          [:div {:class "grid gap-6 mb-6 md:grid-cols-2 max-w-lg"} 
           (text-input-backend {:label "name"
                                :type "text"
-                               :id "name"})
-          (text-input-backend {:label "description"
-                               :type "text"
-                               :id "description"})]
+                               :id "name"
+                               :on-change #(swap! q-data assoc-in [:filter :name] (f-util/get-value %))})]
          [:div {:class "felx inline-flex justify-center items-center w-full"}
-          (query-button {} "Query")
+          (query-button {:on-click #(re-frame/dispatch [::query-categories @q-data])} "Query")
           (new-button {:on-click #(re-frame/dispatch [::show-add-modal true])} "New")]] 
         (modals/modal add-modal-show? 
                       {:id "add-category"
                        :title "Add Category"
                        :on-close #(do
-                                    (re-frame/dispatch [::f-state/clean-toast])
+                                    (re-frame/dispatch [::clean-categories-resp])
                                     (re-frame/dispatch [::show-add-modal false]))} 
                       [add-form])
         (modals/modal update-modal-show?
                       {:id "update-category"
                        :title "Update Category"
-                       :on-close #(re-frame/dispatch [::show-update-modal false])}
+                       :on-close #(do
+                                    (re-frame/dispatch [::clean-categories-resp])
+                                    (re-frame/dispatch [::show-update-modal false]))}
                       [add-form])
         [:div {:class "flex-1 h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
         (table-dash

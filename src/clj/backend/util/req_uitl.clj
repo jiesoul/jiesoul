@@ -5,6 +5,7 @@
 
 (defn parse-header
   [request token-name]
+  (log/debug "parse header request: " request)
   (some->> (-> request :parameters :header :authorization)
            (re-find (re-pattern (str "^" token-name " (.+)$")))
            (second)))

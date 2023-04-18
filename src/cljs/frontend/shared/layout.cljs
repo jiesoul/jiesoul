@@ -4,7 +4,7 @@
             [frontend.shared.header :refer [header-dash nav-home]]
             [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.modals :refer [modal]]
-            [frontend.shared.toast :refer [toast-success toast-dranger toast-warning]]
+            [frontend.shared.toast :refer [toast]]
             [re-frame.core :as re-frame]
             [frontend.state :as f-state]))
 
@@ -13,9 +13,9 @@
   (let [token @(re-frame/subscribe [::f-state/token])
         modal-backdrop-show? @(re-frame/subscribe [::f-state/modal-backdrop-show?])]
     (if token 
-      [:div {:class "flex h-screen bg-gray-50 font-boboto"}
+      [:div {:class "flex h-screen bg-gray-50 font-boboto"} 
        [sidebar-dash]
-       [:div {:class "flex-1 flex flex-col w-full overflow-x-hidden"}
+       [:div {:class "flex-1 flex flex-col w-full overflow-x-hidden"} 
         [header-dash]
         [:main {:class "flex-1 overflow-x-hidden overflow-y-auto bg-gray-100"} 
          [modal]

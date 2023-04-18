@@ -14,6 +14,9 @@
         _ (f-util/clog "get-headers, ret" ret)]
     ret))
 
+(defn convert-get [data]
+  )
+
 (defn http [method db uri data on-success on-failure]
   (f-util/clog "http, uri" uri)
   (let [xhrio (cond-> {:debug true

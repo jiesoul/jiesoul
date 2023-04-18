@@ -10,7 +10,7 @@
     (let [response (handler request)]
       (-> response
           (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
-          (assoc-in [:headers "Access-Control-Allow-Headers"] "x-requested-with,Authorization,Content-Type")
+          (assoc-in [:headers "Access-Control-Allow-Headers"] "*")
           (assoc-in [:headers "Access-Control-Allow-Methods"] "*")))))
 
 

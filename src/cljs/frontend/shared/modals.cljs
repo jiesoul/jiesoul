@@ -1,5 +1,6 @@
 (ns frontend.shared.modals 
   (:require [frontend.shared.svg :as svg]
+            [frontend.shared.toast :refer [toast]]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]))
@@ -30,7 +31,7 @@
         ;; Modal content
       [:div {:class "relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5"}
          ;; Modal header
-       [:div {:class "flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600"}
+       [:div {:class "flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600"} 
         [:h3 {:class "text-lg font-semibold text-gray-900 dark:text-white"}
          title]
         [:button {:type "button"
