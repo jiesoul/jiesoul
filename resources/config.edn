@@ -13,8 +13,8 @@
                :options #ig/ref :backend/options
                :db #ig/ref :backend/db}
  
- :backend/jetty {:port #profile {:dev #long #or [#env PORT 3000]
-                                 :prod #long #or [#env PORT 3001]}
+ :backend/jetty {:port #profile {:dev #long #or [#env PORT 8080]
+                                 :prod #long #or [#env PORT 8080]}
                  :join? false 
                  :env #ig/ref :backend/env}
  

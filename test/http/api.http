@@ -1,7 +1,7 @@
 
 @host= http://localhost:3000/api/v1
 @content-type=application/json; charset=utf-8
-@token = Token 72f0992174c14365ba3561d8b500fd3da24e48b8401f5754893fcde045d20d10
+@token = Token 6afc5ab0eaca8e05eec2d5c39c0a4bbe620730f889a58a33759f0fec4d319bc7
 
 ### Login
 POST {{host}}/login HTTP/1.1
@@ -9,7 +9,7 @@ Content-Type: {{content-type}}
 
 {
     "username": "jiesoul",
-    "password": "123456789"
+    "password": "12345678"
 }
 
 ### logout

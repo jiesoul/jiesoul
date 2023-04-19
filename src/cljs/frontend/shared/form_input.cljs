@@ -28,13 +28,12 @@
                          :class (str "form-input" (when (seq errors) " error"))})]
    (when errors [:div.form-error errors])])
 
-(defn text-input-backend [{:keys [label name class errors on-change]}]
+(defn text-input-backend [{:keys [label class errors] :as props}]
   [:div {:class class}
    (when label
      [:label {:class css-form-label
               :for "name"} label])
-   [:input {:class css-form-input
-            :type "text"
-            :id name
-            :on-change on-change}]
+   [:input (merge {:class css-form-input
+                   :type "text"}
+                  props)]
    (when errors [:div {:class css-form-errors}])])

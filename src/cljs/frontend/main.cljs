@@ -19,12 +19,24 @@
  ::initialize-db
  (fn [_ _]
    {:current-route nil
+    :error nil
     :token nil
     :debug true
     :login-status nil
     :login-user nil
     :modal-backdrop? false
-    :categories nil}))
+    :category nil
+    :tag nil 
+    :article nil
+    :comment nil 
+    :user nil 
+    :blog nil}))
+
+(re-frame/reg-event-db
+ ::f-state/req-failed-message
+ (fn [db [_ resp]]
+   (f-util/clog "failed: " resp)
+   (assoc-in db [:error :resp] (:response resp))))
 
 (re-frame/reg-event-db
  ::f-state/set-toast-success
@@ -153,3 +165,5 @@
 
 (defn ^:dev/after-load reload []
   (.reload router))
+
+;; (.go js/window.history -1)

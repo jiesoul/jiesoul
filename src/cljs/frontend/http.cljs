@@ -1,11 +1,12 @@
 (ns frontend.http 
- (:require [frontend.util :as f-util]
-           [ajax.core :as ajax :refer []]))
+ (:require [ajax.core :as ajax]
+           [frontend.util :as f-util]
+           [reitit.frontend.easy :as rfe]))
 
-(def ^:private api-base "http://localhost:3000/api/v1")
+(def ^:private api-base "http://localhost:8080/api/v1")
 
-(defn api-uri [route]
-  (str api-base route))
+(defn api-uri [route & s]
+  (apply str api-base route s))
 
 (defn get-headers [db]
   (let [token (get-in db [:token])

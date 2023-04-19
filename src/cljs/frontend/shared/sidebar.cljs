@@ -37,19 +37,19 @@
          [:li>a {:class css-sidebar-li-a-top
                  :href "#"
                  :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/categories])}
-          [:span {:class "mx-3"} "Categories"]]
+          [:span {:class "mx-3"} "Category"]]
          
          [:li>a {:class css-sidebar-li-a-top
                  :href "#"
                  :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/tags])}
-          [:span {:class "mx-3"} "Tags"]]
+          [:span {:class "mx-3"} "Tag"]]
 
          [:li 
           [:button {:type "button"
                     :class "flex items-center w-full px-6 py-2 mt-4 text-gray-100 bg-gray-700 bg-opacity-25"
                     :on-click #(swap! articles-nav-show? not)}
            [:span {:class "mx-3"
-                   :sidebartoggleitem "true"} "Articles"]
+                   :sidebartoggleitem "true"} "Article"]
            (svg/chevron-up)]
           [:ul {:class "py-2 space-y-2"
                 :hidden @articles-nav-show?} 
@@ -64,14 +64,14 @@
          
          [:li>a {:class css-sidebar-li-a-top
                  :href "/"}
-          [:span {:class "mx-3"} "Users"]]
+          [:span {:class "mx-3"} "User"]]
          
          [:li>a {:class css-sidebar-li-a-top
                  :href "/"}
-          [:span {:class "mx-3"} "Users Tokens"]]
+          [:span {:class "mx-3"} "User Token"]]
          
          [:li>a {:class css-sidebar-li-a-top
                  :href "/"}
-          [:span {:class "mx-3"} "Api Tokens"]]
+          [:span {:class "mx-3"} "Api Token"]]
 
          ]]])))

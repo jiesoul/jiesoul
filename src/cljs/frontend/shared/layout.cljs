@@ -4,7 +4,6 @@
             [frontend.shared.header :refer [header-dash nav-home]]
             [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.modals :refer [modal]]
-            [frontend.shared.toast :refer [toast]]
             [re-frame.core :as re-frame]
             [frontend.state :as f-state]))
 
@@ -17,9 +16,9 @@
        [sidebar-dash]
        [:div {:class "flex-1 flex flex-col w-full overflow-x-hidden"} 
         [header-dash]
-        [:main {:class "flex-1 overflow-x-hidden overflow-y-auto bg-gray-100"} 
+        [:main {:class "flex-1 h-screen overflow-x-hidden overflow-y-auto bg-gray-100"} 
          [modal]
-         [:div {:class "container mx-auto px-4 py-4"}
+         [:div {:class "container mx-auto px-4 py-4 h-95 h-auto"}
           children]]]
        [:div {:class (str (if modal-backdrop-show? "" "hidden ") "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40")}]]
       [login])))
