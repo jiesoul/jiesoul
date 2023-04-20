@@ -13,8 +13,7 @@
    dark:hover:bg-gray-700 dark:hover:text-white")
 
 
-(defn page-backend
-  [{:keys [uri]}]
+(defn page-backend [{:keys [uri]}]
   (let []
     [:nav {:class "flex items-center justify-between pt-4"
            :aria-label "Table navigation"}

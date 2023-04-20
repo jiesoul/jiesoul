@@ -14,15 +14,16 @@
   (let [db (:db env)
         user (user-db/get-user-by-name db username)]
     (log/debug "user: " user)
-    (if (and user (buddy-hashers/check password (:users/password user)))
-      (let [token (create-user-token db (:users/id user))]
-        (resp-util/ok   {:token token
-                         :user (dissoc user :users/password)}))
-      (resp-util/failed "用户名或密码错误"))))
+    (if (and user (buddy-hashers/check password (:password user)))
+      (let [token (create-user-token db (:id user))]
+        (resp-util/ok  {:token token
+                         :user (dissoc user :password)}))
+
+      (resp-util/not-found "用户名或密码错误"))))
 
 (defn logout [env]
   (fn [req]
     (let [db (:db env)
           token (req-util/parse-header req "Token")]
       (user-token-db/disable-user-token db token)
-      (resp-util/ok {}))))
+      (resp-util/ok {} "用户退出"))))

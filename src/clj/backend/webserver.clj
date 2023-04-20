@@ -68,19 +68,19 @@
 
 (s/def ::CategoryAdd
   (s/keys :req-un [::name]
-          :opt-un [::pid ::description]))
+          :opt-un [ ::description]))
 
 (s/def ::CategoryUpdate
   (s/keys :req-un [::id ::name]
-          :opt-un [::pid ::description]))
+          :opt-un [::description]))
 
 (s/def ::TagAdd
   (s/keys :req-un [::name]
-          :opt-un [::pid ::description]))
+          :opt-un [::description]))
 
 (s/def ::TagUpdate
   (s/keys :req-un [::id ::name]
-          :opt-un [::pid ::description]))
+          :opt-un [::description]))
 
 (s/def ::article-id pos-int?)
 (s/def ::category-id pos-int?)
@@ -385,11 +385,11 @@
                                        :coercion reitit.coercion.spec/coercion
                                        :middleware [;; 跨站
                                                     wrap-cors
+                                                    exception-middleware
                                                     reitit-swagger/swagger-feature
                                                     reitit-parameters/parameters-middleware
                                                     reitit-muuntaja/format-negotiate-middleware
-                                                    reitit-muuntaja/format-response-middleware
-                                                    exception-middleware
+                                                    reitit-muuntaja/format-response-middleware 
                                                     reitit-muuntaja/format-request-middleware
                                                     ;; coercing response bodys
                                                     reitit-coercion/coerce-response-middleware

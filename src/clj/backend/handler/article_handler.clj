@@ -7,9 +7,10 @@
 
 (defn query-articles [{:keys [db]} opt]
   (log/debug "Query articles " opt)
-  (let [articles (article-db/query db opt)]
+  (if-let [articles (article-db/query db opt)]
     (resp-util/ok {:articles articles
-                   :query opt})))
+                   :query opt})
+    (resp-util/not-found "not found")))
 
 (defn create-article! [{:keys [db]} article]
   (log/debug "Creatge article " article)

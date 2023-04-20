@@ -13,7 +13,7 @@
 (defn create-category! [{:keys [db]} category]
   (log/debug "Creatge category " category)
   (let [_ (category-db/create! db category)]
-    (resp-util/ok {})))
+    (resp-util/ok {} "添加成功")))
 
 (defn get-category [{:keys [db]} id]
   (log/debug "Get category " id)

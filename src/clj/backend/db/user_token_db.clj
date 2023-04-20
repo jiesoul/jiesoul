@@ -1,13 +1,14 @@
 (ns backend.db.user-token-db
-  (:require [next.jdbc.sql :as sql]
-            [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]
+            [next.jdbc.result-set :as rs]
+            [next.jdbc.sql :as sql]))
 
 (defn save-user-token [db user-token]
   (sql/insert! db :user_token user-token))
 
 (defn get-user-token-by-token 
   [db token]
-  (sql/get-by-id db :user_token token :token {}))
+  (sql/get-by-id db :user_token token :token {:builder-fn rs/as-unqualified-maps}))
 
 (defn disable-user-token
   [db token]

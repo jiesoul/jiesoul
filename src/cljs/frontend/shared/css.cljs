@@ -1,10 +1,10 @@
 (ns frontend.shared.css)
 
-(def list-table-thead-tr-th "px-6 py-3 border-b border-gray-500 bg-gray-50
+(def list-table-thead-tr-th "px-1 py-1 border-b border-gray-500 bg-gray-50
                       text-base leading-4 font-blod text-gray-500 tracking-wider")
 
-(def list-table-tbody-tr "bg-white border-b dark:bg-gray-800 dark:border-gray-700")
-(def list-table-tbody-tr-td "px-6 py-4 whitespace-no-wrap border-b border-gray-200")
+(def list-table-tbody-tr "bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200")
+(def list-table-tbody-tr-td "px-1 py-1 whitespace-no-wrap border-b border-gray-200")
 
 ;; Button
 (def button-default "text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 

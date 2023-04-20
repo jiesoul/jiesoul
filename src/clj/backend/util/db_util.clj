@@ -1,5 +1,22 @@
 (ns backend.util.db-util 
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [next.jdbc.result-set :as rs]))
+
+(extend-protocol rs/ReadableColumn
+  java.sql.Date
+  (read-column-by-label [^java.sql.Date v _]
+    (.toLocalDate v))
+  (read-column-by-index [^java.sql.Date v _2 _3]
+    (.toLocalDate v))
+  java.sql.Timestamp
+  (read-column-by-label [^java.sql.Timestamp v _]
+    (.toInstant v))
+  (read-column-by-index [^java.sql.Timestamp v _2 _3]
+    (.toInstant v)))
+
+(defn as-kebab-maps [rs opts]
+  (let [kebab #(str/replace % #"_" "-")]
+    (rs/as-modified-maps rs (assoc opts :qualifier-fn kebab :label-fn kebab))))
 
 (defn populate 
   [db db-type]

@@ -2,8 +2,8 @@
 
 (defn breadcrumb-dash
   [b-data]
-  [:nav {:class "flex"}
-   [:ol {:class "inline-flex items-center space-x-1 md:space-x-3"}
+  [:nav {:class "flex border-b"}
+   [:ol {:class "inline-flex items-center space-x-1 md:space-x-2"}
     (for [d b-data]
       [:li {:class "inline-flex items-center"}
        [:a {:href "#"

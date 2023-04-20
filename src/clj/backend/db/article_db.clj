@@ -1,11 +1,12 @@
 (ns backend.db.article-db
-  (:require [next.jdbc.sql :as sql]
-            [backend.util.db-util :as du]
-            [next.jdbc :as jdbc]))
+  (:require [backend.util.db-util :as du]
+            [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as rs]
+            [next.jdbc.sql :as sql]))
 
 (defn query [db opt]
   (let [s "select * from article "]
-    (sql/query db (du/opt-to-sql s opt))))
+    (sql/query db (du/opt-to-sql s opt) {:builder-fn rs/as-unqualified-maps})))
 
 (defn create! [db {:keys [detail] :as article}]
   (with-open [con (jdbc/get-connection db)]
@@ -25,7 +26,7 @@
     (sql/delete! tx :article {:id id})))
 
 (defn get-by-id [db id]
-  (sql/get-by-id db :article id))
+  (sql/get-by-id db :article id {:builder-fn rs/as-unqualified-maps}))
 
 (defn get-detail-by-article-id [db article-id]
-  (sql/get-by-id db :article_detail {:article_id article-id}))
+  (sql/get-by-id db :article_detail {:article_id article-id} {:builder-fn rs/as-unqualified-maps}))

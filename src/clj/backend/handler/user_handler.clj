@@ -8,7 +8,7 @@
   (log/debug "query users request params: "  query)
   (let [db (:db env)
         users (user-db/query-users db query)]
-    (resp-util/ok {:users (map #(dissoc % :users/password) users)
+    (resp-util/ok {:users (map #(dissoc % :password) users)
                    :query query})))
 
 (defn create-user! [env user]
@@ -29,15 +29,15 @@
     (if db-user
       (let [_ (user-db/update-user! db (assoc user :password (buddy-hashers/derive password)))]
         (resp-util/ok {}))
-      (resp-util/failed "无效的用户ID"))))
+      (resp-util/not-found "无效的用户ID"))))
 
 (defn get-user [env id]
   (log/debug "get user id" id)
   (let [db (:db env)
         user (user-db/get-user-by-id db id)]
     (if user
-      (resp-util/ok {:user (dissoc user :users/password)})
-      (resp-util/failed "无效的用户ID"))))
+      (resp-util/ok {:user (dissoc user :password)})
+      (resp-util/not-found "无效的用户ID"))))
 
 (defn delete-user! [env id]
   (log/debug "Delete user id " id)
@@ -47,21 +47,21 @@
       (do
         (user-db/delete-user! db id)
         (resp-util/ok {}))
-      (resp-util/failed "无效的用户ID"))))
+      (resp-util/not-found "无效的用户ID"))))
 
 (defn update-user-password! [env {:keys [id old-password new-password confirm-password] :as update-password}]
   (log/debug "Update user password " update-password)
   (let [db (:db env)]
     (if (not= new-password confirm-password)
-      (resp-util/failed "新密码与确认密码不一致")
+      (resp-util/bad-request "新密码与确认密码不一致")
       (if (= old-password new-password)
-        (resp-util/failed "new password and old password is same")
+        (resp-util/bad-request "new password and old password is same")
         (if-let [user (user-db/get-user-by-id db id)]
-          (if (buddy-hashers/check old-password (:users/password user))
+          (if (buddy-hashers/check old-password (:password user))
             (do
               (user-db/update-user-password! db id (buddy-hashers/derive new-password))
               (resp-util/ok {}))
-            (resp-util/failed "旧密码错误"))
-          (resp-util/failed "用户不存在"))))))
+            (resp-util/bad-request "旧密码错误"))
+          (resp-util/not-found "用户不存在"))))))
 
 

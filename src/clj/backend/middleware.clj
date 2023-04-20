@@ -1,7 +1,8 @@
 (ns backend.middleware
-  (:require [expound.alpha :as expound]
+  (:require [clojure.tools.logging :as log]
+            [expound.alpha :as expound]
             [reitit.ring.middleware.exception :as exception]
-            [clojure.tools.logging :as log]))
+            [ring.util.response :as resp]))
 
 (defn wrap-cors
   "Wrap the server response with new headers to allow Cross Origin."
@@ -18,39 +19,38 @@
 (derive ::failure ::exception)
 (derive ::horror ::exception)
 
-;; (defn error [status message exception request]
-;;   (log/debug "error info: " (:ex-data exception))
-;;   (resp/bad-request
-;;    {:eroor  {:code status
-;;              :message message
-;;              :exception (.getClass exception)
-;;              :details {ex-data exception}
-;;              :uri (:uri request)}}))
-
-;; (defn coercion-error-handler [status]
-;;   (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})]
-;;     (fn [exception request]
-;;       (log/error
-;;        (printer (-> exception ex-data :problems)))
-;;       (case status
-;;         400 (error status "客户端错误" exception request)
-;;         500 (error status "服务端错误" exception request)))))
-
-(defn handler [message exception request]
-  (let [error {:eroor  {:code 500
-                        :message message
-                        :exception (.getClass exception)
-                        :data {ex-data exception}
-                        :uri (:uri request)}}
-        _ (log/error "found error: " error)]
-    error))
+(defn error [status message]
+  (fn [e request]
+    (log/error "error info: " (ex-data e))
+    {:status status
+     :message message
+     :error {:exception (.getClass e)
+             :ex-data (ex-data e)
+             :uri (:uri request)}}))
 
 (defn coercion-error-handler [status]
-  (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})
-        handler (exception/create-coercion-handler status)]
-    (fn [exception request]
+  (let [printer (expound/custom-printer {:theme :figwheel-theme, :print-specs? false})]
+    (fn [exception]
       (printer (-> exception ex-data :problems))
-      (handler exception request))))
+      (case status
+        400 (error status "请求验证错误") 
+        500 (error status "响应验证错误")
+        (error status "未知错误")))))
+
+(defn handler [message exception request]
+  {:status 500
+   :message message
+   :body  {:status 500
+           :message message
+           :exception (.getClass exception)
+           :data (ex-data exception)
+           :uri (:uri request)}})
+
+(defn default-handler
+  [^Exception e _]
+  {:status 500
+   :error {:type "exception"
+          :class (.getName (.getClass e))}})
 
 (def exception-middleware
   (exception/create-exception-middleware
@@ -65,12 +65,13 @@
      ;; SQLException and all it's child classes
      java.sql.SQLException (partial handler "sql-exception")
 
-     :reitit.coercion/request-coercion (coercion-error-handler 400)
-     :retiit.coercion/response-coercion (coercion-error-handler 500)
+    ;;  :reitit.coercion/request-coercion (coercion-error-handler 400)
+    ;;  :retiit.coercion/response-coercion (coercion-error-handler 500)
 
      ;; override the default handler
-     ::exception/default (partial handler "未知错误")
+     ::exception/default (partial handler "default")
 
      ::exception/wrap (fn [handler e request]
                         (log/error "ERROR " (pr-str (:uri request)))
-                        (handler e request))})))
+                        (handler e request))
+     })))

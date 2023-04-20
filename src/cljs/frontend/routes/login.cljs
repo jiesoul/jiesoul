@@ -8,21 +8,7 @@
 (defn empty-creds []
   {:username "" :password ""})
 
-(re-frame/reg-event-db 
- ::login-ret-ok
- (fn [db [_ res-body]]
-   (f-util/clog "res-body: " res-body)
-   (-> db 
-       (assoc-in [:login :response] res-body)
-       (assoc-in [:token] (:token (:data res-body)))
-       (assoc-in [:login-user] (:user (:data res-body)))
-       (assoc-in [:login-status] :logged-in))))
 
-(re-frame/reg-event-db
- ::login-ret-failed
- (fn [db [_ res-body]]
-   (f-util/clog "reg-event-db failed" (:response res-body))
-   (assoc-in db [:login :response] (:response res-body))))
 
 (re-frame/reg-event-db
  ::save-username
@@ -35,6 +21,22 @@
  (fn [db]
    (f-util/clog "reg-sub" db)
    (:response (:login db))))
+
+(re-frame/reg-event-db
+ ::login-ret-ok
+ (fn [db [_ res-body]]
+   (f-util/clog "login ok res-body" res-body)
+   (-> db
+       (assoc-in [:login :response] res-body)
+       (assoc-in [:token] (:token (:data res-body)))
+       (assoc-in [:login-user] (:user (:data res-body)))
+       (assoc-in [:login-status] :logged-in))))
+
+(re-frame/reg-event-db
+ ::login-ret-failed
+ (fn [db [_ res-body]]
+   (f-util/clog "reg-event-db failed" (:response res-body))
+   (assoc-in db [:login :response] (:response res-body))))
 
 (re-frame/reg-event-fx
  ::login-user 

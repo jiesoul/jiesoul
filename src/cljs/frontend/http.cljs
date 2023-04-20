@@ -34,6 +34,6 @@
 
 (def http-post (partial http :post))
 (def http-get (partial http :get))
-(def http-update (partial http :update))
+(def http-delete (partial http :delete))
 (def http-put (partial http :put))
 (def http-patch (partial http :patch))

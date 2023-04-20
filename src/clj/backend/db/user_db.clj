@@ -1,5 +1,6 @@
 (ns backend.db.user-db
   (:require [backend.util.db-util :as du]
+            [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]
             [taoensso.timbre :as log]))
 
@@ -8,7 +9,7 @@
   (let [s "select * from users"
         sql (du/opt-to-sql s query)
         _ (log/info "query user sql: " sql)]
-    (sql/query db sql)))
+    (sql/query db sql {:builder-fn rs/as-unqualified-maps})))
 
 (defn create-user! 
   [db user]
@@ -24,11 +25,11 @@
 
 (defn get-user-by-name 
   [db username]
-  (sql/get-by-id db :users username :username ""))
+  (sql/get-by-id db :users username :username {:builder-fn rs/as-unqualified-maps}))
 
 (defn get-user-by-id 
   [db id]
-  (sql/get-by-id db :users id))
+  (sql/get-by-id db :users id {:builder-fn rs/as-unqualified-maps}))
 
 (defn delete-user!
   [db id]
