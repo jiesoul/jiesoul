@@ -40,7 +40,7 @@
 (defn handler [message exception request]
   {:status 500
    :message message
-   :body  {:status 500
+   :error  {:status 500
            :message message
            :exception (.getClass exception)
            :data (ex-data exception)
@@ -50,7 +50,7 @@
   [^Exception e _]
   {:status 500
    :error {:type "exception"
-          :class (.getName (.getClass e))}})
+           :class (.getName (.getClass e))}})
 
 (def exception-middleware
   (exception/create-exception-middleware

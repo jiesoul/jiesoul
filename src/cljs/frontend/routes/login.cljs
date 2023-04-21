@@ -8,8 +8,6 @@
 (defn empty-creds []
   {:username "" :password ""})
 
-
-
 (re-frame/reg-event-db
  ::save-username
  (fn [db [_ username]]
@@ -70,8 +68,8 @@
     (fn []
       (let [_ (f-util/clog "Enter login")
             title "Login"
-            {:keys [status msg]} @(re-frame/subscribe [::login-response])
-            _ (when (= status "ok") (re-frame/dispatch [::f-state/navigate ::f-state/dashboard]))] 
+            {:keys [status msg error]} @(re-frame/subscribe [::login-response])
+            _ (when-not error (re-frame/dispatch [::f-state/navigate ::f-state/dashboard]))] 
         [:div {:class "flex justify-center items-center h-screen bg-gray-200 px-6"}
          [:div {:class "p-6 max-w-sm w-full bg-white shadow-md rounded-md"}
           [:div {:class "flex justify-center items-center"}

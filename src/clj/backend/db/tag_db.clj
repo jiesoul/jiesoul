@@ -5,7 +5,7 @@
 
 (defn query [db opt]
   (let [s "select * from tag "]
-  (sql/query db (du/opt-to-sql s opt) {:builder-fn rs/as-unqualified-maps})))
+  (sql/query db (du/query-to-sql s opt) {:builder-fn rs/as-unqualified-maps})))
 
 (defn create! [db tag]
   (sql/insert! db :tag tag))

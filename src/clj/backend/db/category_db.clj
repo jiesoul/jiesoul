@@ -5,10 +5,17 @@
             [next.jdbc.result-set :as rs]))
 
 (defn query-categories [db query]
-  (let [s "select * from category "
-        sql (du/opt-to-sql s query)
-        _ (log/info "query categories sql: " sql)]
-    (sql/query db sql {:builder-fn rs/as-unqualified-maps})))
+  (try 
+    (let [[w wv] (du/query-to-sql query)
+          [p pv] (du/query-to-page query)
+          sql (into [(str "select * from category " w p)] (into wv pv))
+          _ (log/info "query categories sql: " sql)
+          categoryies (sql/query db sql {:builder-fn rs/as-unqualified-maps})
+          t-sql (into [(str "select count(1) as total from category " w)] wv)
+          _ (log/info "total categories sql: " t-sql)
+          total (sql/query db t-sql)]
+      [categoryies (first total)])
+    (catch java.sql.SQLException se (prn "sql error" se))))
 
 (defn create! [db category]
   (sql/insert! db :category category {:return-keys true}))

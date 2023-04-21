@@ -13,7 +13,7 @@
    dark:hover:bg-gray-700 dark:hover:text-white")
 
 
-(defn page-backend [{:keys [uri]}]
+(defn page-backend [{:keys [page per-page total]}]
   (let []
     [:nav {:class "flex items-center justify-between pt-4"
            :aria-label "Table navigation"}
@@ -23,11 +23,10 @@
        "1-10"]
       " of "
       [:span {:class "font-semibold text-gray-900 dark:text-white"}
-       "1000"]]
+       (:total total)]]
      [:ul {:class "inline-flex items-center -space-x-px"}
       [:li>a {:href "#"
               :class css-page-no}
-    ;;  [:span {:class "sr-only"} "上一页"]
        (svg/chevron-left)]
       [:li>a {:href "#"
               :class css-page-no-current} "1"]

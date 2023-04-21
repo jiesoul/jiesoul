@@ -7,7 +7,7 @@
 (defn query-users
   [db query]
   (let [s "select * from users"
-        sql (du/opt-to-sql s query)
+        sql (du/query-to-sql s query)
         _ (log/info "query user sql: " sql)]
     (sql/query db sql {:builder-fn rs/as-unqualified-maps})))
 

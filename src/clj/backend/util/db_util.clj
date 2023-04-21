@@ -76,23 +76,24 @@
 
 (defn query-convert 
   [query]
-  {:sort (sort-convert query)
-   :filter (filter-convert query)
-   :page (page-convert query)
-   :q (search-convert query)})
+  (let [cq {:sort (sort-convert query)
+            :filter (filter-convert query)
+            :q (search-convert query)}]
+    cq))
 
-(defn opt-to-sql [s query]
-  (let [{:keys [filter sort page] :as opt} (query-convert query)]
-    (if (seq opt)
-      (let [[s v] [s []]
-            [s v] (if filter
-                    [(str s " where " (first filter)) (into v (second filter))]
-                    [s v])
-            [s v] (if sort
-                    [(str s " order by ? ") (conj v sort)]
-                    [s v])
-            [s v] (if page
-                    [(str s " limit ? offset ? ") (into v page)]
-                    [s v])]
-        (into [s] v))
-      s)))
+(defn query-to-sql [query]
+  (let [{:keys [filter sort]} (query-convert query)
+        [s v] ["" []]
+        [s v] (if filter
+                [(str s " where " (first filter)) (into v (second filter))]
+                [s v])
+        [s v] (if sort
+                [(str s " order by ? ") (conj v sort)]
+                [s v])]
+    [s v]))
+
+(defn query-to-page [query]
+  (let [page (page-convert query)]
+    (if page
+      [(str " limit ? offset ? ") (into [] page)]
+      ["" []])))

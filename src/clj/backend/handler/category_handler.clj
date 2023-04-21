@@ -5,10 +5,11 @@
 
 (defn query-categories [{:keys [db]} query]
   (log/debug "Query categories " query)
-  (let [categories (category-db/query-categories db query)
+  (let [[categories total] (category-db/query-categories db query)
         _ (log/debug "Categories: " )]
     (resp-util/ok {:categories categories
-                   :query query})))
+                   :query query
+                   :total total})))
 
 (defn create-category! [{:keys [db]} category]
   (log/debug "Creatge category " category)

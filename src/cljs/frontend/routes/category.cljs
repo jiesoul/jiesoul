@@ -227,25 +227,29 @@
                                     (re-frame/dispatch [::show-update-modal false]))}
                       [update-form])
         [:div {:class "flex-1 h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
-        (table-dash
-         [:tr
-          [:th {:class css/list-table-thead-tr-th} "Name"]
-          [:th {:class css/list-table-thead-tr-th} "Description"]
-          [:th {:class css/list-table-thead-tr-th} "操作"]]
-         (let [{:keys [categories query]} @(re-frame/subscribe [::categories-list])]
-           (for [c categories]
-             [:tr {:class css/list-table-tbody-tr}
-              [:td {:class css/list-table-tbody-tr-td}
-               [:span {:class ""} (:name c)]]
-              [:td {:class css/list-table-tbody-tr-td}
-               [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
-              [:td {:class css/list-table-tbody-tr-td}
-               (btn {:on-click #(do (re-frame/dispatch [::get-category (:id c)])
-                                    (re-frame/dispatch [::show-update-modal true]))
-                     :class css/buton-purple} 
-                    "Edit")
-               (btn {:on-click #(do 
-                                    (re-frame/dispatch [::delete-category (:id c)]))
-                     :class css/button-yellow}
-                    "Del")]]))
-         (page-backend {}))]]])))
+         (let [{:keys [categories query total]} @(re-frame/subscribe [::categories-list])
+               page (:page query)
+               per-page (:per-page query)]
+           (table-dash
+            [:tr
+             [:th {:class css/list-table-thead-tr-th} "Name"]
+             [:th {:class css/list-table-thead-tr-th} "Description"]
+             [:th {:class css/list-table-thead-tr-th} "操作"]]
+            (for [c categories]
+              [:tr {:class css/list-table-tbody-tr}
+               [:td {:class css/list-table-tbody-tr-td}
+                [:span {:class ""} (:name c)]]
+               [:td {:class css/list-table-tbody-tr-td}
+                [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
+               [:td {:class css/list-table-tbody-tr-td}
+                (btn {:on-click #(do (re-frame/dispatch [::get-category (:id c)])
+                                     (re-frame/dispatch [::show-update-modal true]))
+                      :class css/buton-purple}
+                     "Edit")
+                (btn {:on-click #(do
+                                   (re-frame/dispatch [::delete-category (:id c)]))
+                      :class css/button-yellow}
+                     "Del")]])
+            (page-backend {:page page
+                           :per-page per-page
+                           :total total})))]]])))
