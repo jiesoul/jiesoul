@@ -1,7 +1,5 @@
 (ns frontend.shared.modals 
   (:require [frontend.shared.svg :as svg]
-            [frontend.shared.toast :refer [toast]]
-            [frontend.state :as f-state]
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]))
 

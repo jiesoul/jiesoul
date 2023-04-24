@@ -4,8 +4,14 @@
             [next.jdbc.sql :as sql]))
 
 (defn query [db opt]
-  (let [s "select * from tag "]
-  (sql/query db (du/query-to-sql s opt) {:builder-fn rs/as-unqualified-maps})))
+  (let [[ws wv] (du/opt-to-sql opt)
+        [ps pv] (du/opt-to-page opt)
+        q-sql (into [(str "select * from tag " ws ps)] (into wv pv))
+        tags (sql/query db q-sql {:builder-fn rs/as-modified-maps})
+        t-sql (into [(str "select count(1) as c from tag " ws)] wv)
+        total (:c (:first (sql/query db t-sql)))] 
+    {:data tags
+     :total total}))
 
 (defn create! [db tag]
   (sql/insert! db :tag tag))

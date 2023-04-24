@@ -21,11 +21,6 @@
  (fn [db] 
    (:modal-show? db)))
 
-(re-frame/reg-sub 
- ::modal-status 
- (fn [db]
-   (:modal-status db)))
-
 (re-frame/reg-sub
  ::login-user
  (fn [db]
@@ -40,18 +35,3 @@
  ::debug
  (fn [db]
    (:debug db)))
-
-(re-frame/reg-sub 
- ::toast-success
- (fn [db]
-   (:toast-success db)))
-
-(re-frame/reg-sub
- ::toast-dranger
- (fn [db]
-   (:toast-dranger db)))
-
-(re-frame/reg-sub
- ::toast-warning
- (fn [db]
-   (:toast-warning db)))

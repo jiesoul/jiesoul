@@ -2,6 +2,18 @@
   (:require [re-frame.core :as re-frame]
             [cljs.pprint]))
 
+(def Q-SIZE 5)
+
+(defn q-pop [q]
+  (pop q))
+
+(defn q-push [q d]
+  (if (< (count q) Q-SIZE)
+    (conj q d)
+    (do 
+      (q-pop q)
+      (conj q d))))
+
 (defn get-value [d]
   (-> d .-target .-value))
 

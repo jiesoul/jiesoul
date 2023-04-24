@@ -5,11 +5,15 @@
             [taoensso.timbre :as log]))
 
 (defn query-users
-  [db query]
-  (let [s "select * from users"
-        sql (du/query-to-sql s query)
-        _ (log/info "query user sql: " sql)]
-    (sql/query db sql {:builder-fn rs/as-unqualified-maps})))
+  [db opt]
+  (let [[ws wv] (du/opt-to-sql opt)
+        [ps pv] (du/opt-to-page opt)
+        q-sql (into [(str "select * from users " ws ps)] (into wv pv))
+        users (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
+        t-sql (into [(str "select count(1) :as c from users " ws)] wv)
+        total (sql/query db t-sql)]
+    {:data users 
+     :total total}))
 
 (defn create-user! 
   [db user]

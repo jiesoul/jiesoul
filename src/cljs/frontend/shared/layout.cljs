@@ -2,10 +2,11 @@
   (:require [frontend.routes.login :refer [login]]
             [frontend.shared.footer :refer [footer-home]]
             [frontend.shared.header :refer [header-dash nav-home]]
-            [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.modals :refer [modal]]
-            [re-frame.core :as re-frame]
-            [frontend.state :as f-state]))
+            [frontend.shared.sidebar :refer [sidebar-dash]]
+            [frontend.shared.toasts :refer [toasts]]
+            [frontend.state :as f-state]
+            [re-frame.core :as re-frame]))
 
 (defn layout-dash
   [children]
@@ -16,6 +17,7 @@
        [sidebar-dash]
        [:div {:class "flex-1 flex flex-col w-full overflow-x-hidden"} 
         [header-dash]
+        [toasts]
         [:main {:class "flex-1 h-screen overflow-x-hidden overflow-y-auto bg-gray-100"} 
          [modal]
          [:div {:class "container mx-auto px-4 py-4 h-95 h-auto"}

@@ -6,6 +6,7 @@
             [frontend.routes.category :as category]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
+            [frontend.shared.toasts :as toasts]
             [re-frame.core :as re-frame]
             [re-frame.db]
             [reagent.dom :as rdom]
@@ -19,6 +20,7 @@
  ::initialize-db
  (fn [_ _]
    {:current-route nil
+    :toasts #queue []
     :error nil
     :token nil
     :debug true
@@ -35,31 +37,10 @@
 (re-frame/reg-event-db
  ::f-state/req-failed-message
  (fn [db [_ resp]]
-   (f-util/clog "failed: " resp)
-   (assoc-in db [:error :resp] (:response resp))))
-
-(re-frame/reg-event-db
- ::f-state/set-toast-success
- (fn [db [_ success]]
-   (assoc db :toast-success success)))
-
-(re-frame/reg-event-db
- ::f-state/set-toast-dranger
- (fn [db [_ success]]
-   (assoc db :toast-dranger success)))
-
-(re-frame/reg-event-db
- ::f-state/set-toast-warning
- (fn [db [_ success]]
-   (assoc db :toast-warning success)))
-
-(re-frame/reg-event-db
- ::f-state/clean-toast
- (fn [db _]
-   (-> db 
-       (assoc :toast-success nil)
-       (assoc :toast-dranger nil)
-       (assoc :toast-warning nil))))
+   (f-util/clog "resp failed: " resp) 
+   (->  db
+        (update-in [:toasts] f-util/q-push {:content (:message (:response resp))
+                                            :type :error}))))
 
 (re-frame/reg-event-fx
  ::f-state/navigate

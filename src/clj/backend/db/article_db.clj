@@ -5,8 +5,14 @@
             [next.jdbc.sql :as sql]))
 
 (defn query [db opt]
-  (let [s "select * from article "]
-    (sql/query db (du/query-to-sql s opt) {:builder-fn rs/as-unqualified-maps})))
+  (let [[ws wv] (du/opt-to-sql opt)
+        [ps pv] (du/opt-to-page opt) 
+        q-sql (into [(str "select * from article " ws ps)] (into wv pv))
+        articles (sql/query db q-sql {:builder-fn rs/as-modified-maps})
+        t-sql (into [(str "select count(1) :as c from article " ws)] wv)
+        total (:c (:first (sql/query db t-sql)))]
+    {:data articles
+     :total total}))
 
 (defn create! [db {:keys [detail] :as article}]
   (with-open [con (jdbc/get-connection db)]

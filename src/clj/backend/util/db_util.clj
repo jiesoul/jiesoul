@@ -74,15 +74,15 @@
   [query]
   nil)
 
-(defn query-convert 
+(defn opt-convert 
   [query]
   (let [cq {:sort (sort-convert query)
             :filter (filter-convert query)
             :q (search-convert query)}]
     cq))
 
-(defn query-to-sql [query]
-  (let [{:keys [filter sort]} (query-convert query)
+(defn opt-to-sql [query]
+  (let [{:keys [filter sort]} (opt-convert query)
         [s v] ["" []]
         [s v] (if filter
                 [(str s " where " (first filter)) (into v (second filter))]
@@ -92,8 +92,8 @@
                 [s v])]
     [s v]))
 
-(defn query-to-page [query]
-  (let [page (page-convert query)]
+(defn opt-to-page [opt]
+  (let [page (page-convert opt)]
     (if page
       [(str " limit ? offset ? ") (into [] page)]
       ["" []])))
