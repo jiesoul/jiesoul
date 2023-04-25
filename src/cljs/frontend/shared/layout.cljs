@@ -6,7 +6,14 @@
             [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.toasts :refer [toasts]]
             [frontend.state :as f-state]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [reagent.core :as r]))
+
+(defonce timer (r/atom 0))
+
+(defn timer-component []
+  (fn []
+    (js/setTimeout #(swap! timer inc) 1000)))
 
 (defn layout-dash
   [children]

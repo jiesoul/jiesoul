@@ -10,13 +10,14 @@
           [ps pv] (du/opt-to-page query)
           q-sql (into [(str "select * from category " ws ps)] (into wv pv))
           _ (log/info "query categories sql: " q-sql)
-          categoryies (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
-          t-sql (into [(str "select count(1) as total from category " ws)] wv)
+          categories (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
+          t-sql (into [(str "select count(1) as c from category " ws)] wv)
           _ (log/info "total categories sql: " t-sql)
-          total (sql/query db t-sql)] 
-      {:data categoryies 
-       :total (:c (first total))})
-    (catch java.sql.SQLException se (prn "sql error" se))))
+          total (:c (first (sql/query db t-sql)))] 
+      {:categories categories 
+       :total total
+       :query query})
+    (catch java.sql.SQLException se (log/error "sql error: " se))))
 
 (defn create! [db category]
   (sql/insert! db :category category {:return-keys true}))

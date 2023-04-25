@@ -11,7 +11,7 @@
 (defn user-dropdown []
   [:div {:id "user-dropdown"
          :hidden @user-dropdown-show?
-         :class "z-50 relative bg-white divide-y divide-gray-100 rounded-lg shadow w-44 
+         :class "fixed z-20 right-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 
                  dark:bg-gray-700 dark:divide-gray-600"}
    [:div {:class "px-4 py-3 text-sm text-gray-900 dark:text-white"}
     [:ul {:class "py-2 text-sm text-gray-700 dark:text-gray-200"}
@@ -24,7 +24,8 @@
     [:div {:class "py-1"}
      [:a {:href "#"
           :class "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
-                  dark:text-gray-200 dark:hover:text-white"}
+                  dark:text-gray-200 dark:hover:text-white"
+          :on-click #(re-frame/dispatch [::f-state/logout])}
       "Sign out"]]]])
 
 (defn header-dash []
@@ -38,15 +39,12 @@
                   :type "text"
                   :placeholder "Search"}]]]
        [:div {:class "flex items-center space-x-4"}
-        (if login-user
-         [:img {:class "w-10 h-10 rounded-full" 
-                :src (:users/avatar login-user)}]
-          (svg/user-avatar))
-        [:div {:class "font-medium dark:text-white"}
-         [:a {:class ""
-              :on-click #(swap! user-dropdown-show? not)} 
-          (when login-user (:users/username login-user))]]]
-       (user-dropdown)])))
+        (when login-user
+          [:div {:class "font-medium dark:text-white"}
+           [:a {:class ""
+                :on-click #(swap! user-dropdown-show? not)} 
+            (when login-user (:username login-user))]
+           (user-dropdown)])]])))
 
 (defn nav-home []
   (fn []

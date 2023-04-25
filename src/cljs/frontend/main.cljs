@@ -6,7 +6,6 @@
             [frontend.routes.category :as category]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
-            [frontend.shared.toasts :as toasts]
             [re-frame.core :as re-frame]
             [re-frame.db]
             [reagent.dom :as rdom]
@@ -14,13 +13,14 @@
             [reitit.coercion.spec :as rss]
             [reitit.frontend :as rf]
             [reitit.frontend.controllers :as rfc]
-            [reitit.frontend.easy :as rfe]))
+            [reitit.frontend.easy :as rfe]
+            [frontend.shared.toasts :as toasts]))
 
 (re-frame/reg-event-db
  ::initialize-db
  (fn [_ _]
    {:current-route nil
-    :toasts #queue []
+    :toasts (vec [])
     :error nil
     :token nil
     :debug true
@@ -34,13 +34,21 @@
     :user nil 
     :blog nil}))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
+ ::f-state/load-localstore 
+ (fn [cofx _]
+   (let [defaults (:local-store cofx)]
+     {:db (assoc (:db cofx) :defaults defaults)})))
+
+(re-frame/reg-event-fx
  ::f-state/req-failed-message
- (fn [db [_ resp]]
-   (f-util/clog "resp failed: " resp) 
-   (->  db
-        (update-in [:toasts] f-util/q-push {:content (:message (:response resp))
-                                            :type :error}))))
+ (fn [cofx [_ resp]]
+   (f-util/clog "resp failed: " resp)
+   (let [db (:db cofx)
+         t {:content (:message (:response resp))
+            :type :error}]
+     {:db db
+      :fx [[:dispatch [::toasts/push t]]]})))
 
 (re-frame/reg-event-fx
  ::f-state/navigate

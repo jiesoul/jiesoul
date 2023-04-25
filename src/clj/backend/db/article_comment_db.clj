@@ -1,8 +1,7 @@
 (ns backend.db.article-comment-db
   (:require [backend.util.db-util :as du]
             [next.jdbc.result-set :as rs]
-            [next.jdbc.sql :as sql]
-            [backend.db.article-comment-db :as article-comment-db]))
+            [next.jdbc.sql :as sql]))
 
 (defn query [db opt]
   (let [[w wv] (du/opt-to-sql opt)

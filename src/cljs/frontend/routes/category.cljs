@@ -14,7 +14,8 @@
             [frontend.state :as f-state]
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [clojure.string :as str]))
 
 (def name-error (r/atom nil))
 
@@ -69,20 +70,12 @@
  (fn [{:keys [db]} [_ resp]]
    (f-util/clog "add category ok: " resp) 
    {:db (-> db
-            (assoc-in [:category :resp] {:status "ok"
-                                         :message "添加成功"})
             (update-in [:toasts] conj {:content "添加成功" :type :info}))}))
-
-(re-frame/reg-event-db
- ::add-category-failed
- (fn [db [_ resp]]
-   (f-util/clog "add category failed: " resp)
-   (assoc-in db [:category :resp] (:response resp))))
 
 (re-frame/reg-event-fx 
  ::add-category
  (fn [{:keys [db]} [_ category]]
-   (f-util/clog "add category: " category)
+   (f-util/clog "add category: " category) 
    (f-http/http-post db (f-http/api-uri "/categories") {:category category} ::add-category-ok ::f-state/req-failed-message)))
 
 (re-frame/reg-sub
@@ -99,7 +92,7 @@
  ::query-categories
  (fn [{:keys [db]} [_ data]]
    (f-util/clog "query category")
-   (f-http/http-get db (f-http/api-uri "/categories") {} ::query-categories-ok ::f-state/req-failed-message)))
+   (f-http/http-get db (f-http/api-uri "/categories") data ::query-categories-ok ::f-state/req-failed-message)))
 
 (re-frame/reg-event-db
  ::get-category-ok
@@ -122,24 +115,23 @@
  (fn [db [_ k v]]
    (assoc-in db [:category :current k] v)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::update-category-ok
- (fn [db [_ resp]]
+ (fn [{:keys [db]} [_ resp]]
    (f-util/clog "update category ok: " resp)
-   (assoc-in db [:category :resp] {:status "ok"
-                                   :message "保存成功"})))
-
-(re-frame/reg-event-db
- ::update-category-failed
- (fn [db [_ resp]]
-   (f-util/clog "update category failed: " resp)
-   (assoc-in db [:category :resp] (:response resp))))
+   {:db db
+    :fx [[:dispatch [::toasts/push {:content "保存成功"
+                                    :type :success}]]]}))
 
 (re-frame/reg-event-fx
  ::update-category
  (fn [{:keys [db]} [_ category]]
    (f-util/clog "update category: " category)
-   (f-http/http-put db (f-http/api-uri "/categories/" (:id category)) {:category category} ::update-category-ok ::update-category-failed)))
+   (f-http/http-put db 
+                    (f-http/api-uri "/categories/" (:id category)) 
+                    {:category category} 
+                    ::update-category-ok 
+                    ::f-state/req-failed-message)))
 
 (re-frame/reg-event-fx
  ::delete-category-ok
@@ -156,12 +148,11 @@
    (f-util/clog "Delete Category")
    (f-http/http-delete db (f-http/api-uri "/categories/" id) {} ::delete-category-ok ::delete-category-failed)))
 
-(defn check-name [d]
+(defn check-name [v]
   (f-util/clog "check name")
-  (let [v (f-util/get-value d)]
-    (if (nil? v) 
-      (reset! name-error "名称不能为空")
-      (reset! name-error nil))))
+  (if (or (nil? v) (str/blank? v)) 
+    (reset! name-error "名称不能为空")
+    (reset! name-error nil)))
 
 (defn add-form []
   (let [category (r/atom {})
@@ -173,10 +164,11 @@
        (text-input-backend {:label "Name"
                             :name "name"
                             :required true 
+                            :on-blur #(check-name (f-util/get-value %))
                             :on-change #(swap! category assoc :name (f-util/get-value %))})
        (when @name-error
          [:p {:class "mt-2 text-sm text-red-600 dark:text-red-500"}
-          [:span {:class "font-medium"} "Oops!"]
+          [:span {:class "font-medium"} ]
           @name-error])]
       [:div 
        (text-input-backend {:label "Description"

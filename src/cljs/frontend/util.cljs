@@ -1,6 +1,6 @@
 (ns frontend.util
-  (:require [re-frame.core :as re-frame]
-            [cljs.pprint]))
+  (:require [cljs.pprint]
+            [clojure.string :as str]))
 
 (def Q-SIZE 5)
 
@@ -16,6 +16,9 @@
 
 (defn get-value [d]
   (-> d .-target .-value))
+
+(defn blank? [v]
+  (or (nil? v) (str/blank? v)))
 
 (defn valid?
   [[_ v]]
@@ -56,4 +59,4 @@
 
 (defn my-parseInt
   [s]
-  (js/parseiNT s 10))
+  (js/parseInt s 10))
