@@ -1,150 +1,150 @@
-(ns frontend.routes.tag 
-  (:require [clojure.string :as str]
-            [frontend.http :as f-http]
-            [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
-            [frontend.shared.buttons :refer [btn delete-button edit-button
-                                             green-button red-button]]
-            [frontend.shared.css :as css]
-            [frontend.shared.form-input :refer [text-input-backend]]
-            [frontend.shared.layout :refer [layout-dash]]
-            [frontend.shared.modals :as modals]
-            [frontend.shared.page :refer [page-dash]]
-            [frontend.shared.tables :refer [table-dash td-dash th-dash]]
-            [frontend.shared.toasts :as toasts]
-            [frontend.state :as f-state]
-            [frontend.util :as f-util]
-            [re-frame.core :as re-frame]
-            [reagent.core :as r]))
+(ns frontend.routes.article-comment
+    (:require [clojure.string :as str]
+              [frontend.http :as f-http]
+              [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
+              [frontend.shared.buttons :refer [btn delete-button edit-button
+                                               green-button red-button]]
+              [frontend.shared.css :as css]
+              [frontend.shared.form-input :refer [text-input-backend]]
+              [frontend.shared.layout :refer [layout-dash]]
+              [frontend.shared.modals :as modals]
+              [frontend.shared.page :refer [page-dash]]
+              [frontend.shared.tables :refer [table-dash td-dash th-dash]]
+              [frontend.shared.toasts :as toasts]
+              [frontend.state :as f-state]
+              [frontend.util :as f-util]
+              [re-frame.core :as re-frame]
+              [reagent.core :as r]))
 
 (def name-error (r/atom nil))
 
 (re-frame/reg-event-db
  ::init
  (fn [db _]
-   (assoc db :tag nil)))
+   (assoc db :article-comments nil)))
 
 (re-frame/reg-sub
  ::add-modal-show?
  (fn [db]
-   (get-in db [:tag :add-modal-show?])))
+   (get-in db [:article-comments :add-modal-show?])))
 
 (re-frame/reg-event-db
  ::show-add-modal
  (fn [db [_ show?]]
    (-> db
-       (assoc-in [:tag :add-modal-show?] show?)
+       (assoc-in [:article-comments :add-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-sub
  ::update-modal-show?
  (fn [db]
-   (get-in db [:tag :update-modal-show?])))
+   (get-in db [:article-comments :update-modal-show?])))
 
 (re-frame/reg-event-db
  ::show-update-modal
  (fn [db [_ show?]]
    (-> db
-       (assoc-in [:tag :update-modal-show?] show?)
+       (assoc-in [:article-comments :update-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-sub
  ::delete-modal-show?
  (fn [db]
-   (get-in db [:tag :delete-modal-show?])))
+   (get-in db [:article-comments :delete-modal-show?])))
 
 (re-frame/reg-event-db
  ::show-delete-modal
  (fn [db [_ show?]]
    (-> db
-       (assoc-in [:tag :delete-modal-show?] show?)
+       (assoc-in [:article-comments :delete-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-sub
- ::tags-list
+ ::article-commentss-comments-list
  (fn [db]
-   (get-in db [:tag :list])))
+   (get-in db [:article-comments :list])))
 
 (re-frame/reg-event-db
- ::query-tags-ok
+ ::query-article-commentss-comments-ok
  (fn [db [_ resp]]
-   (assoc-in db [:tag :list] (:data resp))))
+   (assoc-in db [:article-comments :list] (:data resp))))
 
 (re-frame/reg-event-fx
- ::query-tags
+ ::query-article-commentss-comments
  (fn [{:keys [db]} [_ data]]
-   (f-util/clog "query tags: " data)
+   (f-util/clog "query article-commentss-comments: " data)
    (f-http/http-get db
-                    (f-http/api-uri "/tags")
+                    (f-http/api-uri "/article-commentss-comments")
                     data
-                    ::query-tags-ok)))
+                    ::query-article-commentss-comments-ok)))
 
 (re-frame/reg-event-fx
- ::add-tag-ok
+ ::add-article-comments-ok
  (fn [{:keys [db]} [_ resp]]
-   (f-util/clog "add tag ok: " resp)
+   (f-util/clog "add article-comments ok: " resp)
    {:db (-> db
             (update-in [:toasts] conj {:content "添加成功" :type :info}))}))
 
 (re-frame/reg-event-fx
- ::add-tag
- (fn [{:keys [db]} [_ tag]]
-   (f-util/clog "add tag: " tag)
+ ::add-article-comments
+ (fn [{:keys [db]} [_ article-comments]]
+   (f-util/clog "add article-comments: " article-comments)
    (f-http/http-post db
-                     (f-http/api-uri "/tags")
-                     {:tag tag}
-                     ::add-tag-ok)))
+                     (f-http/api-uri "/article-commentss-comments")
+                     {:article-comments article-comments}
+                     ::add-article-comments-ok)))
 
 (re-frame/reg-event-db
- ::get-tag-ok
+ ::get-article-comments-ok
  (fn [db [_ resp]]
-   (assoc-in db [:tag :current] (:tag (:data resp)))))
+   (assoc-in db [:article-comments :current] (:article-comments (:data resp)))))
 
 (re-frame/reg-event-fx
- ::get-tag
+ ::get-article-comments
  (fn [{:keys [db]} [_ id]]
-   (f-util/clog "Get a tag")
+   (f-util/clog "Get a article-comments")
    (f-http/http-get db
-                    (f-http/api-uri "/tags/" id)
+                    (f-http/api-uri "/article-commentss-comments/" id)
                     {}
-                    ::get-tag-ok)))
+                    ::get-article-comments-ok)))
 
 (re-frame/reg-sub
- ::tag-current
+ ::article-comments-current
  (fn [db]
-   (get-in db [:tag :current])))
+   (get-in db [:article-comments :current])))
 
 (re-frame/reg-event-db
  ::reset-current
  (fn [db [_ k v]]
-   (assoc-in db [:tag :current k] v)))
+   (assoc-in db [:article-comments :current k] v)))
 
 (re-frame/reg-event-fx
- ::update-tag-ok
+ ::update-article-comments-ok
  (fn [{:keys [db]} [_ resp]]
-   (f-util/clog "update tag ok: " resp)
+   (f-util/clog "update article-comments ok: " resp)
    {:db db
     :fx [[:dispatch [::toasts/push {:content "保存成功"
                                     :type :success}]]]}))
 
 (re-frame/reg-event-fx
- ::update-tag
- (fn [{:keys [db]} [_ tag]]
-   (f-util/clog "update tag: " tag)
+ ::update-article-comments
+ (fn [{:keys [db]} [_ article-comments]]
+   (f-util/clog "update article-comments: " article-comments)
    (f-http/http-put db
-                    (f-http/api-uri "/tags/" (:id tag))
-                    {:tag tag}
-                    ::update-tag-ok
+                    (f-http/api-uri "/article-commentss-comments/" (:id article-comments))
+                    {:article-comments article-comments}
+                    ::update-article-comments-ok
                     ::f-state/req-failed-message)))
 
 (re-frame/reg-event-db
  ::clean-current
  (fn [db _]
-   (assoc-in db [:tag :current] nil)))
+   (assoc-in db [:article-comments :current] nil)))
 
 (re-frame/reg-event-fx
- ::delete-tag-ok
+ ::delete-article-comments-ok
  (fn [{:keys [db]} [_ resp]]
-   (f-util/clog "delete tag ok: " resp)
+   (f-util/clog "delete article-comments ok: " resp)
    {:db db
     :fx [[:dispatch [::toasts/push {:type :success
                                     :content "Delete success"}]]
@@ -152,13 +152,13 @@
          [:dispatch [::show-delete-modal false]]]}))
 
 (re-frame/reg-event-fx
- ::delete-tag
+ ::delete-article-comments
  (fn [{:keys [db]} [_ id]]
-   (f-util/clog "Delete tag")
+   (f-util/clog "Delete article-comments")
    (f-http/http-delete db
-                       (f-http/api-uri "/tags/" id)
+                       (f-http/api-uri "/article-commentss-comments/" id)
                        {}
-                       ::delete-tag-ok)))
+                       ::delete-article-comments-ok)))
 
 (defn check-name [v]
   (f-util/clog "check name")
@@ -167,7 +167,7 @@
     (reset! name-error nil)))
 
 (defn add-form []
-  (let [tag (r/atom {})]
+  (let [article-comments (r/atom {})]
     [:form
      [:div {:class "grid gap-4 mb-6 sm:grid-cols-2"}
 
@@ -176,7 +176,7 @@
                             :name "name"
                             :required true
                             :on-blur #(check-name (f-util/get-value %))
-                            :on-change #(swap! tag assoc :name (f-util/get-value %))})
+                            :on-change #(swap! article-comments assoc :name (f-util/get-value %))})
        (when @name-error
          [:p {:class "mt-2 text-sm text-red-600 dark:text-red-500"}
           [:span {:class "font-medium"}]
@@ -184,13 +184,13 @@
       [:div
        (text-input-backend {:label "Description"
                             :name "descrtiption"
-                            :on-change #(swap! tag assoc :description (f-util/get-value %))})]]
+                            :on-change #(swap! article-comments assoc :description (f-util/get-value %))})]]
      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-      [green-button {:on-click #(re-frame/dispatch [::add-tag @tag])}
+      [green-button {:on-click #(re-frame/dispatch [::add-article-comments @article-comments])}
        "Add"]]]))
 
 (defn update-form []
-  (let [current (re-frame/subscribe [::tag-current])
+  (let [current (re-frame/subscribe [::article-comments-current])
         name (r/cursor current [:name])
         description (r/cursor current [:description])]
     [:form
@@ -204,11 +204,11 @@
                            :default-value @description
                            :on-change #(re-frame/dispatch [::reset-current :description (f-util/get-value %)])})]
      [:div {:class "flex justify-center items-center space-x-4"}
-      [green-button {:on-click #(re-frame/dispatch [::update-tag @current])}
+      [green-button {:on-click #(re-frame/dispatch [::update-article-comments @current])}
        "Update"]]]))
 
 (defn delete-form []
-  (let [current (re-frame/subscribe [::tag-current])
+  (let [current (re-frame/subscribe [::article-comments-current])
         name (r/cursor current [:name])]
     [:form
      [:div {:class "p-4 mb-4 text-blue-800 border border-red-300 rounded-lg 
@@ -217,7 +217,7 @@
        (str "You confirm delete the " @name "? ")]]
      [:div {:class "flex justify-center items-center space-x-4"}
       [red-button {:on-click #(do
-                                (re-frame/dispatch [::delete-tag (:id @current)]))}
+                                (re-frame/dispatch [::delete-article-comments (:id @current)]))}
        "Delete"]]]))
 
 (defn index []
@@ -230,7 +230,7 @@
      [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-96"}
       ;; page title
       [:div
-       [breadcrumb-dash ["Tag"]]]
+       [breadcrumb-dash ["article-comments"]]]
 
       ;; page query form
       [:form
@@ -243,25 +243,25 @@
                                :on-blur #(when-let [v (f-util/get-trim-value %)]
                                            (swap! filter str " name lk " v))})]]
         [:div {:class "felx inline-flex justify-center items-center w-full"}
-         (btn {:on-click #(re-frame/dispatch [::query-tags @q-data])
+         (btn {:on-click #(re-frame/dispatch [::query-article-commentss-comments @q-data])
                :class css/buton-purple} "Query")
          (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
                :class css/button-green} "New")]]]
 
       ;; modals
       [:div
-       [modals/modal add-modal-show? {:id "add-tag"
-                                      :title "Add Tag"
+       [modals/modal add-modal-show? {:id "add-article-comments"
+                                      :title "Add article-comments"
                                       :on-close #(re-frame/dispatch [::show-add-modal false])}
         [add-form]]
-       [modals/modal update-modal-show? {:id "update-tag"
-                                         :title "Update Tag"
+       [modals/modal update-modal-show? {:id "update-article-comments"
+                                         :title "Update article-comments"
                                          :on-close #(do
                                                       (re-frame/dispatch [::clean-current])
                                                       (re-frame/dispatch [::show-update-modal false]))}
         [update-form]]
-       [modals/modal delete-modal-show? {:id "Delete-Tag"
-                                         :title "Delete Tag"
+       [modals/modal delete-modal-show? {:id "Delete-article-comments"
+                                         :title "Delete article-comments"
                                          :on-close #(do
                                                       (re-frame/dispatch [::clean-current])
                                                       (re-frame/dispatch [::show-delete-modal false]))}
@@ -271,7 +271,7 @@
 
       ;; data table
       [:div
-       (let [{:keys [tags query total]} @(re-frame/subscribe [::tags-list])
+       (let [{:keys [article-commentss-comments query total]} @(re-frame/subscribe [::article-commentss-comments-list])
              page (:page query)
              per-page (:per-page query)]
          (table-dash
@@ -279,7 +279,7 @@
            [th-dash "Name"]
            [th-dash "Description"]
            [th-dash "操作"]]
-          (for [c tags]
+          (for [c article-commentss-comments]
             [:tr {:class css/list-table-tbody-tr}
              [td-dash
               [:span {:class ""} (:name c)]]
@@ -287,16 +287,16 @@
               [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
              [td-dash
               [:<>
-               [edit-button {:on-click #(do (re-frame/dispatch [::get-tag (:id c)])
+               [edit-button {:on-click #(do (re-frame/dispatch [::get-article-comments (:id c)])
                                             (re-frame/dispatch [::show-update-modal true]))}
                 "Edit"]
                [:span " | "]
                [delete-button {:on-click #(do
-                                            (re-frame/dispatch [::get-tag (:id c)])
+                                            (re-frame/dispatch [::get-article-comments (:id c)])
                                             (re-frame/dispatch [::show-delete-modal true]))}
                 "Del"]]]])
           (page-dash {:page page
                       :per-page per-page
                       :total total
                       :query query
-                      :url ::query-tags})))]])))
+                      :url ::query-article-commentss-comments})))]])))

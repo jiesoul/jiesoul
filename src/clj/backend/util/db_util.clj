@@ -19,7 +19,7 @@
     (rs/as-modified-maps rs (assoc opts :qualifier-fn kebab :label-fn kebab))))
 
 (defn populate 
-  [db db-type]
+  [_ db-type]
   (let [auto-key (if (= "sqlite" db-type)
                    "primary key autoincrement"
                    (str " generated always as identity "
@@ -33,10 +33,13 @@
       (subs s 1 end))
     s))
 
+(defn not-blank [s]
+  (if (or (nil? s) (str/blank? (str/trim s))) nil (str/trim s)))
+
 (defn sort-convert
-  [query-params]
-  (let [sort (get query-params :sort)]
-    sort))
+  [opts]
+  (let [sort (get opts :sort)]
+    (not-blank sort)))
 
 (defn op-convert
   [s]
@@ -46,7 +49,7 @@
             snd (second sql)
             [ssql ww vv] (case fst
                            "eq" [(nnext sql) (str w " = ?  ") (conj v (del-qu snd))]
-                           "like" [(nnext sql) (str w " like ? ") (conj v (str "'%" (del-qu snd) "%'"))]
+                           "lk" [(nnext sql) (str w " like ? ") (conj v (str "%" (del-qu snd) "%"))]
                            "ne" [(nnext sql) (str w " != ?") (conj v snd)]
                            "gt" [(nnext sql) (str w " > ? ") (conj v snd)]
                            "ge" [(nnext sql) (str w " >= ? ") (conj v snd)]
@@ -57,32 +60,32 @@
       [w v])))
 
 (defn filter-convert
-  [query]
-  (if-let [filter (get query :filter)]
+  [opts]
+  (if-let [filter (not-blank (get opts :filter))] 
     (-> filter
         (str/split #" +")
         op-convert)
     nil))
 
 (defn page-convert
-  [query]
-  (let [page (or (get query :page) 1)
-        per-page (or (get query :per-page) 10)]
+  [opts]
+  (let [page (or (get opts :page) 1)
+        per-page (or (get opts :per-page) 10)]
     [per-page (* per-page (dec page))]))
 
-(defn search-convert
-  [query]
+;; TODO
+(defn search-convert [query]
   nil)
 
 (defn opt-convert 
-  [query]
-  (let [cq {:sort (sort-convert query)
-            :filter (filter-convert query)
-            :q (search-convert query)}]
+  [opts]
+  (let [cq {:sort (sort-convert opts)
+            :filter (filter-convert opts)
+            :q (search-convert opts)}]
     cq))
 
-(defn opt-to-sql [query]
-  (let [{:keys [filter sort]} (opt-convert query)
+(defn opt-to-sql [opts]
+  (let [{:keys [filter sort]} (opt-convert opts)
         [s v] ["" []]
         [s v] (if filter
                 [(str s " where " (first filter)) (into v (second filter))]

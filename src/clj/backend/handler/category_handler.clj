@@ -3,9 +3,9 @@
             [clojure.tools.logging :as log]
             [backend.util.resp-util :as resp-util]))
 
-(defn query-categories [{:keys [db]} query]
-  (log/debug "Query categories " query)
-  (let [data (category-db/query-categories db query)
+(defn query-categories [{:keys [db]} opts]
+  (log/debug "Query categories " opts)
+  (let [data (category-db/query-categories db opts)
         _ (log/debug "query categories data: " data)]
     (resp-util/ok data)))
 

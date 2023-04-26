@@ -1,19 +1,19 @@
 (ns backend.db.user-db
   (:require [backend.util.db-util :as du]
             [next.jdbc.result-set :as rs]
-            [next.jdbc.sql :as sql]
-            [taoensso.timbre :as log]))
+            [next.jdbc.sql :as sql]))
 
 (defn query-users
-  [db opt]
-  (let [[ws wv] (du/opt-to-sql opt)
-        [ps pv] (du/opt-to-page opt)
+  [db opts]
+  (let [[ws wv] (du/opt-to-sql opts)
+        [ps pv] (du/opt-to-page opts)
         q-sql (into [(str "select * from users " ws ps)] (into wv pv))
         users (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) :as c from users " ws)] wv)
         total (sql/query db t-sql)]
-    {:data users 
-     :total total}))
+    {:users users 
+     :total total
+     :opts opts}))
 
 (defn create-user! 
   [db user]

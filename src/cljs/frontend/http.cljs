@@ -1,7 +1,7 @@
 (ns frontend.http 
  (:require [ajax.core :as ajax]
            [frontend.util :as f-util]
-           [reitit.frontend.easy :as rfe]))
+           [frontend.state :as f-state]))
 
 (def ^:private api-base "http://localhost:8080/api/v1")
 
@@ -15,10 +15,7 @@
         _ (f-util/clog "get-headers, ret" ret)]
     ret))
 
-(defn convert-get [data]
-  )
-
-(defn http [method db uri data on-success on-failure]
+(defn http [method db uri data on-success & on-failure]
   (f-util/clog "http, uri" uri)
   (let [xhrio (cond-> {:debug true
                        :method method
@@ -27,7 +24,7 @@
                        :format (ajax/json-request-format)
                        :response-format (ajax/json-response-format {:keywords? true})
                        :on-success [on-success]
-                       :on-failure [on-failure]}
+                       :on-failure (if on-failure [on-failure] [::f-state/req-failed-message])}
                       data (assoc :params data))]
     {:http-xhrio xhrio
      :db db}))

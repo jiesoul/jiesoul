@@ -5,11 +5,10 @@
             [backend.db.article-comment-db :as article-comment-db]
             [backend.util.resp-util :as resp-util]))
 
-(defn query-articles [{:keys [db]} opt]
-  (log/debug "Query articles " opt)
-  (if-let [articles (article-db/query db opt)]
-    (resp-util/ok {:articles articles
-                   :query opt})
+(defn query-articles [{:keys [db]} opts]
+  (log/debug "Query articles " opts)
+  (if-let [data (article-db/query db opts)]
+    (resp-util/ok data)
     (resp-util/not-found "not found")))
 
 (defn create-article! [{:keys [db]} article]

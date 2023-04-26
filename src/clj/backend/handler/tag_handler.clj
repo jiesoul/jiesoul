@@ -3,10 +3,10 @@
             [clojure.tools.logging :as log]
             [backend.util.resp-util :as resp-util]))
 
-(defn query-tags [{:keys [db]} opt]
-  (log/debug "Query tags " opt)
-  (let [tags (tag-db/query db opt)]
-    (resp-util/ok {:tags tags})))
+(defn query-tags [{:keys [db]} opts]
+  (log/debug "Query tags " opts)
+  (let [data (tag-db/query db opts)]
+    (resp-util/ok data)))
 
 (defn create-tag! [{:keys [db]} tag]
   (log/debug "Creatge tag " tag)

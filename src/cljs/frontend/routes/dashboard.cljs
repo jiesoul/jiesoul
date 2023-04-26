@@ -1,7 +1,5 @@
 (ns frontend.routes.dashboard
-  (:require [re-frame.core :as re-frame]
-            [frontend.state :as f-state]
-            [frontend.shared.layout :refer [layout-dash]]))
+  (:require  [frontend.shared.layout :refer [layout-dash]]))
 
 (defn index [] 
   (layout-dash

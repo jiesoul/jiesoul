@@ -3,17 +3,18 @@
             [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]))
 
-(defn query [db opt]
-  (let [[w wv] (du/opt-to-sql opt)
-        [p pv] (du/opt-to-page opt)
+(defn query [db opts]
+  (let [[w wv] (du/opt-to-sql opts)
+        [p pv] (du/opt-to-page opts)
         q-sql (into [(str "select * from article_comment " w p)] (into wv pv))
         article-comments (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) as c from article_comment" w)] wv)
         total (-> (sql/query db t-sql)
               first
               :c)]
-    {:data article-comments
-     :total total}))
+    {:article-comments article-comments
+     :total total
+     :opts opts}))
 
 (defn create! [db article_comment]
   (sql/insert! db :article_comment article_comment))

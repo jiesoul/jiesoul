@@ -1,7 +1,5 @@
 (ns backend.util.req-uitl 
-  (:require [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [clojure.walk :as walk]))
+  (:require [clojure.tools.logging :as log]))
 
 (def DEFAULT-PAGE 1)
 (def DEFAULT-PER-PAGE 10)
@@ -20,16 +18,6 @@
 (defn parse-path 
   [req key]
   (get-in req [:parameters :path key]))
-
-(defn sub-query 
-  [s]
-  (let [i (str/index-of s "=")
-        l (count s)]
-    (subs s (inc i) l)))
-
-(defn get-str-by-key
-  [req key]
-  (-> req :parameters :query key))
 
 (defn parse-query
   [req]

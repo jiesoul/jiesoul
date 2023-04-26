@@ -1,7 +1,6 @@
 (ns frontend.shared.breadcrumb)
 
-(defn breadcrumb-dash
-  [b-data]
+(defn breadcrumb-dash [b-data]
   [:nav {:class "flex border-b"}
    [:ol {:class "inline-flex items-center space-x-1 md:space-x-2"}
     (for [d b-data]

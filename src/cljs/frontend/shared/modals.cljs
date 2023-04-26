@@ -1,6 +1,7 @@
 (ns frontend.shared.modals 
   (:require [frontend.shared.svg :as svg]
             [frontend.util :as f-util]
+            [frontend.state :as f-state]
             [re-frame.core :as re-frame]))
 
 (re-frame/reg-event-db
@@ -22,7 +23,7 @@
   (let [{:keys [id title on-close]} props] 
     [:div {:id id
            :tab-index "-1"
-           :class (str (if show? "" "hidden ") "flex overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 
+           :class (str (if show? "" "hidden ") "flex overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-40 
                  justify-center items-center w-full inset-0 h-[calc(100%-1rem)] max-h-full")
            :role "dialog"}
      [:div {:class "relative p-4 w-full justify-center items-center max-w-2xl max-h-full"} 
@@ -40,3 +41,8 @@
          (svg/close)]]
         ;; Modal body
        children]]]))
+
+(defn modal-back []
+  (let [modal-backdrop-show? @(re-frame/subscribe [::f-state/modal-backdrop-show?])]
+    [:div {:class (str (if modal-backdrop-show? "" "hidden ") 
+                       "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-30")}]))

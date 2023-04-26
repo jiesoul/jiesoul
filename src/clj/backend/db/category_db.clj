@@ -4,10 +4,10 @@
             [clojure.tools.logging :as log]
             [next.jdbc.result-set :as rs]))
 
-(defn query-categories [db query]
+(defn query-categories [db opts]
   (try 
-    (let [[ws wv] (du/opt-to-sql query)
-          [ps pv] (du/opt-to-page query)
+    (let [[ws wv] (du/opt-to-sql opts)
+          [ps pv] (du/opt-to-page opts)
           q-sql (into [(str "select * from category " ws ps)] (into wv pv))
           _ (log/info "query categories sql: " q-sql)
           categories (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
@@ -16,8 +16,9 @@
           total (:c (first (sql/query db t-sql)))] 
       {:categories categories 
        :total total
-       :query query})
-    (catch java.sql.SQLException se (log/error "sql error: " se))))
+       :opts opts})
+    (catch java.sql.SQLException se 
+      (throw (ex-info "query error" se)))))
 
 (defn create! [db category]
   (sql/insert! db :category category {:return-keys true}))

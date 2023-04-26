@@ -2,20 +2,12 @@
   (:require [cljs.pprint]
             [clojure.string :as str]))
 
-(def Q-SIZE 5)
-
-(defn q-pop [q]
-  (pop q))
-
-(defn q-push [q d]
-  (if (< (count q) Q-SIZE)
-    (conj q d)
-    (do 
-      (q-pop q)
-      (conj q d))))
-
 (defn get-value [d]
   (-> d .-target .-value))
+
+(defn get-trim-value [d]
+  (let [v (str/trim (get-value d))]
+    (if (or (nil? v) (str/blank? v)) nil v)))
 
 (defn blank? [v]
   (or (nil? v) (str/blank? v)))

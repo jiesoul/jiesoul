@@ -2,38 +2,28 @@
   (:require [frontend.routes.login :refer [login]]
             [frontend.shared.footer :refer [footer-home]]
             [frontend.shared.header :refer [header-dash nav-home]]
-            [frontend.shared.modals :refer [modal]]
+            [frontend.shared.modals :refer [modal modal-back]]
             [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.toasts :refer [toasts]]
             [frontend.state :as f-state]
-            [re-frame.core :as re-frame]
-            [reagent.core :as r]))
+            [re-frame.core :as re-frame]))
 
-(defonce timer (r/atom 0))
-
-(defn timer-component []
-  (fn []
-    (js/setTimeout #(swap! timer inc) 1000)))
-
-(defn layout-dash
-  [children]
-  (let [token @(re-frame/subscribe [::f-state/token])
-        modal-backdrop-show? @(re-frame/subscribe [::f-state/modal-backdrop-show?])]
+(defn layout-dash [children]
+  (let [token @(re-frame/subscribe [::f-state/token])]
     (if token 
-      [:div {:class "flex h-screen bg-gray-50 font-boboto"} 
+      [:div {:class "flex h-screen bg-gray-50 overflow-y-hidden overflow-x-hidden"} 
        [sidebar-dash]
-       [:div {:class "flex-1 flex flex-col w-full overflow-x-hidden"} 
+       [:div {:class "flex-1 flex flex-col w-full"} 
         [header-dash]
         [toasts]
-        [:main {:class "flex-1 h-screen overflow-x-hidden overflow-y-auto bg-gray-100"} 
+        [:main {:class "flex-1 bg-gray-100"} 
          [modal]
-         [:div {:class "container mx-auto px-4 py-4 h-95 h-auto"}
+         [:div {:class "px-2 py-2"}
           children]]]
-       [:div {:class (str (if modal-backdrop-show? "" "hidden ") "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40")}]]
+       [modal-back]]
       [login])))
 
-(defn layout-home 
-  [children]
+(defn layout-home [children]
   [:div {:class "flex flex-col mx-auto w-full"}
    [nav-home]
    children

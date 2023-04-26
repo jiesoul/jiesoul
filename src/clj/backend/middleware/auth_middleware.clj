@@ -1,6 +1,5 @@
 (ns backend.middleware.auth-middleware
-  (:require [buddy.auth.backends.token :as backends]
-            [buddy.core.codecs :as codecs]
+  (:require [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
             [backend.util.req-uitl :as req-util]
             [backend.db.user-token-db :as user-token-db]
@@ -10,7 +9,7 @@
             [taoensso.timbre :as log]))
 
 ;; 盐
-(def private-key "soul")
+;; (def private-key "soul")
 
 (defn random-token
   []
@@ -32,18 +31,18 @@
     token))
 
 (defn my-unauthorized-handler
-  [request message]
+  [_ message]
   (-> (resp/bad-request {:status :failed
                          :message message})
       (assoc :status 403)))
 
-(defn my-authfn
-  [requeset token]
-  (println (str "token: " token)))
+;; (defn my-authfn
+;;   [_ token]
+;;   (println (str "token: " token)))
 
-(def auth-backend
-  (backends/token-backend {:authfn my-authfn
-                           :unauthorized-handler my-unauthorized-handler}))
+;; (def auth-backend
+;;   (backends/token-backend {:authfn my-authfn
+;;                            :unauthorized-handler my-unauthorized-handler}))
 
 (defn wrap-auth [handler env role]
   (fn [request]

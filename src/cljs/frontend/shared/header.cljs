@@ -28,23 +28,19 @@
           :on-click #(re-frame/dispatch [::f-state/logout])}
       "Sign out"]]]])
 
-(defn header-dash []
-  (fn []
-    (let [login-user @(re-frame/subscribe [::f-state/login-user])]
-      [:header {:class "flex items-center justify-between px-6 py-4 bg-white border-b-4 border-indigo-600"}
-       [:div {:class "flex items-center"}
-        [:div {:class "relative mx-4 lg:mx-0"}
-         [:span {:class "absolute inset-y-0 left-0 flex items-center pl-3"}]
-         [:input {:class "w-32 pl-10 pr-4 rounded-md form-input sm:w-64 focus:border-indigo-600"
-                  :type "text"
-                  :placeholder "Search"}]]]
-       [:div {:class "flex items-center space-x-4"}
-        (when login-user
-          [:div {:class "font-medium dark:text-white"}
-           [:a {:class ""
-                :on-click #(swap! user-dropdown-show? not)} 
-            (when login-user (:username login-user))]
-           (user-dropdown)])]])))
+(defn header-dash [] 
+  (let [login-user @(re-frame/subscribe [::f-state/login-user])]
+    [:header {:class "flex items-center justify-between px-6 py-4 bg-white border-b border-indigo-600"}
+     [:div {:class "flex items-center"}
+      [:div {:class "relative mx-4 lg:mx-0"}
+       [:span {:class "absolute inset-y-0 left-0 flex items-center pl-3"}]]]
+     [:div {:class "flex items-center space-x-4"}
+      (when login-user
+        [:div {:class "font-medium dark:text-white"}
+         [:a {:class ""
+              :on-click #(swap! user-dropdown-show? not)} 
+          (when login-user (:username login-user))]
+         (user-dropdown)])]]))
 
 (defn nav-home []
   (fn []

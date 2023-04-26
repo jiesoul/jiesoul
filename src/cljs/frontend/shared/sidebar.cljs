@@ -18,10 +18,10 @@
         path (:path current-route)]
     (fn []
       [:<>
-       [:div {:class "fixed inset-0 z-20 transition-opacity bg-black opacity-50 lg:hidden"}]
+       [:div {:class "fixed h-screen inset-0 z-10 transition-opacity bg-black opacity-50 lg:hidden"}]
        
        [:aside {:id "sidebar-dash"
-                :class "fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto transition duration-300
+                :class "fixed inset-y-0 left-0 z-20 w-64 overflow-y-auto transition duration-300
                   transform bg-gray-900 lg:translate-x-0 lg:static lg:inset-0"
                 :aria-label "Sidebar"}
         [:div {:class "flex items-center justify-center mt-8"}
@@ -31,17 +31,23 @@
         [:ul {:class "mt-10"} 
          [:li>a {:class css-sidebar-li-a-top
                  :href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/dashboard])}
+                 :on-click #(do 
+                              (re-frame/dispatch [::f-state/init :dashboard])
+                              (re-frame/dispatch [::f-state/navigate ::f-state/dashboard]))}
           [:span {:class "mx-3"} "Dashboard"]] 
          
          [:li>a {:class css-sidebar-li-a-top
                  :href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/categories])}
+                 :on-click #(do
+                              (re-frame/dispatch [::f-state/init :category])
+                              (re-frame/dispatch [::f-state/navigate ::f-state/categories]))}
           [:span {:class "mx-3"} "Category"]]
          
          [:li>a {:class css-sidebar-li-a-top
                  :href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/tags])}
+                 :on-click #(do
+                              (re-frame/dispatch [::f-state/init :tag])
+                              (re-frame/dispatch [::f-state/navigate ::f-state/tags]))}
           [:span {:class "mx-3"} "Tag"]]
 
          [:li 
@@ -63,15 +69,18 @@
             "Comment"]]]
          
          [:li>a {:class css-sidebar-li-a-top
-                 :href "/"}
+                 :href "#"
+                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/users])}
           [:span {:class "mx-3"} "User"]]
          
          [:li>a {:class css-sidebar-li-a-top
-                 :href "/"}
+                 :href "#"
+                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/user-tokens])}
           [:span {:class "mx-3"} "User Token"]]
          
          [:li>a {:class css-sidebar-li-a-top
-                 :href "/"}
+                 :href "#"
+                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/apies-tokens])}
           [:span {:class "mx-3"} "Api Token"]]
 
          ]]])))

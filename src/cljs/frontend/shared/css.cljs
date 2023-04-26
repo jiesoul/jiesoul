@@ -36,3 +36,6 @@
                    focus:outline-none focus:ring-purple-300 font-medium rounded px-3 py-2 text-xs text-center 
                    mr-2 mb-2 dark:border-purple-400 dark:text-purple-400 dark:hover:text-white dark:hover:bg-purple-500 
                    dark:focus:ring-purple-900")
+
+(def edit-a "font-medium text-blue-600 dark:text-blue-500 hover:underline")
+(def delete-a "font-medium text-red-600 dark:text-red-500 hover:underline")
