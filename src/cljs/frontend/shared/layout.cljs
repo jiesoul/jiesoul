@@ -11,14 +11,14 @@
 (defn layout-dash [children]
   (let [token @(re-frame/subscribe [::f-state/token])]
     (if token 
-      [:div {:class "flex h-screen bg-gray-50 overflow-y-hidden overflow-x-hidden"} 
+      [:div {:class "flex h-screen bg-gray-50 overflow-x-hidden"} 
        [sidebar-dash]
-       [:div {:class "flex-1 flex flex-col w-full"} 
+       [:div {:class "flex-1 flex flex-col w-full h-screen"} 
         [header-dash]
         [toasts]
-        [:main {:class "flex-1 bg-gray-100"} 
+        [:main {:class "flex-1 h-screen bg-gray-100"} 
          [modal]
-         [:div {:class "px-2 py-2"}
+         [:div {:class "px-2 py-2 h-screen"}
           children]]]
        [modal-back]]
       [login])))

@@ -4,18 +4,18 @@
             [next.jdbc.sql :as sql]
             [clojure.tools.logging :as log]))
 
-(defn query [db opt]
-  (let [[ws wv] (du/opt-to-sql opt)
-        [ps pv] (du/opt-to-page opt)
+(defn query [db opts]
+  (let [[ws wv] (du/opt-to-sql opts)
+        [ps pv] (du/opt-to-page opts)
         q-sql (into [(str "select * from tag " ws ps)] (into wv pv))
         _ (log/info "query tags: " q-sql)
         tags (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) as c from tag " ws)] wv)
         _ (log/info "Count tags: " t-sql)
-        total (:c (:first (sql/query db t-sql)))] 
+        total (:c (first (sql/query db t-sql)))] 
     {:tags tags
      :total total
-     :query opt}))
+     :opts opts}))
 
 (defn create! [db tag]
   (sql/insert! db :tag tag))

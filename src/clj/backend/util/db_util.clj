@@ -70,8 +70,8 @@
 (defn page-convert
   [opts]
   (let [page (or (get opts :page) 1)
-        per-page (or (get opts :per-page) 10)]
-    [per-page (* per-page (dec page))]))
+        page-size (or (get opts :page-size) 10)]
+    [page-size (* page-size (dec page))]))
 
 ;; TODO
 (defn search-convert [query]

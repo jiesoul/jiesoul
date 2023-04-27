@@ -1,20 +1,23 @@
 (ns frontend.routes.article
     (:require [clojure.string :as str]
-            [frontend.http :as f-http]
-            [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
-            [frontend.shared.buttons :refer [btn delete-button edit-button
-                                             green-button red-button]]
-            [frontend.shared.css :as css]
-            [frontend.shared.form-input :refer [text-input-backend]]
-            [frontend.shared.layout :refer [layout-dash]]
-            [frontend.shared.modals :as modals]
-            [frontend.shared.page :refer [page-dash]]
-            [frontend.shared.tables :refer [table-dash td-dash th-dash]]
-            [frontend.shared.toasts :as toasts]
-            [frontend.state :as f-state]
-            [frontend.util :as f-util]
-            [re-frame.core :as re-frame]
-            [reagent.core :as r]))
+              [frontend.http :as f-http]
+              [frontend.routes.category :as category]
+              [frontend.shared.buttons :refer [btn delete-button edit-button
+                                               green-button red-button]]
+              [frontend.shared.css :as css]
+              [frontend.shared.form-input :refer [file-input select-input
+                                                  text-input text-input-backend
+                                                  textarea]]
+              [frontend.shared.layout :refer [layout-dash]]
+              [frontend.shared.modals :as modals]
+              [frontend.shared.page :refer [page-dash]]
+              [frontend.shared.tables :refer [css-list-table-tbody-tr
+                                              table-dash td-dash th-dash]]
+              [frontend.shared.toasts :as toasts]
+              [frontend.state :as f-state]
+              [frontend.util :as f-util]
+              [re-frame.core :as re-frame]
+              [reagent.core :as r]))
 
 (def name-error (r/atom nil))
 
@@ -167,27 +170,53 @@
     (reset! name-error nil)))
 
 (defn add-form []
-  (let [article (r/atom {})]
+  (let [login-user @(re-frame/subscribe [::f-state/login-user])
+        article (r/atom {:title ""
+                         :author (:username login-user)
+                         :like-count 0
+                         :read-count 0
+                         :article-summary ""
+                         :article-detail {:content-md ""}})
+        {:keys [categories]} @(re-frame/subscribe [::category/categories-list])]
     [:form
-     [:div {:class "grid gap-4 mb-6 sm:grid-cols-2"}
+     [:div {:class "flex-l flex-col"} 
+      [text-input {:class "pt-4"
+                   :label "Title"
+                   :name "title"
+                   :required ""
+                   :on-change #(swap! article assoc :title (f-util/get-value %))}]
+      
+      [text-input {:class "pt-4"
+                   :label "Summary"
+                   :name "article-summary"
+                   :required ""
+                   :on-change #(swap! article assoc :summary (f-util/get-value %))}]
+      
+      [select-input {:class "pt-4"
+                     :label "Category"
+                     :required ""
+                     :name "category"}
+       [:option "select category"]
+       (for [c categories]
+         [:option {:value (:id c)} (:name c)])]
+      [file-input {:class "pt-4"
+                   :help "md"}]
+      [textarea {:class "pt-4"
+                 :label "Content"
+                 :rows 8
+                 :name "content"
+                 :on-change #(swap! article assoc :content (f-util/get-trim-value %))}]
+      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
+       [green-button {:on-click #(re-frame/dispatch [::add-article @article])}
+        "Add"]]]]))
 
-      [:div
-       (text-input-backend {:label "Name"
-                            :name "name"
-                            :required true
-                            :on-blur #(check-name (f-util/get-value %))
-                            :on-change #(swap! article assoc :name (f-util/get-value %))})
-       (when @name-error
-         [:p {:class "mt-2 text-sm text-red-600 dark:text-red-500"}
-          [:span {:class "font-medium"}]
-          @name-error])]
-      [:div
-       (text-input-backend {:label "Description"
-                            :name "descrtiption"
-                            :on-change #(swap! article assoc :description (f-util/get-value %))})]]
-     [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-      [green-button {:on-click #(re-frame/dispatch [::add-article @article])}
-       "Add"]]]))
+(defn new []
+  (layout-dash
+   [:section {:class "bg-white dark:bg-gray-900 overflow-y-auto"}
+    [:div {:class "py-2 px-2 mx-auto max-w-2xl lg:py-8"}
+     [:h2 {:class "mb-2 text-xl font-bold text-gray-900 dark:text-white"}
+      "New Article"]
+     [add-form]]]))
 
 (defn update-form []
   (let [current (re-frame/subscribe [::article-current])
@@ -221,39 +250,31 @@
        "Delete"]]]))
 
 (defn index []
-  (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
-        update-modal-show? @(re-frame/subscribe [::update-modal-show?])
+  (let [update-modal-show? @(re-frame/subscribe [::update-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
-        q-data (r/atom {:per-page 10 :page 1 :filter "" :sort ""})
+        q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
     (layout-dash
-     [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-96"}
+     [:div {:class css/main-container}
       ;; page title
-      [:div
-       [breadcrumb-dash ["Article"]]]
+      [:h4 {:class css/page-title} "Articles"]
 
       ;; page query form
       [:form
        [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
         [:div {:class "grid grid-cols-4 gap-3"}
          [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "name"
+          (text-input-backend {:label "Title："
                                :type "text"
-                               :id "name"
+                               :id "title"
                                :on-blur #(when-let [v (f-util/get-trim-value %)]
                                            (swap! filter str " name lk " v))})]]
         [:div {:class "felx inline-flex justify-center items-center w-full"}
          (btn {:on-click #(re-frame/dispatch [::query-articles @q-data])
-               :class css/buton-purple} "Query")
-         (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
-               :class css/button-green} "New")]]]
+               :class css/buton-purple} "Query")]]]
 
       ;; modals
-      [:div
-       [modals/modal add-modal-show? {:id "add-article"
-                                      :title "Add article"
-                                      :on-close #(re-frame/dispatch [::show-add-modal false])}
-        [add-form]]
+      [:div 
        [modals/modal update-modal-show? {:id "update-article"
                                          :title "Update article"
                                          :on-close #(do
@@ -271,16 +292,16 @@
 
       ;; data table
       [:div
-       (let [{:keys [articles query total]} @(re-frame/subscribe [::articles-list])
-             page (:page query)
-             per-page (:per-page query)]
+       (let [{:keys [articles opts total]} @(re-frame/subscribe [::articles-list])
+             page (:page opts)
+             page-size (:page-size opts)]
          (table-dash
           [:tr
            [th-dash "Name"]
            [th-dash "Description"]
            [th-dash "操作"]]
           (for [c articles]
-            [:tr {:class css/list-table-tbody-tr}
+            [:tr {:class css-list-table-tbody-tr}
              [td-dash
               [:span {:class ""} (:name c)]]
              [td-dash
@@ -294,9 +315,11 @@
                [delete-button {:on-click #(do
                                             (re-frame/dispatch [::get-article (:id c)])
                                             (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]])
+                "Del"]]]]) 
           (page-dash {:page page
-                      :per-page per-page
+                      :page-size page-size
                       :total total
-                      :query query
+                      :opts opts
                       :url ::query-articles})))]])))
+
+

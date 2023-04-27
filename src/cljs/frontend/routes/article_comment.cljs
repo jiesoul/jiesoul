@@ -9,7 +9,8 @@
               [frontend.shared.layout :refer [layout-dash]]
               [frontend.shared.modals :as modals]
               [frontend.shared.page :refer [page-dash]]
-              [frontend.shared.tables :refer [table-dash td-dash th-dash]]
+              [frontend.shared.tables :refer [css-list-table-tbody-tr
+                                              table-dash td-dash th-dash]]
               [frontend.shared.toasts :as toasts]
               [frontend.state :as f-state]
               [frontend.util :as f-util]
@@ -224,7 +225,7 @@
   (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
         update-modal-show? @(re-frame/subscribe [::update-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
-        q-data (r/atom {:per-page 10 :page 1 :filter "" :sort ""})
+        q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
     (layout-dash
      [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-96"}
@@ -270,17 +271,17 @@
       [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
 
       ;; data table
-      [:div
-       (let [{:keys [article-commentss-comments query total]} @(re-frame/subscribe [::article-commentss-comments-list])
-             page (:page query)
-             per-page (:per-page query)]
+      [:div {:class ""}
+       (let [{:keys [article-commentss-comments opts total]} @(re-frame/subscribe [::article-commentss-comments-list])
+             page (:page opts)
+             page-size (:page-size opts)]
          (table-dash
           [:tr
            [th-dash "Name"]
            [th-dash "Description"]
            [th-dash "操作"]]
           (for [c article-commentss-comments]
-            [:tr {:class css/list-table-tbody-tr}
+            [:tr {:class css-list-table-tbody-tr}
              [td-dash
               [:span {:class ""} (:name c)]]
              [td-dash
@@ -296,7 +297,7 @@
                                             (re-frame/dispatch [::show-delete-modal true]))}
                 "Del"]]]])
           (page-dash {:page page
-                      :per-page per-page
+                      :page-size page-size
                       :total total
-                      :query query
+                      :opts opts
                       :url ::query-article-commentss-comments})))]])))

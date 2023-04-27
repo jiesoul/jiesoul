@@ -6,6 +6,6 @@
     (for [d b-data]
       [:li {:class "inline-flex items-center"}
        [:a {:href "#"
-            :class "text-6xl font-bold inline-flex items-center text-gray-700 
-                  hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"}
+             :class "text-6xl font-bold inline-flex items-center text-gray-700 
+                  hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"} 
         d]])]])

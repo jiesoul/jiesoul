@@ -41,12 +41,12 @@
 (s/def ::description string?)
 
 (s/def ::page pos-int?)
-(s/def ::per-page pos-int?)
+(s/def ::page-size pos-int?)
 (s/def ::sort string?)
 (s/def ::filter string?)
 (s/def ::q string?)
 (s/def ::query
-  (s/keys :opt-un [::page ::per-page ::sort ::filter ::q]))
+  (s/keys :opt-un [::page ::page-size ::sort ::filter ::q]))
 
 (s/def ::username string?)
 (s/def ::nickname string?)

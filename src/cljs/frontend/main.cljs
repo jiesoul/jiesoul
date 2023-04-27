@@ -107,23 +107,41 @@
 
    ["categories" {:name ::f-state/categories
                   :view category/index
-                  :link-text "categories"}]
+                  :link-text "categories"
+                  :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                                 :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
 
    ["tags" {:name ::f-state/tags
             :view tag/index
-            :link-text "tags"}]
+            :link-text "tags"
+            :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                           :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+   
+   ["article-new" {:name ::f-state/article-new
+                   :view article/new
+                   :link-text "article-new"
+                   :controllers [{:start (fn [& params] (do
+                                                          (js/console.log (str "Entering dashboard, params: " params))
+                                                          (re-frame/dispatch [::category/query-categories {:page 1 :page-size 10000}])))
+                                  :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
 
    ["articles" {:name ::f-state/articles
                 :view article/index
-                :link-text "articles"}]
+                :link-text "articles"
+                :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                               :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
 
    ["articles-comments" {:name ::f-state/articles-comments
                          :view article-comment/index
-                         :link-text "articles-comments"}]
+                         :link-text "articles-comments"
+                         :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                                        :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
 
    ["users" {:name ::f-state/users
              :view user/index
-             :link-text "users"}]])
+             :link-text "users"
+             :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                            :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]])
 
 (defn on-navigate [new-match]
   (f-util/clog "on-navigate, new-match" new-match)

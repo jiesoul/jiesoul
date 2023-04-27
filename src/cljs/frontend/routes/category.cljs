@@ -2,15 +2,15 @@
   (:require [clojure.string :as str]
             [frontend.http :as f-http]
             [frontend.routes.category :as category]
-            [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
             [frontend.shared.buttons :refer [btn delete-button edit-button
                                              green-button red-button]]
             [frontend.shared.css :as css]
             [frontend.shared.form-input :refer [text-input-backend]]
             [frontend.shared.layout :refer [layout-dash]]
-            [frontend.shared.modals :as  modals] 
+            [frontend.shared.modals :as  modals]
             [frontend.shared.page :refer [page-dash]]
-            [frontend.shared.tables :refer [table-dash td-dash th-dash]]
+            [frontend.shared.tables :refer [css-list-table-tbody-tr table-dash
+                                            tbody-tr td-dash th-dash]]
             [frontend.shared.toasts :as toasts]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
@@ -174,7 +174,7 @@
      [:div {:class "grid gap-4 mb-6 sm:grid-cols-2"}
       
       [:div 
-       (text-input-backend {:label "Name"
+       (text-input-backend {:label "Name："
                             :name "name"
                             :required true 
                             :on-blur #(check-name (f-util/get-value %))
@@ -226,20 +226,19 @@
   (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
         update-modal-show? @(re-frame/subscribe [::update-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
-        q-data (r/atom {:per-page 10 :page 1 :filter "" :sort ""})
+        q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])] 
     (layout-dash 
-     [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-auto"} 
+     [:div {:class css/main-container}
       ;; page title
-      [:div 
-       [breadcrumb-dash ["Category"]]]
+      [:h4 {:class css/page-title} "Category"]
       
       ;; page query form
       [:form
        [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
         [:div {:class "grid grid-cols-4 gap-3"}
          [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "name"
+          (text-input-backend {:label "name："
                                :type "text"
                                :id "name"
                                :on-blur #(when-let [v (f-util/get-trim-value %)]
@@ -273,32 +272,31 @@
       
       ;; data table
       [:div 
-       (let [{:keys [categories query total]} @(re-frame/subscribe [::categories-list])
-             page (:page query)
-             per-page (:per-page query)]
-         (table-dash
+       (let [{:keys [categories opts total]} @(re-frame/subscribe [::categories-list])
+             page (:page opts)
+             page-size (:page-size opts)]
+         (table-dash 
           [:tr
            [th-dash "Name"]
            [th-dash "Description"]
-           [th-dash "操作"]]
+           [th-dash "操作"]] 
           (for [c categories]
-            [:tr {:class css/list-table-tbody-tr}
+            [:tr {:class css-list-table-tbody-tr}
+             [td-dash (:name c)]
+             [td-dash (:description c)]
              [td-dash
-              [:span {:class ""} (:name c)]]
-             [td-dash
-              [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
-             [td-dash
-              [:<> 
+              [:<>
                [edit-button {:on-click #(do (re-frame/dispatch [::get-category (:id c)])
-                                        (re-frame/dispatch [::show-update-modal true]))}
+                                            (re-frame/dispatch [::show-update-modal true]))}
                 "Edit"]
                [:span " | "]
                [delete-button {:on-click #(do
                                             (re-frame/dispatch [::get-category (:id c)])
                                             (re-frame/dispatch [::show-delete-modal true]))}
                 "Del"]]]])
-          (page-dash {:page page
-                         :per-page per-page
-                         :total total
-                         :query query
-                         :url ::query-categories})))]])))
+          (when (pos-int? total)
+            [page-dash {:page page
+                        :page-size page-size
+                        :total total
+                        :opts opts
+                        :url ::query-categories}])))]])))

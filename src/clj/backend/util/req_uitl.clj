@@ -2,7 +2,7 @@
   (:require [clojure.tools.logging :as log]))
 
 (def DEFAULT-PAGE 1)
-(def DEFAULT-PER-PAGE 10)
+(def DEFAULT-PAGE-SIZE 10)
 
 (defn parse-header
   [request token-name]
@@ -23,6 +23,6 @@
   [req]
   (let [query (get-in req [:parameters :query])
         page (or (get query :page) DEFAULT-PAGE)
-        per-page (or (get query :per-page) DEFAULT-PER-PAGE)
+        page-size (or (get query :page-size) DEFAULT-PAGE-SIZE)
         _ (log/debug "parameters query " query)]
-    (assoc query :page page :per-page per-page)))
+    (assoc query :page page :page-size page-size)))

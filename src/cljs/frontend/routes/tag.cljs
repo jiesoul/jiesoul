@@ -1,7 +1,6 @@
 (ns frontend.routes.tag 
   (:require [clojure.string :as str]
             [frontend.http :as f-http]
-            [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
             [frontend.shared.buttons :refer [btn delete-button edit-button
                                              green-button red-button]]
             [frontend.shared.css :as css]
@@ -9,7 +8,8 @@
             [frontend.shared.layout :refer [layout-dash]]
             [frontend.shared.modals :as modals]
             [frontend.shared.page :refer [page-dash]]
-            [frontend.shared.tables :refer [table-dash td-dash th-dash]]
+            [frontend.shared.tables :refer [css-list-table-tbody-tr table-dash
+                                            td-dash th-dash]]
             [frontend.shared.toasts :as toasts]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
@@ -224,20 +224,19 @@
   (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
         update-modal-show? @(re-frame/subscribe [::update-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
-        q-data (r/atom {:per-page 10 :page 1 :filter "" :sort ""})
+        q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
     (layout-dash
-     [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-96"}
+     [:div {:class css/main-container}
       ;; page title
-      [:div
-       [breadcrumb-dash ["Tag"]]]
+      [:h4 {:class css/page-title} "Tags"]
 
       ;; page query form
       [:form
        [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
         [:div {:class "grid grid-cols-4 gap-3"}
          [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "name"
+          (text-input-backend {:label "Name："
                                :type "text"
                                :id "name"
                                :on-blur #(when-let [v (f-util/get-trim-value %)]
@@ -267,24 +266,22 @@
                                                       (re-frame/dispatch [::show-delete-modal false]))}
         [delete-form]]]
       ;; hr
-      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
+      [:div {:class "h-px my-4 bg-blue-500 border-1 dark:bg-blue-700"}]
 
       ;; data table
       [:div
-       (let [{:keys [tags query total]} @(re-frame/subscribe [::tags-list])
-             page (:page query)
-             per-page (:per-page query)]
+       (let [{:keys [tags opts total]} @(re-frame/subscribe [::tags-list])
+             page (:page opts)
+             page-size (:page-size opts)]
          (table-dash
           [:tr
            [th-dash "Name"]
            [th-dash "Description"]
            [th-dash "操作"]]
           (for [c tags]
-            [:tr {:class css/list-table-tbody-tr}
-             [td-dash
-              [:span {:class ""} (:name c)]]
-             [td-dash
-              [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
+            [:tr {:class css-list-table-tbody-tr}
+             [td-dash (:name c)]
+             [td-dash (:description c)]
              [td-dash
               [:<>
                [edit-button {:on-click #(do (re-frame/dispatch [::get-tag (:id c)])
@@ -294,9 +291,10 @@
                [delete-button {:on-click #(do
                                             (re-frame/dispatch [::get-tag (:id c)])
                                             (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]])
-          (page-dash {:page page
-                      :per-page per-page
-                      :total total
-                      :query query
-                      :url ::query-tags})))]])))
+                "Del"]]]]) 
+          (when (pos-int? total)
+            (page-dash {:page page
+                        :page-size page-size
+                        :total total
+                        :opts opts
+                        :url ::query-tags}))))]])))
