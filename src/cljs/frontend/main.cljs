@@ -1,12 +1,13 @@
 (ns frontend.main
-  (:require [day8.re-frame.http-fx]
+  (:require [clojure.spec.alpha :as s]
+            [day8.re-frame.http-fx]
+            [frontend.routes.article :as article]
+            [frontend.routes.article-comment :as article-comment]
             [frontend.routes.category :as category]
             [frontend.routes.dashboard :as dashboard]
             [frontend.routes.index :as f-index]
             [frontend.routes.login :as f-login]
             [frontend.routes.tag :as tag]
-            [frontend.routes.article :as article]
-            [frontend.routes.article-comment :as article-comment]
             [frontend.routes.user :as user]
             [frontend.shared.toasts :as toasts]
             [frontend.state :as f-state]
@@ -116,22 +117,44 @@
             :link-text "tags"
             :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
                            :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
-   
-   ["article-new" {:name ::f-state/article-new
-                   :view article/new
-                   :link-text "article-new"
-                   :controllers [{:start (fn [& params] (do
-                                                          (js/console.log (str "Entering dashboard, params: " params))
-                                                          (re-frame/dispatch [::category/query-categories {:page 1 :page-size 10000}])))
-                                  :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
 
+   
+   
    ["articles" {:name ::f-state/articles
                 :view article/index
                 :link-text "articles"
                 :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
                                :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+   
+   ["article-new" {:name ::f-state/article-new
+                     :view article/new
+                     :link-text "article-new"
+                     :controllers [{:start (fn [& params]
+                                             (f-util/clog (str "Entering dashboard, params: " params)))
+                                    :stop (fn [& params]
+                                            (js/console.log (str "Leaving login, params: " params)))}]}]
 
-   ["articles-comments" {:name ::f-state/articles-comments
+   ["/articles/edit" [{:name ::f-state/article-edit
+                  :parameters {:path  {:id int?}}
+                  :view article/edit
+                  :link-text "article-edit"
+                  :controllers [{:start (fn [& params]
+                                          (let [id (-> params :path :id)]
+                                            (re-frame/dispatch [::get-article id])
+                                            (f-util/clog (str "Entering dashboard, params: " params))))
+                                 :stop (fn [& params]
+                                         (js/console.log (str "Leaving login, params: " params)))}]}]]
+
+   ["/articles/push" [{:name ::f-state/article-push
+                       :view article/push
+                       :parameters {:path  {:id int?}}
+                       :link-text "article-push"
+                       :controllers [{:start (fn [& params]
+                                               (f-util/clog (str "Entering dashboard, params: " params)))
+                                      :stop (fn [& params]
+                                              (js/console.log (str "Leaving login, params: " params)))}]}]] 
+
+   ["articles/comments" {:name ::f-state/articles-comments
                          :view article-comment/index
                          :link-text "articles-comments"
                          :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))

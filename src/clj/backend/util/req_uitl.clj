@@ -13,7 +13,7 @@
 
 (defn parse-body
   [req key]
-  (get-in req [:parameters :body key]))
+  (get-in req [:body-params key]))
 
 (defn parse-path 
   [req key]

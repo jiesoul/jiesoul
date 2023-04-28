@@ -75,7 +75,7 @@
            (case type
              :success (svg/success)
              :warning (svg/warning)
-             :error (svg/warning)
+             :error (svg/danger)
              (svg/info))]
           [:div {:class "ml-3 text-sm font-normal w-auto h-auto overflow-y-hidden"} content]
           [:button {:type "button"

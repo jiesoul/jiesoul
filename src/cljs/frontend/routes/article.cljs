@@ -169,29 +169,72 @@
     (reset! name-error "名称不能为空")
     (reset! name-error nil)))
 
-(defn add-form []
+(defn edit-layout [title children]
+  (layout-dash
+   [:section {:class "bg-white dark:bg-gray-900 overflow-y-auto"}
+    [:div {:class "py-2 px-2 mx-auto max-w-2xl lg:py-8"}
+     [:h2 {:class "mb-2 text-xl font-bold text-gray-900 dark:text-white"}
+      title]
+     children]]))
+
+(defn new []
+  (edit-layout "Add Article"
+   (let [login-user @(re-frame/subscribe [::f-state/login-user])
+         article (r/atom {:title ""
+                          :author (:username login-user)
+                          :like_count 0
+                          :read_count 0
+                          :comment_count 0
+                          :summary ""
+                          :detail {:content_md ""}})]
+     [:form
+      [:div {:class "flex-l flex-col"} 
+       [text-input {:class "pt-4"
+                    :label "Title"
+                    :name "title"
+                    :required ""
+                    :on-change #(swap! article assoc :title (f-util/get-value %))}]
+       
+       [textarea {:class "pt-4"
+                  :label "Summary"
+                  :name "summary"
+                  :required ""
+                  :on-change #(swap! article assoc :summary (f-util/get-value %))}] 
+       
+       [file-input {:class "pt-4"
+                    :help "md"}]
+       [textarea {:class "pt-4"
+                  :label "Content"
+                  :rows 8
+                  :name "content"
+                  :on-change #(swap! article assoc-in [:detail :content_md] (f-util/get-trim-value %))}]
+       [:div {:class "flex justify-center items-center space-x-4 mt-4"}
+        [green-button {:on-click #(re-frame/dispatch [::add-article @article])}
+         "Add"]]]])))
+
+(defn push-form []
   (let [login-user @(re-frame/subscribe [::f-state/login-user])
         article (r/atom {:title ""
                          :author (:username login-user)
                          :like-count 0
                          :read-count 0
-                         :article-summary ""
-                         :article-detail {:content-md ""}})
+                         :summary ""
+                         :detail {:content-md ""}})
         {:keys [categories]} @(re-frame/subscribe [::category/categories-list])]
     [:form
-     [:div {:class "flex-l flex-col"} 
+     [:div {:class "flex-l flex-col"}
       [text-input {:class "pt-4"
                    :label "Title"
                    :name "title"
                    :required ""
                    :on-change #(swap! article assoc :title (f-util/get-value %))}]
-      
+
       [text-input {:class "pt-4"
-                   :label "Summary"
-                   :name "article-summary"
+                   :label "Tags"
+                   :name "tags"
                    :required ""
-                   :on-change #(swap! article assoc :summary (f-util/get-value %))}]
-      
+                   :on-change #(swap! article assoc :tags (f-util/get-value %))}]
+
       [select-input {:class "pt-4"
                      :label "Category"
                      :required ""
@@ -199,42 +242,37 @@
        [:option "select category"]
        (for [c categories]
          [:option {:value (:id c)} (:name c)])]
-      [file-input {:class "pt-4"
-                   :help "md"}]
-      [textarea {:class "pt-4"
-                 :label "Content"
-                 :rows 8
-                 :name "content"
-                 :on-change #(swap! article assoc :content (f-util/get-trim-value %))}]
       [:div {:class "flex justify-center items-center space-x-4 mt-4"}
        [green-button {:on-click #(re-frame/dispatch [::add-article @article])}
         "Add"]]]]))
 
-(defn new []
+(defn push []
   (layout-dash
    [:section {:class "bg-white dark:bg-gray-900 overflow-y-auto"}
     [:div {:class "py-2 px-2 mx-auto max-w-2xl lg:py-8"}
      [:h2 {:class "mb-2 text-xl font-bold text-gray-900 dark:text-white"}
       "New Article"]
-     [add-form]]]))
+     [push-form]]]))
 
-(defn update-form []
-  (let [current (re-frame/subscribe [::article-current])
-        name (r/cursor current [:name])
-        description (r/cursor current [:description])]
-    [:form
-     [:div {:class "grid gap-4 mb-4 sm:grid-cols-2"}
-      (text-input-backend {:label "Name"
-                           :name "name"
-                           :default-value @name
-                           :on-change #(re-frame/dispatch [::reset-current :name (f-util/get-value %)])})
-      (text-input-backend {:label "Description"
-                           :name "descrtiption"
-                           :default-value @description
-                           :on-change #(re-frame/dispatch [::reset-current :description (f-util/get-value %)])})]
-     [:div {:class "flex justify-center items-center space-x-4"}
-      [green-button {:on-click #(re-frame/dispatch [::update-article @current])}
-       "Update"]]]))
+(defn edit []
+  (edit-layout "Edit Aritcle"
+   [:section {:class ""}
+    (let [current (re-frame/subscribe [::article-current])
+          name (r/cursor current [:name])
+          description (r/cursor current [:description])]
+      [:form
+       [:div {:class "grid gap-4 mb-4 sm:grid-cols-2"}
+        (text-input-backend {:label "Name"
+                             :name "name"
+                             :default-value @name
+                             :on-change #(re-frame/dispatch [::reset-current :name (f-util/get-value %)])})
+        (text-input-backend {:label "Description"
+                             :name "descrtiption"
+                             :default-value @description
+                             :on-change #(re-frame/dispatch [::reset-current :description (f-util/get-value %)])})]
+       [:div {:class "flex justify-center items-center space-x-4"}
+        [green-button {:on-click #(re-frame/dispatch [::update-article @current])}
+         "Update"]]])]))
 
 (defn delete-form []
   (let [current (re-frame/subscribe [::article-current])
@@ -279,8 +317,7 @@
                                          :title "Update article"
                                          :on-close #(do
                                                       (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-update-modal false]))}
-        [update-form]]
+                                                      (re-frame/dispatch [::show-update-modal false]))}]
        [modals/modal delete-modal-show? {:id "Delete-article"
                                          :title "Delete article"
                                          :on-close #(do
@@ -298,18 +335,25 @@
          (table-dash
           [:tr
            [th-dash "Name"]
-           [th-dash "Description"]
+           [th-dash "Author"]
+           [th-dash "Like-count"]
+           [th-dash "Read-count"]
+           [th-dash "Comment-count"]
+           [th-dash "Create-time"]
+           [th-dash "Top"]
            [th-dash "操作"]]
           (for [c articles]
             [:tr {:class css-list-table-tbody-tr}
-             [td-dash
-              [:span {:class ""} (:name c)]]
-             [td-dash
-              [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
+             [td-dash (:title c)]
+             [td-dash (:author c)]
+             [td-dash (:like-count c)]
+             [td-dash (:read-count c)]
+             [td-dash (:comment-count c)]
+             [td-dash (:create-time c)]
+             [td-dash (:top-flag c)]
              [td-dash
               [:<>
-               [edit-button {:on-click #(do (re-frame/dispatch [::get-article (:id c)])
-                                            (re-frame/dispatch [::show-update-modal true]))}
+               [edit-button {:on-click #(re-frame/dispatch [::f-state/navigate [::f-state/article-edit]])}
                 "Edit"]
                [:span " | "]
                [delete-button {:on-click #(do

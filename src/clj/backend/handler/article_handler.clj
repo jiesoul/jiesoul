@@ -5,6 +5,11 @@
             [backend.db.article-comment-db :as article-comment-db]
             [backend.util.resp-util :as resp-util]))
 
+(defn gen-id []
+  (let [now (java.time.LocalDateTime/now)
+        dtf (java.time.format.DateTimeFormatter/ofPattern "yyyyMMddHHmmssSSSSS")]
+    (. dtf format now)))
+
 (defn query-articles [{:keys [db]} opts]
   (log/debug "Query articles " opts)
   (if-let [data (article-db/query db opts)]
@@ -14,7 +19,10 @@
 (defn create-article! [{:keys [db]} article]
   (log/debug "Creatge article " article)
   (let [create-time (java.time.Instant/now)
-        _ (article-db/create! db (assoc article :create_time create-time))]
+        id (gen-id)
+        _ (article-db/create! db (-> article
+                                     (assoc :create_time create-time
+                                            :id id)))]
     (resp-util/ok {})))
 
 (defn get-article [{:keys [db]} id]

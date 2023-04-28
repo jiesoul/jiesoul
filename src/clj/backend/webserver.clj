@@ -16,7 +16,8 @@
             [backend.handler.category-handler :as category-handler]
             [backend.handler.user-handler :as user-handler]
             [backend.handler.tag-handler :as tag-handler]
-            [backend.handler.article-handler :as article-handler]))
+            [backend.handler.article-handler :as article-handler]
+            [clojure.tools.logging :as log]))
 
 ;; (defn make-response [response-value]
 ;;   (if (= (:ret response-value) :ok)
@@ -84,19 +85,19 @@
 (s/def ::article-id pos-int?)
 (s/def ::category-id pos-int?)
 (s/def ::title ::not-empty-string)
-(s/def ::author ::id)
-(s/def ::article-summary string?)
+(s/def ::author string?)
+(s/def ::summary string?)
 (s/def ::content-html string?)
 (s/def ::content-md string?)
 (s/def ::tags string?)
 
 (s/def ::ArticleAdd 
-  (s/keys :req-un [::article-id ::title ::category-id ::author]
-          :opt-un [::tags ::article-summary ::content-md ::content-html]))
+  (s/keys :req-un [::title ::author]
+          :opt-un [::summary]))
 
 (s/def ::ArticleUpdate 
-  (s/keys :req-un [::article-id ::title ::category-id ::author]
-          :opt-un [::tags ::article-summary ::content-md ::content-html]))
+  (s/keys :req-un [::id ::title ::author]
+          :opt-un [::summary]))
 
 (s/def ::ArticleCommentAdd 
   (s/keys :req-un [::id ::article-id ::content ::pid]))
@@ -285,8 +286,9 @@
           :post {:summary "New a article"
                  :middleware [[auth-mw/wrap-auth env "user"]]
                  :parameters {:header {:authorization ::token}
-                              :body {:artcile ::ArticleAdd}}
+                              :body {:article ::ArticleAdd}}
                  :handler (fn [req]
+                            (log/debug  "new a article req: " (:body-params req))
                             (let [article (req-util/parse-body req :article)]
                               (article-handler/create-article! env article)))}}]
 
