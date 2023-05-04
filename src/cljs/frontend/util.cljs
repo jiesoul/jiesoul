@@ -1,6 +1,14 @@
 (ns frontend.util
   (:require [cljs.pprint]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [reitit.frontend.easy :as rfe]))
+
+(defn href
+  "Return relative url for given route. Url can be used in HTML links"
+  ([k] (href k nil nil))
+  ([k params] (href k params nil))
+  ([k params query]
+   (rfe/href k params query)))
 
 (defn get-value [d]
   (-> d .-target .-value))

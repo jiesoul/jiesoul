@@ -2,7 +2,8 @@
   (:require [reagent.core :as r]
             [re-frame.core :as re-frame]
             [frontend.state :as f-state]
-            [frontend.shared.svg :as svg]))
+            [frontend.shared.svg :as svg]
+            [frontend.util :as f-util]))
 
 (def articles-nav-show? (r/atom true))
 
@@ -27,24 +28,15 @@
       
       [:ul {:class "mt-10"} 
        [:li>a {:class css-sidebar-li-a-top
-               :href "#"
-               :on-click #(do 
-                            (re-frame/dispatch [::f-state/init :dashboard])
-                            (re-frame/dispatch [::f-state/navigate ::f-state/dashboard]))}
+               :href (f-util/href ::f-state/dashboard)}
         [:span {:class "mx-2"} "Dashboard"]] 
        
        [:li>a {:class css-sidebar-li-a-top
-               :href "#"
-               :on-click #(do
-                            (re-frame/dispatch [::f-state/init :category])
-                            (re-frame/dispatch [::f-state/navigate ::f-state/categories]))}
+               :href (f-util/href ::f-state/categories)}
         [:span {:class "mx-2"} "Category"]]
        
        [:li>a {:class css-sidebar-li-a-top
-               :href "#"
-               :on-click #(do
-                            (re-frame/dispatch [::f-state/init :tag])
-                            (re-frame/dispatch [::f-state/navigate ::f-state/tags]))}
+               :href (f-util/href ::f-state/tags)}
         [:span {:class "mx-2"} "Tag"]]
 
        [:li 
@@ -56,33 +48,27 @@
          (svg/chevron-up)]
         [:ul {:class "py-2 space-y-2"
               :hidden @articles-nav-show?} 
-         [:li>a {:href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/article-new])
+         [:li>a {:href (f-util/href ::f-state/article-new)
                  :class css-sidebar-li-a-second}
           "New Articles"]
          
-         [:li>a {:href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/articles])
+         [:li>a {:href (f-util/href ::f-state/articles)
                  :class css-sidebar-li-a-second}
           "Articles"] 
-         [:li>a {:href "#"
-                 :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/articles-comments])
+         [:li>a {:href (f-util/href ::f-state/articles-comments)
                  :class css-sidebar-li-a-second}
           "Comments"]]]
        
        [:li>a {:class css-sidebar-li-a-top
-               :href "#"
-               :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/users])}
+               :href (f-util/href ::f-state/users)}
         [:span {:class "mx-3"} "User"]]
        
        [:li>a {:class css-sidebar-li-a-top
-               :href "#"
-               :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/user-tokens])}
+               :href (f-util/href ::f-state/user-tokens)}
         [:span {:class "mx-3"} "User Token"]]
        
        [:li>a {:class css-sidebar-li-a-top
-               :href "#"
-               :on-click #(re-frame/dispatch [::f-state/navigate ::f-state/apies-tokens])}
+               :href (f-util/href ::f-state/api-tokens)}
         [:span {:class "mx-3"} "Api Token"]]
 
        ]]]))
