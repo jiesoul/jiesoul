@@ -2,7 +2,7 @@
   (:require [clojure.string :as str]
             [frontend.http :as f-http]
             [frontend.shared.buttons :refer [btn delete-button edit-button
-                                             green-button red-button]]
+                                             new-button red-button]]
             [frontend.shared.css :as css]
             [frontend.shared.form-input :refer [text-input-backend]]
             [frontend.shared.layout :refer [layout-dash]]
@@ -24,27 +24,27 @@
    (assoc db :tag nil)))
 
 (re-frame/reg-sub
- ::add-modal-show?
+ ::new-modal-show?
  (fn [db]
-   (get-in db [:tag :add-modal-show?])))
+   (get-in db [:tag :new-modal-show?])))
 
 (re-frame/reg-event-db
  ::show-add-modal
  (fn [db [_ show?]]
    (-> db
-       (assoc-in [:tag :add-modal-show?] show?)
+       (assoc-in [:tag :new-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-sub
- ::update-modal-show?
+ ::edit-modal-show?
  (fn [db]
-   (get-in db [:tag :update-modal-show?])))
+   (get-in db [:tag :edit-modal-show?])))
 
 (re-frame/reg-event-db
  ::show-update-modal
  (fn [db [_ show?]]
    (-> db
-       (assoc-in [:tag :update-modal-show?] show?)
+       (assoc-in [:tag :edit-modal-show?] show?)
        (assoc :modal-backdrop-show? show?))))
 
 (re-frame/reg-sub
@@ -79,20 +79,20 @@
                     ::query-tags-ok)))
 
 (re-frame/reg-event-fx
- ::add-tag-ok
+ ::new-tag-ok
  (fn [{:keys [db]} [_ resp]]
    (f-util/clog "add tag ok: " resp)
    {:db (-> db
             (update-in [:toasts] conj {:content "添加成功" :type :info}))}))
 
 (re-frame/reg-event-fx
- ::add-tag
+ ::new-tag
  (fn [{:keys [db]} [_ tag]]
    (f-util/clog "add tag: " tag)
    (f-http/http-post db
                      (f-http/api-uri "/tags")
                      {:tag tag}
-                     ::add-tag-ok)))
+                     ::new-tag-ok)))
 
 (re-frame/reg-event-db
  ::get-tag-ok
@@ -186,10 +186,10 @@
                             :name "descrtiption"
                             :on-change #(swap! tag assoc :description (f-util/get-value %))})]]
      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-      [green-button {:on-click #(re-frame/dispatch [::add-tag @tag])}
+      [new-button {:on-click #(re-frame/dispatch [::new-tag @tag])}
        "Add"]]]))
 
-(defn update-form []
+(defn edit-form []
   (let [current (re-frame/subscribe [::tag-current])
         name (r/cursor current [:name])
         description (r/cursor current [:description])]
@@ -204,7 +204,7 @@
                            :default-value @description
                            :on-change #(re-frame/dispatch [::reset-current :description (f-util/get-value %)])})]
      [:div {:class "flex justify-center items-center space-x-4"}
-      [green-button {:on-click #(re-frame/dispatch [::update-tag @current])}
+      [new-button {:on-click #(re-frame/dispatch [::update-tag @current])}
        "Update"]]]))
 
 (defn delete-form []
@@ -221,8 +221,8 @@
        "Delete"]]]))
 
 (defn index []
-  (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
-        update-modal-show? @(re-frame/subscribe [::update-modal-show?])
+  (let [new-modal-show? @(re-frame/subscribe [::new-modal-show?])
+        edit-modal-show? @(re-frame/subscribe [::edit-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
         q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
@@ -249,21 +249,24 @@
 
       ;; modals
       [:div
-       [modals/modal add-modal-show? {:id "add-tag"
-                                      :title "Add Tag"
-                                      :on-close #(re-frame/dispatch [::show-add-modal false])}
+       [modals/modal  {:id "new-tag"
+                       :show new-modal-show?
+                       :title "Add Tag"
+                       :on-close #(re-frame/dispatch [::show-add-modal false])}
         [add-form]]
-       [modals/modal update-modal-show? {:id "update-tag"
-                                         :title "Update Tag"
-                                         :on-close #(do
-                                                      (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-update-modal false]))}
-        [update-form]]
-       [modals/modal delete-modal-show? {:id "Delete-Tag"
-                                         :title "Delete Tag"
-                                         :on-close #(do
-                                                      (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-delete-modal false]))}
+       [modals/modal  {:id "update-tag"
+                       :show? edit-modal-show?
+                       :title "Update Tag"
+                       :on-close #(do
+                                    (re-frame/dispatch [::clean-current])
+                                    (re-frame/dispatch [::show-update-modal false]))}
+        [edit-form]]
+       [modals/modal  {:id "Delete-Tag"
+                       :show? delete-modal-show?
+                       :title "Delete Tag"
+                       :on-close #(do
+                                    (re-frame/dispatch [::clean-current])
+                                    (re-frame/dispatch [::show-delete-modal false]))}
         [delete-form]]]
       ;; hr
       [:div {:class "h-px my-4 bg-blue-500 border-1 dark:bg-blue-700"}]

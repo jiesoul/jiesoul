@@ -1,7 +1,7 @@
 CREATE TABLE article
 -- 文章
 (
-    id INTEGER PRIMARY KEY NOT NULL,    -- 博文ID
+    id VARCHAR PRIMARY KEY NOT NULL,    -- 博文ID
     push_data DATETIME,                 -- 发布日期
     author VARCHAR(32),                 -- 发表用户
     title VARCHAR(1024),                -- 博文标题

@@ -2,7 +2,7 @@
   (:require [frontend.routes.login :refer [login]]
             [frontend.shared.footer :refer [footer-home]]
             [frontend.shared.header :refer [header-dash nav-home]]
-            [frontend.shared.modals :refer [modal modal-back]]
+            [frontend.shared.modals :refer [modal modal-back default-modal]]
             [frontend.shared.sidebar :refer [sidebar-dash]]
             [frontend.shared.toasts :refer [toasts]]
             [frontend.state :as f-state]

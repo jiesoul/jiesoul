@@ -31,7 +31,7 @@
     :debug true
     :login-status nil
     :login-user nil
-    :modal-backdrop? false
+    :modal nil
     :category nil
     :tag nil
     :article nil
@@ -126,57 +126,18 @@
     ["" {:name ::f-state/articles
          :view article/index
          :link-text "articles"
-         :controllers [{:start (fn [& params] 
+         :controllers [{:start (fn [& params]
                                  (re-frame/dispatch [::f-state/init :article])
                                  (js/console.log (str "Entering articles, params: " params)))
                         :stop (fn [& params] (js/console.log (str "Leaving articles, params: " params)))}]}]
-
-    ["/new" {:name ::f-state/article-new
-             :view article/new
-             :link-text "article-new"
-             :controllers [{:start (fn [& params]
-                                     (js/console.log (str "Entering new article, params: " params)))
-                            :stop (fn [& params]
-                                    (js/console.log (str "Leaving new article , params: " params)))}]}]
-
-    ["/edit/:id" {:name ::f-state/article-edit
-                  :view article/edit
-                  :parameters {:path {:id int?}}
-                  :link-text "article-edit"
-                  :controllers [{:parameters {:path [:id]}
-                                 :start (fn [& params]
-                                          (let [id (-> params :id)]
-                                            (re-frame/dispatch [::get-article id])
-                                            (f-util/clog (str "Entering article edit, params: " params))))
-                                 :stop (fn [& params]
-                                         (js/console.log (str "Leaving article edit, params: " params)))}]}]]
-  
-
-  ;;  ["articles/:id/edit" [{:name ::f-state/article-edit
-  ;;                         :parameters {:path [:id]}
-  ;;                         :view article/edit
-  ;;                         :link-text "article-edit"
-  ;;                         :controllers [{:start (fn [& params]
-  ;;                                                 (let [id (-> params :path :id)]
-  ;;                                                   (re-frame/dispatch [::get-article id])
-  ;;                                                   (f-util/clog (str "Entering dashboard, params: " params))))
-  ;;                                        :stop (fn [& params]
-  ;;                                                (js/console.log (str "Leaving login, params: " params)))}]}]]
-
-   ["/articles/push" [{:name ::f-state/article-push
-                       :view article/push 
-                       :link-text "article-push"
-                       :controllers [{:start (fn [& params]
-                                               (f-util/clog (str "Entering dashboard, params: " params)))
-                                      :stop (fn [& params]
-                                              (js/console.log (str "Leaving login, params: " params)))}]}]] 
-
-  ;;  ["articles/comments" {:name ::f-state/articles-comments
-  ;;                        :view article-comment/index
-  ;;                        :link-text "articles-comments"
-  ;;                        :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
-  ;;                                       :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
-
+    
+    ["/comments" {:name ::f-state/articles-comments
+                          :view article-comment/index
+                          :link-text "articles-comments"
+                          :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                                         :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]]
+   
+   
    ["users" {:name ::f-state/users
              :view user/index
              :link-text "users"

@@ -3,7 +3,7 @@
               [frontend.http :as f-http]
               [frontend.shared.breadcrumb :refer [breadcrumb-dash]]
               [frontend.shared.buttons :refer [btn delete-button edit-button
-                                               green-button red-button]]
+                                               new-button red-button]]
               [frontend.shared.css :as css]
               [frontend.shared.form-input :refer [text-input-backend]]
               [frontend.shared.layout :refer [layout-dash]]
@@ -187,7 +187,7 @@
                             :name "descrtiption"
                             :on-change #(swap! article-comments assoc :description (f-util/get-value %))})]]
      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-      [green-button {:on-click #(re-frame/dispatch [::add-article-comments @article-comments])}
+      [new-button {:on-click #(re-frame/dispatch [::add-article-comments @article-comments])}
        "Add"]]]))
 
 (defn update-form []
@@ -205,7 +205,7 @@
                            :default-value @description
                            :on-change #(re-frame/dispatch [::reset-current :description (f-util/get-value %)])})]
      [:div {:class "flex justify-center items-center space-x-4"}
-      [green-button {:on-click #(re-frame/dispatch [::update-article-comments @current])}
+      [new-button {:on-click #(re-frame/dispatch [::update-article-comments @current])}
        "Update"]]]))
 
 (defn delete-form []

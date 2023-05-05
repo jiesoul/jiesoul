@@ -47,10 +47,7 @@
                  :sidebartoggleitem "true"} "Article"]
          (svg/chevron-up)]
         [:ul {:class "py-2 space-y-2"
-              :hidden @articles-nav-show?} 
-         [:li>a {:href (f-util/href ::f-state/article-new)
-                 :class css-sidebar-li-a-second}
-          "New Articles"]
+              :hidden @articles-nav-show?}
          
          [:li>a {:href (f-util/href ::f-state/articles)
                  :class css-sidebar-li-a-second}

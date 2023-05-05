@@ -3,7 +3,7 @@
             [frontend.http :as f-http]
             [frontend.routes.category :as category]
             [frontend.shared.buttons :refer [btn delete-button edit-button
-                                             green-button red-button]]
+                                             new-button red-button]]
             [frontend.shared.css :as css]
             [frontend.shared.form-input :refer [text-input-backend]]
             [frontend.shared.layout :refer [layout-dash]]
@@ -188,7 +188,7 @@
                             :name "descrtiption" 
                             :on-change #(swap! category assoc :description (f-util/get-value %))})]] 
      [:div {:class "flex justify-center items-center space-x-4 mt-4"} 
-      [green-button {:on-click #(re-frame/dispatch [::add-category @category])}
+      [new-button {:on-click #(re-frame/dispatch [::add-category @category])}
        "Add"]]]))
 
 (defn update-form []
@@ -206,7 +206,7 @@
                            :default-value @description
                            :on-change #(re-frame/dispatch [::reset-current :description (f-util/get-value %)])})] 
      [:div {:class "flex justify-center items-center space-x-4"} 
-      [green-button {:on-click #(re-frame/dispatch [::update-category @current])}
+      [new-button {:on-click #(re-frame/dispatch [::update-category @current])}
        "Update"]]]))
 
 (defn delete-form []
@@ -251,21 +251,24 @@
       
       ;; modals
       [:div
-       [modals/modal add-modal-show? {:id "add-category"
-                                      :title "Add Category"
-                                      :on-close #(re-frame/dispatch [::show-add-modal false])}
+       [modals/modal  {:id "add-category"
+                       :show? add-modal-show?
+                       :title "Add Category"
+                       :on-close #(re-frame/dispatch [::show-add-modal false])}
         [add-form]]
-       [modals/modal update-modal-show? {:id "update-category"
-                                         :title "Update Category"
-                                         :on-close #(do
-                                                      (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-update-modal false]))}
+       [modals/modal  {:id "update-category"
+                       :show? update-modal-show?
+                       :title "Update Category"
+                       :on-close #(do
+                                    (re-frame/dispatch [::clean-current])
+                                    (re-frame/dispatch [::show-update-modal false]))}
         [update-form]]
-       [modals/modal delete-modal-show? {:id "delete-category"
-                                         :title "Delete Category"
-                                         :on-close #(do 
-                                                      (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-delete-modal false]))}
+       [modals/modal  {:id "delete-category"
+                       :show? delete-modal-show?
+                       :title "Delete Category"
+                       :on-close #(do
+                                    (re-frame/dispatch [::clean-current])
+                                    (re-frame/dispatch [::show-delete-modal false]))}
         [delete-form]]]
       ;; hr
       [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]

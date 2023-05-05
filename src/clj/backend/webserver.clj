@@ -82,7 +82,7 @@
   (s/keys :req-un [::id ::name]
           :opt-un [::description]))
 
-(s/def ::article-id pos-int?)
+(s/def ::article-id string?)
 (s/def ::category-id pos-int?)
 (s/def ::title ::not-empty-string)
 (s/def ::author string?)
@@ -96,7 +96,7 @@
           :opt-un [::summary]))
 
 (s/def ::ArticleUpdate 
-  (s/keys :req-un [::id ::title ::author]
+  (s/keys :req-un [::title ::author]
           :opt-un [::summary]))
 
 (s/def ::ArticleCommentAdd 

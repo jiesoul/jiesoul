@@ -37,8 +37,15 @@
     (sql/delete! tx :article_detail {:article_id id})
     (sql/delete! tx :article {:id id})))
 
-(defn get-by-id [db id]
-  (sql/get-by-id db :article id {:builder-fn rs/as-unqualified-maps}))
-
 (defn get-detail-by-article-id [db article-id]
-  (sql/get-by-id db :article_detail {:article_id article-id} {:builder-fn rs/as-unqualified-maps}))
+  (sql/find-by-keys db :article_detail {:article_id article-id} {:builder-fn rs/as-unqualified-kebab-maps}))
+
+(defn get-by-id [db id]
+  (jdbc/with-transaction [tx db]
+    (let [article (sql/get-by-id tx :article id {:builder-fn rs/as-unqualified-kebab-maps})
+          _ (log/debug "article: " article)
+          detail (get-detail-by-article-id tx id)
+          ]
+      (assoc article :detail (first detail)))))
+
+

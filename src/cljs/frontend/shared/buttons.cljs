@@ -46,7 +46,7 @@
             :on-click on-click}
    children])
 
-(defn green-button [{:keys [on-click]} & children]
+(defn new-button [{:keys [on-click]} & children]
   [:button {:type "button"
             :class css-green
             :on-click on-click}
@@ -80,4 +80,9 @@
                     :class css-delete}
                    props)
     children]))
+
+(defn link [props & children]
+  [:a (merge {:class "font-medium text-blue-600 dark:text-blue-500 hover:underline"}
+             props)
+   children])
 
