@@ -92,11 +92,11 @@
 (s/def ::tags string?)
 
 (s/def ::ArticleAdd 
-  (s/keys :req-un [::title ::author]
+  (s/keys :req-un [::title]
           :opt-un [::summary]))
 
 (s/def ::ArticleUpdate 
-  (s/keys :req-un [::title ::author]
+  (s/keys :req-un [::title]
           :opt-un [::summary]))
 
 (s/def ::ArticleCommentAdd 
@@ -277,16 +277,14 @@
 
      ["" {:get {:summary "Query articles"
                 :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
+                :parameters {:header {:authorization ::token}}
                 :handler (fn [req]
                            (let [opt (req-util/parse-query req)]
                              (article-handler/query-articles env opt)))}
 
           :post {:summary "New a article"
                  :middleware [[auth-mw/wrap-auth env "user"]]
-                 :parameters {:header {:authorization ::token}
-                              :body {:article ::ArticleAdd}}
+                 :parameters {:header {:authorization ::token}}
                  :handler (fn [req]
                             (log/debug  "new a article req: " (:body-params req))
                             (let [article (req-util/parse-body req :article)]
@@ -295,36 +293,43 @@
 
      ["/:id" {:get {:summary "Get a article"
                     :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}}
+                    :parameters {:header {:authorization ::token}}
                     :handler (fn [req]
                                (let [id (req-util/parse-path req :id)]
                                  (article-handler/get-article env id)))}
 
-              :put {:summary "Update a article"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}
-                                 :body {:article ::ArticleUpdate}}
-                    :handler (fn [req]
-                               (let [article (req-util/parse-body req :article)]
-                                 (article-handler/update-article! env article)))}
+              :patch {:summary "Update a article"
+                      :middleware [[auth-mw/wrap-auth env "user"]]
+                      :parameters {:header {:authorization ::token}}
+                      :handler (fn [req]
+                                 (let [article (req-util/parse-body req :article)]
+                                   (article-handler/update-article! env article)))}
 
               :delete {:summary "Delete a article"
                        :middleware [[auth-mw/wrap-auth env "user"]]
-                       :parameters {:header {:authorization ::token}
-                                    :path {:id pos-int?}}
+                       :parameters {:header {:authorization ::token}}
                        :handler (fn [req]
                                   (let [id (req-util/parse-path req :id)]
                                     (article-handler/delete-article! env id)))}}]
 
+     ["/:id/push" {:patch {:summary "Query the comments of a article"
+                           :middleware [[auth-mw/wrap-auth env "user"]]
+                           :parameters {:header {:authorization ::token}}
+                           :handler (fn [req]
+                                      (let [article (req-util/parse-body req :article)]
+                                        (article-handler/push! env article)))}}]
+
      ["/:id/comments" {:get {:summary "Query the comments of a article"
                              :middleware [[auth-mw/wrap-auth env "user"]]
-                             :parameters {:header {:authorization ::token}
-                                          :path {:id pos-int?}}
+                             :parameters {:header {:authorization ::token}}
                              :handler (fn [req]
                                         (let [article-id (req-util/parse-path req :id)]
-                                          (article-handler/get-comments-by-article-id env article-id)))}}]]
+                                          (article-handler/get-comments-by-article-id env article-id)))}
+                       :post {:summary "add a comments of the article"
+                              :parameters {:path {:id string?}}
+                              :handler (fn [req]
+                                         (let [comment (req-util/parse-body req :comment)]
+                                           (article-handler/save-comment! env comment)))}}]]
     
     ["/aricles/comments" 
      {:swagger {:tags ["Articles Comments"]}}

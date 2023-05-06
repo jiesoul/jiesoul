@@ -68,3 +68,11 @@
   (let [_ (article-comment-db/delete-by-id-set! db id-set)]
     (resp/response {:status :ok})))
 
+(defn push! [{:keys [db]} article]
+  (let [push-time (java.time.Instant/now)
+        result (article-db/push! db (assoc article :push_date push-time))]
+    (resp-util/ok {})))
+
+(defn save-comment! [{:keys [db]} comment]
+  (let [result (article-db/save-comment! db comment)]
+    (resp-util/ok {})))

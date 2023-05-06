@@ -28,8 +28,17 @@
 
 (defn update! [db {:keys [id detail] :as article}]
   (jdbc/with-transaction [tx db]
-    (sql/update! tx :article_detail detail {:id id})
-    (sql/update! tx :article (dissoc article :detail) {:id id})))
+    (sql/update! tx :article_detail (select-keys detail [:content_md]) {:article_id id})
+    (sql/update! tx :article (select-keys article [:title :summary]) {:id id})))
+
+(defn push! [db { :keys [id category_id] :as article}]
+  (jdbc/with-transaction [tx db]
+    (sql/update! tx :article (select-keys article [:push_date :top_flag :tags :category_id]) {:id id})))
+
+(defn save-comment! [db comment]
+  (jdbc/with-transaction [tx db]
+    (sql/insert! tx :article_comment comment)
+    (jdbc/execute! tx "update article set comment_count = comment_count + 1 where id = ? " (:article_id comment))))
 
 (defn delete! [db id]
   (jdbc/with-transaction [tx db]

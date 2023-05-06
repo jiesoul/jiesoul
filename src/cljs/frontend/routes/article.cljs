@@ -5,9 +5,9 @@
               [frontend.shared.buttons :refer [default-button delete-button
                                                edit-button new-button red-button]]
               [frontend.shared.css :as css]
-              [frontend.shared.form-input :refer [file-input select-input
-                                                  text-input text-input-backend
-                                                  textarea]]
+              [frontend.shared.form-input :refer [checkbox-input select-input
+                                                  text-input
+                                                  text-input-backend textarea]]
               [frontend.shared.layout :refer [layout-dash]]
               [frontend.shared.modals :as modals :refer [default-modal]]
               [frontend.shared.page :refer [page-dash]]
@@ -48,7 +48,19 @@
  (fn [db [_ show?]]
    (-> db
        (assoc-in [:article :edit-modal-show?] show?)
-       (assoc :modal-backdrop-show? show?))))
+       (assoc-in [:modal :show?] show?))))
+
+(re-frame/reg-sub
+ ::push-modal-show?
+ (fn [db]
+   (get-in db [:article :push-modal-show?])))
+
+(re-frame/reg-event-db
+ ::show-push-modal
+ (fn [db [_ show?]]
+   (-> db
+       (assoc-in [:article :push-modal-show?] show?)
+       (assoc-in [:modal :show?] show?))))
 
 (re-frame/reg-sub
  ::delete-modal-show?
@@ -60,7 +72,7 @@
  (fn [db [_ show?]]
    (-> db
        (assoc-in [:article :delete-modal-show?] show?)
-       (assoc :modal-backdrop-show? show?))))
+       (assoc-in [:modal :show?] show?))))
 
 (re-frame/reg-sub
  ::articles-list
@@ -117,11 +129,6 @@
  (fn [db]
    (get-in db [:article :current])))
 
-(re-frame/reg-event-db
- ::reset-current
- (fn [db [_ k v]]
-   (assoc-in db [:article :current k] v)))
-
 (re-frame/reg-event-fx
  ::update-article-ok
  (fn [{:keys [db]} [_ resp]]
@@ -134,11 +141,30 @@
  ::update-article
  (fn [{:keys [db]} [_ article]]
    (f-util/clog "update article: " article)
-   (f-http/http-put db
-                    (f-http/api-uri "/articles/" (:id article))
-                    {:article article}
-                    ::update-article-ok
-                    ::f-state/req-failed-message)))
+   (f-http/http-patch db
+                      (f-http/api-uri "/articles/" (:id article))
+                      {:article article}
+                      ::update-article-ok
+                      ::f-state/req-failed-message)))
+
+
+(re-frame/reg-event-fx
+ ::push-article-ok
+ (fn [{:keys [db]} [_ resp]]
+   (f-util/clog "push article ok: " resp)
+   {:db db
+    :fx [[:dispatch [::toasts/push {:content "Push Success!!!"
+                                    :type :success}]]]}))
+
+(re-frame/reg-event-fx
+ ::update-article
+ (fn [{:keys [db]} [_ article]]
+   (f-util/clog "update article: " article)
+   (f-http/http-patch db
+                      (f-http/api-uri "/articles/" (:id article) "/push")
+                      {:article article}
+                      ::push-article-ok
+                      ::f-state/req-failed-message)))
 
 (re-frame/reg-event-db
  ::clean-current
@@ -181,12 +207,9 @@
 (defn new-form [] 
   (let [login-user @(re-frame/subscribe [::f-state/login-user])
         article (r/atom {:title ""
-                         :author (:username login-user)
-                         :like_count 0
-                         :read_count 0
-                         :comment_count 0
+                         :author (:username login-user) 
                          :summary ""
-                         :detail {:content_md ""}})]
+                         :detail {:content_md ""}})] 
     [:form
      [:div {:class "flex-l flex-col"} 
       [text-input {:class "pt-2"
@@ -213,72 +236,76 @@
         "Save"]]]]))
 
 (defn edit-form []
-  (let [login-user @(re-frame/subscribe [::f-state/login-user])
-        origin-article @(re-frame/subscribe [::article-current])
-        article (r/atom origin-article)
-        title (r/cursor article [:title])
-        summary (r/cursor article [:summary])
-        content (r/cursor article [:detail :content-md])]
-    [:form
-     [:div {:class "flex-l flex-col"}
-      [text-input {:class "pt-2"
-                   :placeholder "Title"
-                   :name "title"
+  (fn []
+    (let [{:keys [id title summary detail]} @(re-frame/subscribe [::article-current])
+          article (r/atom {:id id 
+                           :title title 
+                           :summary summary
+                           :detail {:article_id (:article-id detail)
+                                    :content_md (:content-md detail)}})
+          title-edit (r/cursor article [:title])
+          summary-edit (r/cursor article [:summary])
+          content-edit (r/cursor article [:detail :content_md])]
+      [:form
+       [:div {:class "flex-l flex-col"}
+        [text-input {:class "pt-2"
+                     :placeholder "Title"
+                     :name "title"
+                     :required ""
+                     :default-value title
+                     :on-change #(reset! title-edit (f-util/get-value %))}]
+
+        [textarea {:class "pt-4"
+                   :placeholder "Summary"
+                   :name "summary"
                    :required ""
-                   :default-value @title
-                   :on-change #(swap! article assoc :title (f-util/get-value %))}]
+                   :default-value summary
+                   :on-change #(reset! summary-edit (f-util/get-value %))}]
 
-      [textarea {:class "pt-4"
-                 :placeholder "Summary"
-                 :name "summary"
-                 :required ""
-                 :default-value @summary
-                 :on-change #(swap! article assoc :summary (f-util/get-value %))}]
+        [textarea {:class "pt-4"
+                   :placeholder "Content"
+                   :rows 8
+                   :name "content"
+                   :default-value (:content-md detail)
+                   :on-change #(reset! content-edit (f-util/get-trim-value %))}]
+        [:div {:class "flex justify-center items-center space-x-4 mt-4"}
+         [new-button {:on-click #(re-frame/dispatch [::update-article @article])}
+          "Save"]]]])))
 
-      [textarea {:class "pt-4"
-                 :placeholder "Content"
-                 :rows 8
-                 :name "content"
-                 :default-value @content
-                 :on-change #(swap! article assoc-in [:detail :content_md] (f-util/get-trim-value %))}]
-      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-       [new-button {:on-click #(re-frame/dispatch [::update-article @article])}
-        "Save"]]]]))
+(defn push-form []
+  (fn []
+    (let [{:keys [id title summary detail]} @(re-frame/subscribe [::article-current]) 
+          article (r/atom {:id id
+                           :top_flag 0  
+                           :category_id 0
+                           :tags ""})
+          {:keys [categories]} @(re-frame/subscribe [::category/categories-list])] 
+      [:form
+       [:div {:class "flex-l flex-col"}
+        [:p "Title: " title]
+        [:p "Summary: " summary]
+        [:p "Content: " (:content-md detail)]
+        [checkbox-input {:class "pt-2"
+                         :name "top_flag"
+                         :label "Top"}]
 
-(defn push []
-  (let [login-user @(re-frame/subscribe [::f-state/login-user])
-        article (r/atom {:title ""
-                         :author (:username login-user)
-                         :like-count 0
-                         :read-count 0
-                         :summary ""
-                         :detail {:content-md ""}})
-        {:keys [categories]} @(re-frame/subscribe [::category/categories-list])]
-    (edit-layout "Push Article"
-     [:form
-      [:div {:class "flex-l flex-col"}
-       [text-input {:class "pt-4"
-                    :label "Title"
-                    :name "title"
-                    :required ""
-                    :on-change #(swap! article assoc :title (f-util/get-value %))}]
+        [text-input {:class "pt-2"
+                     :placeholder "Tags"
+                     :name "tags"
+                     :required ""
+                     :on-change #(swap! article assoc :tags (f-util/get-value %))}]
 
-       [text-input {:class "pt-4"
-                    :label "Tags"
-                    :name "tags"
-                    :required ""
-                    :on-change #(swap! article assoc :tags (f-util/get-value %))}]
-
-       [select-input {:class "pt-4"
-                      :label "Category"
-                      :required ""
-                      :name "category"}
-        [:option "select category"]
-        (for [c categories]
-          [:option {:value (:id c)} (:name c)])]
-       [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-        [new-button {:on-click #(re-frame/dispatch [::add-article @article])}
-         "Add"]]]])))
+        [select-input {:class "pt-2"
+                       :placeholder "Category"
+                       :required ""
+                       :name "category"}
+         [:option "select category"]
+         (for [c categories]
+           [:option {:value (:id c)} (:name c)])]
+        
+        [:div {:class "flex justify-center items-center space-x-4 mt-4"}
+         [new-button {:on-click #(re-frame/dispatch [::push-article @article])}
+          "Psuh"]]]])))
 
 (defn delete-form []
   (let [current (re-frame/subscribe [::article-current])
@@ -293,10 +320,16 @@
                                 (re-frame/dispatch [::delete-article (:id @current)]))}
        "Delete"]]]))
 
+(defn test-form [] 
+  (fn []
+    [:form 
+     [:div "test"]]))
+
 (defn index []
   (let [new-modal-show? @(re-frame/subscribe [::new-modal-show?])
         edit-modal-show? @(re-frame/subscribe [::edit-modal-show?])
-        delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
+        push-modal-show? @(re-frame/subscribe [::push-modal-show?])
+        delete-modal-show? @(re-frame/subscribe [::delete-modal-show?]) 
         q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
     (layout-dash
@@ -314,11 +347,14 @@
                                :id "title"
                                :on-blur #(when-let [v (f-util/get-trim-value %)]
                                            (swap! filter str " name lk " v))})]]
+        [:div {:children  [:r> test-form]}]
         [:div {:class "flex inline-flex justify-center items-center w-full"}
          [default-button {:on-click #(re-frame/dispatch [::query-articles @q-data])}
           "Query"]
          [new-button {:on-click #(re-frame/dispatch [::show-new-modal true])} 
-          "New"]]]]
+          "New"]
+         [default-button {:on-click #(default-modal edit-form)}
+          "test"]]]]
 
       ;; modals
       [:div 
@@ -337,9 +373,16 @@
                                     (re-frame/dispatch [::clean-current])
                                     (re-frame/dispatch [::show-edit-modal false]))}
         [edit-form]]
+       [modals/modal  {:id "push-article"
+                       :title "Push article"
+                       :show? push-modal-show?
+                       :on-close #(do
+                                    (re-frame/dispatch [::clean-current])
+                                    (re-frame/dispatch [::show-push-modal false]))}
+        [push-form]]
        [modals/modal  {:id "Delete-article"
                        :title "Delete article"
-                       :show? delete-modal-show?
+                       :show? delete-modal-show? 
                        :on-close #(do
                                     (re-frame/dispatch [::clean-current])
                                     (re-frame/dispatch [::show-delete-modal false]))}
@@ -355,7 +398,7 @@
          (table-dash
           [:tr
            [th-dash "ID"]
-           [th-dash "Name"]
+           [th-dash "Title"]
            [th-dash "Author"]
            [th-dash "Like-count"]
            [th-dash "Read-count"]
@@ -375,11 +418,16 @@
              [td-dash (:top-flag c)]
              [td-dash
               [:<>
-               [edit-button {:on-click #(do 
-                                          (re-frame/dispatch [::get-article id])
-                                          (re-frame/dispatch [::show-edit-modal true]))
-                             :target "_blank"}
+               [edit-button {:on-click #(do
+                                          (re-frame/dispatch [::get-article id]) 
+                                          (re-frame/dispatch [::show-edit-modal true]))}
                 "Edit"]
+               [:span " | "]
+               [edit-button {:on-click #(do
+                                          (re-frame/dispatch [::get-article id])
+                                          (re-frame/dispatch [::category/query-categories {:page-size 100}])
+                                          (re-frame/dispatch [::show-push-modal true]))}
+                "Push"]
                [:span " | "]
                [delete-button {:on-click #(do
                                             (re-frame/dispatch [::get-article (:id c)])

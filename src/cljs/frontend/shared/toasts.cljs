@@ -2,7 +2,8 @@
   (:require [frontend.shared.svg :as svg]
             [frontend.shared.toasts :as toasts]
             [frontend.util :as f-util]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [reagent.core :as r]))
 
 (def css-toast-base "flex items-center w-full max-w-xs p-4 mb-1 text-gray-500 
                  bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800")
@@ -26,6 +27,8 @@
 
 
 (def MAX-TOASTS 5)
+(def MAX-TIMEOUT 5000)
+(def TIMEOUT 4)
 
 (re-frame/reg-sub
  ::toasts
@@ -46,7 +49,9 @@
          toasts (if (>= (count toasts) MAX-TOASTS)
                   (vec (rest toasts)) 
                   toasts)]
-     (assoc db :toasts (conj toasts (assoc t :id (str (random-uuid))))))))
+     (assoc db :toasts (conj toasts (assoc t 
+                                           :id (str (random-uuid))
+                                           :timeout MAX-TIMEOUT))))))
 
 (re-frame/reg-event-db
  ::remove 
@@ -57,13 +62,19 @@
                            (remove #(= (:id %) id))
                             vec)))))
 
-
+(defn timer-toasts [id]
+  (let [seconds-elapsed (r/atom TIMEOUT)]
+    (fn [id]
+      (js/setTimeout #(if (pos-int? @seconds-elapsed) 
+                       (swap! seconds-elapsed dec)
+                        (re-frame/dispatch [::pop id])) MAX-TIMEOUT)
+      [:div {:class "hidden"} @seconds-elapsed])))
 
 (defn toasts []
   (let [toasts @(re-frame/subscribe [::toasts])]
     (when toasts
-      [:div {:class "fixed top-5 right-5 z-50 w-full max-w-xs"}
-       (for [{:keys [id type content]} toasts] 
+      [:div {:class "fixed top-5 right-5 z-50 w-full max-w-xs"} 
+       (for [{:keys [id type content timeout]} toasts] 
          [:div {:id (str "toast-" id)
                 :class css-toast-base
                 :role "alert"}
@@ -78,6 +89,7 @@
              :error (svg/danger)
              (svg/info))]
           [:div {:class "ml-3 text-sm font-normal w-auto h-auto overflow-y-hidden"} content]
+          [timer-toasts id]
           [:button {:type "button"
                     :class css-toast-close-button
                     :on-click #(re-frame/dispatch [::remove id])}

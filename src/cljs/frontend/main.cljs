@@ -26,6 +26,7 @@
  (fn [_ _]
    {:current-route nil
     :toasts (vec [])
+    :toasts-sum 0
     :error nil
     :token nil
     :debug true

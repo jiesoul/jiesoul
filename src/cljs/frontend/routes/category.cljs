@@ -9,8 +9,7 @@
             [frontend.shared.layout :refer [layout-dash]]
             [frontend.shared.modals :as  modals]
             [frontend.shared.page :refer [page-dash]]
-            [frontend.shared.tables :refer [css-list-table-tbody-tr table-dash
-                                            tbody-tr td-dash th-dash]]
+            [frontend.shared.tables :refer [css-list-table-tbody-tr table-dash td-dash th-dash]]
             [frontend.shared.toasts :as toasts]
             [frontend.state :as f-state]
             [frontend.util :as f-util]

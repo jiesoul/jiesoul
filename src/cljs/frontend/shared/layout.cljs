@@ -2,9 +2,9 @@
   (:require [frontend.routes.login :refer [login]]
             [frontend.shared.footer :refer [footer-home]]
             [frontend.shared.header :refer [header-dash nav-home]]
-            [frontend.shared.modals :refer [modal modal-back default-modal]]
+            [frontend.shared.modals :refer [modal modal-back]]
             [frontend.shared.sidebar :refer [sidebar-dash]]
-            [frontend.shared.toasts :refer [toasts]]
+            [frontend.shared.toasts :refer [timer-toasts toasts]]
             [frontend.state :as f-state]
             [re-frame.core :as re-frame]))
 
@@ -15,7 +15,7 @@
        [sidebar-dash]
        [:div {:class "flex-1 flex flex-col w-full h-screen"} 
         [header-dash]
-        [toasts]
+        [toasts] 
         [:main {:class "flex-1 h-screen bg-gray-100"} 
          [modal]
          [:div {:class "px-2 py-2 h-screen"}

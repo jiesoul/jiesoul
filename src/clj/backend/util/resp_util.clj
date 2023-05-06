@@ -1,10 +1,11 @@
 (ns backend.util.resp-util
   (:require [ring.util.response :as resp]))
 
-(defn ok [data & message]
-  (resp/response {:status  200
-                  :message message
-                  :data data}))
+(defn ok 
+  ([] (ok nil))
+  ([data & message] (resp/response {:status  200
+                                    :message message
+                                    :data data})))
 
 (defn redirect [url & data]
   (resp/redirect {:status  302
