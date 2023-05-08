@@ -8,8 +8,9 @@
               [frontend.shared.form-input :refer [checkbox-input select-input
                                                   text-input
                                                   text-input-backend textarea]]
-              [frontend.shared.layout :refer [layout-dash]]
-              [frontend.shared.modals :as modals :refer [default-modal]]
+              [frontend.shared.layout :refer [admin-layout layout-dash
+                                              list-data]]
+              [frontend.shared.modals :as modals]
               [frontend.shared.page :refer [page-dash]]
               [frontend.shared.tables :refer [css-list-table-tbody-tr
                                               table-dash td-dash th-dash]]
@@ -35,44 +36,44 @@
  ::show-new-modal
  (fn [{:keys [db]} [_ show?]]
    {:db (-> db
-            (assoc-in [:article :new-modal-show?] show?)
-            (assoc-in [:modal :show?] show?))}))
+            (assoc-in [:article :new-modal-show?] show?))
+    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
 
 (re-frame/reg-sub
  ::edit-modal-show?
  (fn [db]
    (get-in db [:article :edit-modal-show?])))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::show-edit-modal
- (fn [db [_ show?]]
-   (-> db
-       (assoc-in [:article :edit-modal-show?] show?)
-       (assoc-in [:modal :show?] show?))))
+ (fn [{:keys [db]} [_ show?]]
+   {:db (-> db
+            (assoc-in [:article :edit-modal-show?] show?))
+    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
 
 (re-frame/reg-sub
  ::push-modal-show?
  (fn [db]
    (get-in db [:article :push-modal-show?])))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::show-push-modal
- (fn [db [_ show?]]
-   (-> db
-       (assoc-in [:article :push-modal-show?] show?)
-       (assoc-in [:modal :show?] show?))))
+ (fn [{:keys [db]} [_ show?]]
+   {:db (-> db
+            (assoc-in [:article :push-modal-show?] show?))
+    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
 
 (re-frame/reg-sub
  ::delete-modal-show?
  (fn [db]
    (get-in db [:article :delete-modal-show?])))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::show-delete-modal
- (fn [db [_ show?]]
-   (-> db
-       (assoc-in [:article :delete-modal-show?] show?)
-       (assoc-in [:modal :show?] show?))))
+ (fn [{:keys [db]} [_ show?]]
+   {:db (-> db
+             (assoc-in [:article :delete-modal-show?] show?))
+    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
 
 (re-frame/reg-sub
  ::articles-list
@@ -118,7 +119,7 @@
 (re-frame/reg-event-fx
  ::get-article
  (fn [{:keys [db]} [_ id]]
-   (f-util/clog "Get a article")
+   (f-util/clog "Get a article: " id)
    (f-http/http-get db
                     (f-http/api-uri "/articles/" id)
                     {}
@@ -205,7 +206,8 @@
      children]]))
 
 (defn new-form [] 
-  (let [login-user @(re-frame/subscribe [::f-state/login-user])
+  (let [{:keys [id title summary detail]} @(re-frame/subscribe [::article-current])
+        login-user @(re-frame/subscribe [::f-state/login-user])
         article (r/atom {:title ""
                          :author (:username login-user) 
                          :summary ""
@@ -216,12 +218,14 @@
                    :name "title"
                    :placeholder "Title"
                    :required ""
+                   :default-value title
                    :on-change #(swap! article assoc :title (f-util/get-value %))}]
       
       [textarea {:class "pt-4"
                  :placeholder "Summary"
                  :name "summary"
                  :required ""
+                 :default-value summary
                  :on-change #(swap! article assoc :summary (f-util/get-value %))}] 
       
       ;;  [file-input {:class "pt-4"
@@ -230,6 +234,7 @@
                  :placeholder "Content"
                  :rows 8
                  :name "content"
+                 :default-value (:content-md detail)
                  :on-change #(swap! article assoc-in [:detail :content_md] (f-util/get-trim-value %))}]
       [:div {:class "flex justify-center items-center space-x-4 mt-4"}
        [new-button {:on-click #(re-frame/dispatch [::add-article @article])}
@@ -301,7 +306,8 @@
                        :name "category"}
          [:option "select category"]
          (for [c categories]
-           [:option {:value (:id c)} (:name c)])]
+           [:option {:value (:id c)
+                     :key (:id c)} (:name c)])]
         
         [:div {:class "flex justify-center items-center space-x-4 mt-4"}
          [new-button {:on-click #(re-frame/dispatch [::push-article @article])}
@@ -320,45 +326,41 @@
                                 (re-frame/dispatch [::delete-article (:id @current)]))}
        "Delete"]]]))
 
-(defn test-form [] 
-  (fn []
-    [:form 
-     [:div "test"]]))
+(defn form []
+  (let [q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
+        filter (r/cursor q-data [:filter])]
+    [:form
+     [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
+      [:div {:class "grid grid-cols-4 gap-3"}
+       [:div {:class "max-w-10 flex"}
+        (text-input-backend {:label "Title："
+                             :type "text"
+                             :id "title"
+                             :on-blur #(when-let [v (f-util/get-trim-value %)]
+                                         (swap! filter str " name lk " v))})]]
+      [:div {:class "flex inline-flex justify-center items-center w-full"}
+       [default-button {:on-click #(re-frame/dispatch [::query-articles @q-data])}
+        "Query"]
+       [new-button {:on-click #(re-frame/dispatch [::show-new-modal true])}
+        "New"]]]]))
 
 (defn index []
   (let [new-modal-show? @(re-frame/subscribe [::new-modal-show?])
         edit-modal-show? @(re-frame/subscribe [::edit-modal-show?])
         push-modal-show? @(re-frame/subscribe [::push-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?]) 
-        q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
-        filter (r/cursor q-data [:filter])]
-    (layout-dash
+        ]
+    [layout-dash
      [:div {:class css/main-container}
       ;; page title
       [:h4 {:class css/page-title} "Articles"]
 
       ;; page query form
-      [:form
-       [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
-        [:div {:class "grid grid-cols-4 gap-3"}
-         [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "Title："
-                               :type "text"
-                               :id "title"
-                               :on-blur #(when-let [v (f-util/get-trim-value %)]
-                                           (swap! filter str " name lk " v))})]]
-        [:div {:children  [:r> test-form]}]
-        [:div {:class "flex inline-flex justify-center items-center w-full"}
-         [default-button {:on-click #(re-frame/dispatch [::query-articles @q-data])}
-          "Query"]
-         [new-button {:on-click #(re-frame/dispatch [::show-new-modal true])} 
-          "New"]
-         [default-button {:on-click #(default-modal edit-form)}
-          "test"]]]]
+      [form]
 
       ;; modals
-      [:div 
-       
+      [:div
+
        [modals/modal  {:id "new-article"
                        :title "New article"
                        :show? new-modal-show?
@@ -382,7 +384,7 @@
         [push-form]]
        [modals/modal  {:id "Delete-article"
                        :title "Delete article"
-                       :show? delete-modal-show? 
+                       :show? delete-modal-show?
                        :on-close #(do
                                     (re-frame/dispatch [::clean-current])
                                     (re-frame/dispatch [::show-delete-modal false]))}
@@ -419,7 +421,7 @@
              [td-dash
               [:<>
                [edit-button {:on-click #(do
-                                          (re-frame/dispatch [::get-article id]) 
+                                          (re-frame/dispatch [::get-article id])
                                           (re-frame/dispatch [::show-edit-modal true]))}
                 "Edit"]
                [:span " | "]
@@ -432,11 +434,11 @@
                [delete-button {:on-click #(do
                                             (re-frame/dispatch [::get-article (:id c)])
                                             (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]]) 
+                "Del"]]]])
           [page-dash {:page page
                       :page-size page-size
                       :total total
                       :opts opts
-                      :url ::query-articles}]))]])))
+                      :url ::query-articles}]))]]]))
 
 

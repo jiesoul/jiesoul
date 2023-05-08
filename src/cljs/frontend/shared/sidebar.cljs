@@ -16,7 +16,7 @@
 
 (defn sidebar-dash []
   (let [current-route @(re-frame/subscribe [::f-state/current-route])
-        path (:path current-route)] 
+        path (:path current-route)]
     [:<> 
      [:aside {:id "sidebar-dash"
               :class "fixed inset-y-0 left-0 z-20 w-64 overflow-y-auto transition duration-300

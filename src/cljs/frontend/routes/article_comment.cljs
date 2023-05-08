@@ -231,7 +231,7 @@
      [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-96"}
       ;; page title
       [:div
-       [breadcrumb-dash ["article-comments"]]]
+       [:div ["article-comments"]]]
 
       ;; page query form
       [:form

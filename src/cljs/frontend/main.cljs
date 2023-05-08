@@ -32,7 +32,7 @@
     :debug true
     :login-status nil
     :login-user nil
-    :modal nil
+    :modal {:show? false}
     :category nil
     :tag nil
     :article nil

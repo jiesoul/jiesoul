@@ -9,10 +9,14 @@
         _ (log/debug "query categories data: " data)]
     (resp-util/ok data)))
 
-(defn create-category! [{:keys [db]} category]
+(defn create-category! [{:keys [db]} {:keys [name] :as category}]
   (log/debug "Creatge category " category)
-  (let [_ (category-db/create! db category)]
-    (resp-util/ok {} "添加成功")))
+  (let [cs (category-db/find-by-name db name)]
+    (if (seq cs) 
+      (resp-util/bad-request (str "category name " name " is used!!"))
+      (do 
+        (category-db/create! db category)
+        (resp-util/ok {} "添加成功")))))
 
 (defn get-category [{:keys [db]} id]
   (log/debug "Get category " id)

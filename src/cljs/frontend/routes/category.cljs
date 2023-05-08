@@ -28,37 +28,38 @@
  (fn [db]
    (get-in db [:category :add-modal-show?])))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::show-add-modal 
- (fn [db [_ show?]]
-   (-> db 
-       (assoc-in [:category :add-modal-show?] show?)
-       (assoc :modal-backdrop-show? show?))))
+ (fn [{:keys [db]} [_ show?]]
+   {:fx [[:dispatch [::f-state/set-modal-show? show?]]]
+    :db (-> db 
+            (assoc-in [:category :add-modal-show?] show?))}))
 
 (re-frame/reg-sub
  ::update-modal-show?
  (fn [db]
    (get-in db [:category :update-modal-show?])))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::show-update-modal
- (fn [db [_ show?]]
-   (-> db
-       (assoc-in [:category :update-modal-show?] show?)
-       (assoc :modal-backdrop-show? show?))))
+ (fn [{:keys [db]} [_ show?]]
+   {:fx [[:dispatch [::f-state/set-modal-show? show?]]]
+    :db (-> db
+            (assoc-in [:category :update-modal-show?] show?))}))
 
 (re-frame/reg-sub
  ::delete-modal-show?
  (fn [db]
    (get-in db [:category :delete-modal-show?])))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::show-delete-modal
- (fn [db [_ show?]]
+ (fn [{:keys [db]} [_ show?]]
    (f-util/clog "show delete modal: " show?)
-   (-> db
-       (assoc-in [:category :delete-modal-show?] show?)
-       (assoc :modal-backdrop-show? show?))))
+   {:fx [[:dispatch [::f-state/set-modal-show? show?]]]
+    :db (-> db
+            (assoc-in [:category :delete-modal-show?] show?)
+            (assoc-in [:modal :show?] show?))}))
 
 (re-frame/reg-sub
  ::categories-list
@@ -283,7 +284,8 @@
            [th-dash "Description"]
            [th-dash "操作"]] 
           (for [c categories]
-            [:tr {:class css-list-table-tbody-tr}
+            [:tr {:class css-list-table-tbody-tr
+                  :key (:id c)}
              [td-dash (:name c)]
              [td-dash (:description c)]
              [td-dash

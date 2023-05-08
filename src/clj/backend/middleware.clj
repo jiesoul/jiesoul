@@ -1,6 +1,7 @@
 (ns backend.middleware
   (:require [clojure.tools.logging :as log]
-            [reitit.ring.middleware.exception :as exception]))
+            [reitit.ring.middleware.exception :as exception]
+            [ring.util.response :as resp]))
 
 (defn wrap-cors
   "Wrap the server response with new headers to allow Cross Origin."
@@ -18,10 +19,10 @@
 (derive ::horror ::exception)
 
 (defn handler [message exception request]
-  (log/error "Error message: " message)
-  (log/error "Error: " exception) 
+  (log/error "ERROR uri: " (pr-str (:uri request)))
+  (log/error "ERROR trace: " exception) 
   {:status 500 
-   :body  {:message message
+   :body  {:message message 
            :exception (.getClass exception)
            :data (ex-data exception)
            :uri (:uri request)}})
@@ -41,9 +42,7 @@
      java.sql.SQLException (partial handler "sql-exception")
 
      ;; override the default handler
-     ::exception/default (partial handler "default")
+     ::exception/default (partial handler "unknown error")
 
-     ::exception/wrap (fn [handler e request]
-                        (log/error "ERROR " (pr-str (:uri request))) 
-                        (log/error "ERROR: " e)
+     ::exception/wrap (fn [handler e request] 
                         (handler e request))})))

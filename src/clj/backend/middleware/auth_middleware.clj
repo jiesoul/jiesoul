@@ -62,4 +62,4 @@
                   _ (log/debug "update user token expires time " id)]
               (handler request))
             (my-unauthorized-handler request "用户无权限！")))
-        (my-unauthorized-handler request "Token 已过期！！")))))
+        (my-unauthorized-handler request "Token been expiresed,please relogin!!!")))))

@@ -21,7 +21,10 @@
       (throw (ex-info "query error" se)))))
 
 (defn create! [db category]
-  (sql/insert! db :category category {:return-keys true}))
+  (try 
+    (sql/insert! db :category category {:return-keys true})
+    (catch java.sql.SQLException se 
+      (throw (ex-info "create category error" se)))))
 
 (defn update! [db category]
   (sql/update! db :category category {:id (:id category)}))
@@ -30,4 +33,8 @@
   (sql/delete! db :category {:id id}))
 
 (defn get-by-id [db id]
-  (sql/get-by-id db :category id {:builder-fn rs/as-unqualified-maps}))
+  (sql/get-by-id db :category id {:builder-fn rs/as-unqualified-kebab-maps}))
+
+(defn find-by-name [db name]
+  (let [c (sql/find-by-keys db :category {:name name} {:builder-fn rs/as-unqualified-kebab-maps})]
+    c))

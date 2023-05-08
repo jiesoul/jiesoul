@@ -9,7 +9,7 @@ CREATE TABLE article
     comment_count INT DEFAULT 0,        -- 评论数
     read_count INT DEFAULT 0,           -- 浏览量
     top_flag INT DEFAULT 0,               -- 是否置顶
-    categoryid INT DEFAULT 0,           -- 分类
+    category_id INT DEFAULT 0,           -- 分类
     push_time DATETIME,                 -- 发布时间
     push_flag INT DEFAULT 0,
     summary VARCHAR(1024)               -- 文章摘要

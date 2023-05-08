@@ -277,7 +277,8 @@
 
      ["" {:get {:summary "Query articles"
                 :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}}
+                :parameters {:header {:authorization ::token}
+                             :query ::query}
                 :handler (fn [req]
                            (let [opt (req-util/parse-query req)]
                              (article-handler/query-articles env opt)))}
@@ -293,35 +294,40 @@
 
      ["/:id" {:get {:summary "Get a article"
                     :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}}
+                    :parameters {:header {:authorization ::token}
+                                 :path {:id string?}}
                     :handler (fn [req]
                                (let [id (req-util/parse-path req :id)]
                                  (article-handler/get-article env id)))}
 
               :patch {:summary "Update a article"
                       :middleware [[auth-mw/wrap-auth env "user"]]
-                      :parameters {:header {:authorization ::token}}
+                      :parameters {:header {:authorization ::token}
+                                   :path {:id string?}}
                       :handler (fn [req]
                                  (let [article (req-util/parse-body req :article)]
                                    (article-handler/update-article! env article)))}
 
               :delete {:summary "Delete a article"
                        :middleware [[auth-mw/wrap-auth env "user"]]
-                       :parameters {:header {:authorization ::token}}
+                       :parameters {:header {:authorization ::token}
+                                    :path {:id string?}}
                        :handler (fn [req]
                                   (let [id (req-util/parse-path req :id)]
                                     (article-handler/delete-article! env id)))}}]
 
      ["/:id/push" {:patch {:summary "Query the comments of a article"
                            :middleware [[auth-mw/wrap-auth env "user"]]
-                           :parameters {:header {:authorization ::token}}
+                           :parameters {:header {:authorization ::token}
+                                        :path {:id string?}}
                            :handler (fn [req]
                                       (let [article (req-util/parse-body req :article)]
                                         (article-handler/push! env article)))}}]
 
      ["/:id/comments" {:get {:summary "Query the comments of a article"
                              :middleware [[auth-mw/wrap-auth env "user"]]
-                             :parameters {:header {:authorization ::token}}
+                             :parameters {:header {:authorization ::token}
+                                          :path {:id string?}}
                              :handler (fn [req]
                                         (let [article-id (req-util/parse-path req :id)]
                                           (article-handler/get-comments-by-article-id env article-id)))}
@@ -388,10 +394,7 @@
    (reitit-ring/ring-handler
     (reitit-ring/router routes {:data {:muuntaja mu-core/instance
                                        :coercion reitit.coercion.spec/coercion
-                                       :middleware [;; 跨站
-                                                    wrap-cors
-                                                    exception-middleware
-                                                    reitit-swagger/swagger-feature
+                                       :middleware [reitit-swagger/swagger-feature
                                                     reitit-parameters/parameters-middleware
                                                     reitit-muuntaja/format-negotiate-middleware
                                                     reitit-muuntaja/format-response-middleware 
@@ -400,6 +403,9 @@
                                                     reitit-coercion/coerce-response-middleware
                                                     ;; coercing request parameters
                                                     reitit-coercion/coerce-request-middleware
+                                                    ;; 跨站
+                                                    wrap-cors
+                                                    exception-middleware
                                                     ]}})
 
     (reitit-ring/routes
