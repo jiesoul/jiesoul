@@ -227,77 +227,70 @@
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
         q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
-    (layout-dash
-     [:div {:class "flex-1 flex-col mt-2 border border-white-500 px-4 bg-white h-96"}
-      ;; page title
-      [:div
-       [:div ["article-comments"]]]
-
+    [layout-dash
       ;; page query form
-      [:form
-       [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
-        [:div {:class "grid grid-cols-4 gap-3"}
-         [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "name"
-                               :type "text"
-                               :id "name"
-                               :on-blur #(when-let [v (f-util/get-trim-value %)]
-                                           (swap! filter str " name lk " v))})]]
-        [:div {:class "felx inline-flex justify-center items-center w-full"}
-         (btn {:on-click #(re-frame/dispatch [::query-article-commentss-comments @q-data])
-               :class css/buton-purple} "Query")
-         (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
-               :class css/button-green} "New")]]]
+     [:form
+      [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
+       [:div {:class "grid grid-cols-4 gap-3"}
+        [:div {:class "max-w-10 flex"}
+         (text-input-backend {:label "name"
+                              :type "text"
+                              :id "name"
+                              :on-blur #(when-let [v (f-util/get-trim-value %)]
+                                          (swap! filter str " name lk " v))})]]
+       [:div {:class "felx inline-flex justify-center items-center w-full"}
+        (btn {:on-click #(re-frame/dispatch [::query-article-commentss-comments @q-data])
+              :class css/buton-purple} "Query")
+        (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
+              :class css/button-green} "New")]]]
 
       ;; modals
-      [:div
-       [modals/modal add-modal-show? {:id "add-article-comments"
-                                      :title "Add article-comments"
-                                      :on-close #(re-frame/dispatch [::show-add-modal false])}
-        [add-form]]
-       [modals/modal update-modal-show? {:id "update-article-comments"
-                                         :title "Update article-comments"
-                                         :on-close #(do
-                                                      (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-update-modal false]))}
-        [update-form]]
-       [modals/modal delete-modal-show? {:id "Delete-article-comments"
-                                         :title "Delete article-comments"
-                                         :on-close #(do
-                                                      (re-frame/dispatch [::clean-current])
-                                                      (re-frame/dispatch [::show-delete-modal false]))}
-        [delete-form]]]
-      ;; hr
-      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
+     [:div
+      [modals/modal add-modal-show? {:id "add-article-comments"
+                                     :title "Add article-comments"
+                                     :on-close #(re-frame/dispatch [::show-add-modal false])}
+       [add-form]]
+      [modals/modal update-modal-show? {:id "update-article-comments"
+                                        :title "Update article-comments"
+                                        :on-close #(do
+                                                     (re-frame/dispatch [::clean-current])
+                                                     (re-frame/dispatch [::show-update-modal false]))}
+       [update-form]]
+      [modals/modal delete-modal-show? {:id "Delete-article-comments"
+                                        :title "Delete article-comments"
+                                        :on-close #(do
+                                                     (re-frame/dispatch [::clean-current])
+                                                     (re-frame/dispatch [::show-delete-modal false]))}
+       [delete-form]]]
 
       ;; data table
-      [:div {:class ""}
-       (let [{:keys [article-commentss-comments opts total]} @(re-frame/subscribe [::article-commentss-comments-list])
-             page (:page opts)
-             page-size (:page-size opts)]
-         (table-dash
-          [:tr
-           [th-dash "Name"]
-           [th-dash "Description"]
-           [th-dash "操作"]]
-          (for [c article-commentss-comments]
-            [:tr {:class css-list-table-tbody-tr}
-             [td-dash
-              [:span {:class ""} (:name c)]]
-             [td-dash
-              [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
-             [td-dash
-              [:<>
-               [edit-button {:on-click #(do (re-frame/dispatch [::get-article-comments (:id c)])
-                                            (re-frame/dispatch [::show-update-modal true]))}
-                "Edit"]
-               [:span " | "]
-               [delete-button {:on-click #(do
-                                            (re-frame/dispatch [::get-article-comments (:id c)])
-                                            (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]])
-          (page-dash {:page page
-                      :page-size page-size
-                      :total total
-                      :opts opts
-                      :url ::query-article-commentss-comments})))]])))
+     [:div {:class ""}
+      (let [{:keys [article-commentss-comments opts total]} @(re-frame/subscribe [::article-commentss-comments-list])
+            page (:page opts)
+            page-size (:page-size opts)]
+        (table-dash
+         [:tr
+          [th-dash "Name"]
+          [th-dash "Description"]
+          [th-dash "操作"]]
+         (for [c article-commentss-comments]
+           [:tr {:class css-list-table-tbody-tr}
+            [td-dash
+             [:span {:class ""} (:name c)]]
+            [td-dash
+             [:span {:class "px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-green-800"} (:description c)]]
+            [td-dash
+             [:<>
+              [edit-button {:on-click #(do (re-frame/dispatch [::get-article-comments (:id c)])
+                                           (re-frame/dispatch [::show-update-modal true]))}
+               "Edit"]
+              [:span " | "]
+              [delete-button {:on-click #(do
+                                           (re-frame/dispatch [::get-article-comments (:id c)])
+                                           (re-frame/dispatch [::show-delete-modal true]))}
+               "Del"]]]])
+         (page-dash {:page page
+                     :page-size page-size
+                     :total total
+                     :opts opts
+                     :url ::query-article-commentss-comments})))]]))

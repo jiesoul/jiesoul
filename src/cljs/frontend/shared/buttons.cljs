@@ -30,7 +30,8 @@
 
 (defn btn [props & children]
   (into
-   [:button (merge {:type "button"} props) children]))
+   [:button (merge {:type "button"
+                    :class css-default} props)] children))
 
 (defn loading-button [{:keys [loading class]} & children]
   (let [class (str class " flex items-center focus:outline-none"

@@ -1,7 +1,7 @@
 (ns frontend.shared.css)
 
 (def main-container "flex-1 border flex-col px-2 bg-white h-auto")
-(def page-title "text-gray-700 text-3xl font-medium border-b")
+(def page-title "text-gray-700 text-2xl font-medium border-b")
 
 ;; Button
 (def button-default "text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 

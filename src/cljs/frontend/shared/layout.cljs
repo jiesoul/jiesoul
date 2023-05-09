@@ -1,12 +1,15 @@
 (ns frontend.shared.layout
   (:require [frontend.routes.login :refer [login]]
+            [frontend.shared.buttons :refer [default-button new-button]]
+            [frontend.shared.css :as css]
             [frontend.shared.footer :refer [footer-home]]
             [frontend.shared.header :refer [header-dash nav-home]]
-            [frontend.shared.modals :refer [modal modal-back]]
-            [frontend.shared.sidebar :refer [sidebar-dash]]
-            [frontend.shared.toasts :refer [timer-toasts toasts]]
+            [frontend.shared.modals :refer [modal-back]] 
+            [frontend.shared.sidebar :refer [sidebar-dash]] 
+            [frontend.shared.toasts :refer [toasts]]
             [frontend.state :as f-state]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [frontend.shared.modals :as modals]))
 
 (defn layout-dash [children]
   (let [token @(re-frame/subscribe [::f-state/token])]
@@ -17,29 +20,27 @@
         [header-dash]
         [toasts] 
         [:main {:class "flex-1 bg-gray-100"} 
-         [modal]
          [:div {:class "px-2 py-2 h-auto"}
-          [:<> children]]]]
+          [:div {:class css/main-container}
+           [:<> children]]]]]
        [modal-back]]
       [login])))
 
-(defn list-data [form table]
-  [form]
-  [table])
-
-(defn admin-layout [main modal]
+(defn layout-admin [modals query-form list-table]
   (let [token @(re-frame/subscribe [::f-state/token])]
-    (if token 
-      [:div {:class "flex h-screen bg-gray-50 overflow-x-hidden"} 
+    (if token
+      [:div {:class "flex h-screen bg-gray-50 overflow-x-hidden"}
        [sidebar-dash]
-       [:div {:class "flex-1 flex flex-col w-full"} 
+       [:div {:class "flex-1 flex flex-col w-full"}
         [header-dash]
         [toasts]
-        [:main {:class "flex-1 h-screen bg-gray-100"} 
-         [modal]
-         [:div {:class "px-2 py-2 h-screen"}
-          [main]]]]
-       [modal-back]]
+        [:<> modals]
+        [modal-back]
+        [:main {:class "flex-1 bg-gray-100"}
+         [:div {:class "px-2 py-2 h-auto"}
+          [:div {:class css/main-container}
+           query-form
+           list-table]]]]]
       [login])))
 
 (defn layout-home [children]

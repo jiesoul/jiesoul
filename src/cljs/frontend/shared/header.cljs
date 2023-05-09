@@ -1,8 +1,8 @@
 (ns frontend.shared.header 
-  (:require [re-frame.core :as re-frame]
-            [cljs.pprint]
+  (:require [cljs.pprint]
+            [frontend.shared.css :as css]
             [frontend.state :as f-state]
-            [frontend.shared.svg :as svg]
+            [re-frame.core :as re-frame]
             [reagent.core :as r]))
 
 (def css-user-dropdown-li-a "block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white")
@@ -29,11 +29,13 @@
       "Sign out"]]]])
 
 (defn header-dash [] 
-  (let [login-user @(re-frame/subscribe [::f-state/login-user])]
+  (let [login-user @(re-frame/subscribe [::f-state/login-user])
+        current-route @(re-frame/subscribe [::f-state/current-route])]
     [:header {:class "flex items-center justify-between px-6 py-4 bg-white border-b border-indigo-600"}
      [:div {:class "flex items-center"}
       [:div {:class "relative mx-4 lg:mx-0"}
-       [:span {:class "absolute inset-y-0 left-0 flex items-center pl-3"}]]]
+       [:h5 {:class css/page-title} (get-in current-route [:data :link-text])]
+       [:span {:class "absolute inset-y-0 left-0 flex items-center pl-1"}]]] 
      [:div {:class "flex items-center space-x-4"}
       (when login-user
         [:div {:class "font-medium dark:text-white"}

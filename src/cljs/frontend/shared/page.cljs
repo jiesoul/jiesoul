@@ -13,7 +13,9 @@
    dark:hover:bg-gray-700 dark:hover:text-white")
 
 
-(defn page-dash [{:keys [page page-size total opts url]}]
+(defn page-dash 
+  "params: page page-size total query-params url" 
+  [{:keys [page page-size total query-params url]}]
   (when (pos-int? total)
    (let [total-pages (quot (dec (+ total page-size)) page-size)
          start (inc (* (dec page) page-size))
@@ -34,25 +36,25 @@
          total]]
        [:ul {:class "inline-flex items-center -space-x-px"}
         [:li {:key "prev-page"}
-         [:button {:on-click #(re-frame/dispatch [url (assoc opts :page prev-page)])
+         [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page prev-page)])
                    :disabled (if (<= page 1) true false)
                    :class css-page-no}
           (svg/chevron-left)]]
         (when (> start-page 1)
           [:li {:key 1}
-           [:button {:on-click #(re-frame/dispatch [url (assoc opts :page 1)])
+           [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page 1)])
                      :class css-page-no} "1"]])
         (for [p (range start-page (inc end-page))]
           [:li {:key p}
-           [:button {:on-click #(re-frame/dispatch [url (assoc opts :page p)])
+           [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page p)])
                      :disabled (if (= page p) true false)
                      :class (if (= page p) css-page-no-current css-page-no)} p]])
         (when (< end-page total-pages)
           [:li {:key total-pages}
-           [:button {:on-click #(re-frame/dispatch [url (assoc opts :page total-pages)])
+           [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page total-pages)])
                        :class css-page-no} total-pages]])
         [:li {:key "next-page"}
-         [:button {:on-click #(re-frame/dispatch [url (assoc opts :page next-page)])
+         [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page next-page)])
                      :class css-page-no
                      :disabled (if (>= page total-pages) true false)}
          (svg/chevron-right)]]]]])))

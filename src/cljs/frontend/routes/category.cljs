@@ -2,14 +2,15 @@
   (:require [clojure.string :as str]
             [frontend.http :as f-http]
             [frontend.routes.category :as category]
-            [frontend.shared.buttons :refer [btn delete-button edit-button
-                                             new-button red-button]]
+            [frontend.shared.buttons :refer [btn css-delete css-edit
+                                             delete-button edit-button new-button
+                                             red-button]]
             [frontend.shared.css :as css]
             [frontend.shared.form-input :refer [text-input-backend]]
-            [frontend.shared.layout :refer [layout-dash]]
+            [frontend.shared.layout :refer [layout-admin]]
             [frontend.shared.modals :as  modals]
-            [frontend.shared.page :refer [page-dash]]
-            [frontend.shared.tables :refer [css-list-table-tbody-tr table-dash td-dash th-dash]]
+            [frontend.shared.tables :refer [css-list-table-tbody-tr
+                                            table-admin table-dash td-dash th-dash]]
             [frontend.shared.toasts :as toasts]
             [frontend.state :as f-state]
             [frontend.util :as f-util]
@@ -31,7 +32,7 @@
 (re-frame/reg-event-fx
  ::show-add-modal 
  (fn [{:keys [db]} [_ show?]]
-   {:fx [[:dispatch [::f-state/set-modal-show? show?]]]
+   {:fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]
     :db (-> db 
             (assoc-in [:category :add-modal-show?] show?))}))
 
@@ -43,7 +44,7 @@
 (re-frame/reg-event-fx
  ::show-update-modal
  (fn [{:keys [db]} [_ show?]]
-   {:fx [[:dispatch [::f-state/set-modal-show? show?]]]
+   {:fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]
     :db (-> db
             (assoc-in [:category :update-modal-show?] show?))}))
 
@@ -56,7 +57,7 @@
  ::show-delete-modal
  (fn [{:keys [db]} [_ show?]]
    (f-util/clog "show delete modal: " show?)
-   {:fx [[:dispatch [::f-state/set-modal-show? show?]]]
+   {:fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]
     :db (-> db
             (assoc-in [:category :delete-modal-show?] show?)
             (assoc-in [:modal :show?] show?))}))
@@ -69,7 +70,7 @@
 (re-frame/reg-event-db
  ::query-categories-ok
  (fn [db [_ resp]]
-   (assoc-in db [:category :list] (:data resp))))
+   (assoc-in db [:current-route :result] (:data resp))))
 
 (re-frame/reg-event-fx
  ::query-categories
@@ -96,10 +97,11 @@
                      {:category category} 
                      ::add-category-ok)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::get-category-ok
- (fn [db [_ resp]]
-   (assoc-in db [:category :current] (:category (:data resp)))))
+ (fn [{:keys [db]} [_ resp]]
+   {:db db 
+    :fx [[:dispatch [::f-state/init-current (:data resp)]]]}))
 
 (re-frame/reg-event-fx
  ::get-category
@@ -171,8 +173,7 @@
 (defn add-form []
   (let [category (r/atom {})]
     [:form 
-     [:div {:class "grid gap-4 mb-6 sm:grid-cols-2"}
-      
+     [:div {:class "grid gap-4 mb-6 sm:grid-cols-2"} 
       [:div 
        (text-input-backend {:label "Name："
                             :name "name"
@@ -181,7 +182,7 @@
                             :on-change #(swap! category assoc :name (f-util/get-value %))})
        (when @name-error
          [:p {:class "mt-2 text-sm text-red-600 dark:text-red-500"}
-          [:span {:class "font-medium"} ]
+          [:span {:class "font-medium"}]
           @name-error])]
       [:div 
        (text-input-backend {:label "Description"
@@ -222,85 +223,78 @@
                                 (re-frame/dispatch [::delete-category (:id @current)]))}
        "Delete"]]]))
 
+(defn modals []
+  ;; modals
+  (let [add-modal-show? @(re-frame/subscribe [::f-state/add-modal-show?])
+        update-modal-show? @(re-frame/subscribe [::f-state/update-modal-show?])
+        delete-modal-show? @(re-frame/subscribe [::f-state/delete-modal-show?])]
+    [:div
+     [modals/modal  {:id "add-category"
+                     :show? add-modal-show?
+                     :title "Add Category"
+                     :on-close #(re-frame/dispatch [::f-state/show-add-modal false])}
+      [add-form]]
+     [modals/modal  {:id "update-category"
+                     :show? update-modal-show?
+                     :title "Update Category"
+                     :on-close #(do
+                                  (re-frame/dispatch [::f-state/clean-current])
+                                  (re-frame/dispatch [::f-state/show-update-modal false]))}
+      [update-form]]
+     [modals/modal  {:id "delete-category"
+                     :show? delete-modal-show?
+                     :title "Delete Category"
+                     :on-close #(do
+                                  (re-frame/dispatch [::f-state/clean-current])
+                                  (re-frame/dispatch [::f-state/show-delete-modal false]))}
+      [delete-form]]]))
+
+(defn query-form []
+  ;; page query form
+  (let [q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
+        filter (r/cursor q-data [:filter])]
+    [:<> 
+     [:form
+      [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
+       [:div {:class "grid grid-cols-4 gap-3"}
+        [:div {:class "max-w-10 flex"}
+         (text-input-backend {:label "name："
+                              :type "text"
+                              :id "name"
+                              :on-blur #(when-let [v (f-util/get-trim-value %)]
+                                          (swap! filter str " name lk " v))})]]
+       [:div {:class "felx inline-flex justify-center items-center w-full"}
+        [btn {:on-click #(re-frame/dispatch [::query-categories @q-data])
+                :class css/buton-purple} "Query"]
+        [btn {:on-click #(re-frame/dispatch [::f-state/show-add-modal true])
+                :class css/button-green} "New"]]]]
+     [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]]))
+
+(def columns [{:key :name :title "Name"}
+              {:key :description :title "Description"}
+              {:key :tags :title "Edit"}])
+
+(defn edit-fn [d]
+  (do (re-frame/dispatch [::get-category (:id d)])
+    (re-frame/dispatch [::f-state/show-update-modal true])))
+
+(defn delete-fn [d]
+  (do
+    (re-frame/dispatch [::get-category (:id d)])
+    (re-frame/dispatch [::f-state/show-delete-modal true])))
+
+
 (defn index [] 
-  (let [add-modal-show? @(re-frame/subscribe [::add-modal-show?])
-        update-modal-show? @(re-frame/subscribe [::update-modal-show?])
-        delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
-        q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
-        filter (r/cursor q-data [:filter])] 
-    (layout-dash 
-     [:div {:class css/main-container}
-      ;; page title
-      [:h4 {:class css/page-title} "Category"]
-      
-      ;; page query form
-      [:form
-       [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
-        [:div {:class "grid grid-cols-4 gap-3"}
-         [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "name："
-                               :type "text"
-                               :id "name"
-                               :on-blur #(when-let [v (f-util/get-trim-value %)]
-                                           (swap! filter str " name lk " v))})]]
-        [:div {:class "felx inline-flex justify-center items-center w-full"}
-         (btn {:on-click #(re-frame/dispatch [::query-categories @q-data])
-               :class css/buton-purple} "Query")
-         (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
-               :class css/button-green} "New")]]]
-      
-      ;; modals
-      [:div
-       [modals/modal  {:id "add-category"
-                       :show? add-modal-show?
-                       :title "Add Category"
-                       :on-close #(re-frame/dispatch [::show-add-modal false])}
-        [add-form]]
-       [modals/modal  {:id "update-category"
-                       :show? update-modal-show?
-                       :title "Update Category"
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-update-modal false]))}
-        [update-form]]
-       [modals/modal  {:id "delete-category"
-                       :show? delete-modal-show?
-                       :title "Delete Category"
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-delete-modal false]))}
-        [delete-form]]]
-      ;; hr
-      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
-      
-      ;; data table
-      [:div 
-       (let [{:keys [categories opts total]} @(re-frame/subscribe [::categories-list])
-             page (:page opts)
-             page-size (:page-size opts)]
-         (table-dash 
-          [:tr
-           [th-dash "Name"]
-           [th-dash "Description"]
-           [th-dash "操作"]] 
-          (for [c categories]
-            [:tr {:class css-list-table-tbody-tr
-                  :key (:id c)}
-             [td-dash (:name c)]
-             [td-dash (:description c)]
-             [td-dash
-              [:<>
-               [edit-button {:on-click #(do (re-frame/dispatch [::get-category (:id c)])
-                                            (re-frame/dispatch [::show-update-modal true]))}
-                "Edit"]
-               [:span " | "]
-               [delete-button {:on-click #(do
-                                            (re-frame/dispatch [::get-category (:id c)])
-                                            (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]])
-          (when (pos-int? total)
-            [page-dash {:page page
-                        :page-size page-size
-                        :total total
-                        :opts opts
-                        :url ::query-categories}])))]])))
+  (let [{:keys [categories total opts]} @(re-frame/subscribe [::f-state/result])
+        current-route @(re-frame/subscribe [::f-state/current-route])
+        pagination (assoc opts :total total :query-params opts :url ::query-categories)
+        
+        data-sources (map #(assoc % :tags [{:class css-edit :title "Edit" :on-click edit-fn}
+                                           {:class css-delete :title "Del" :on-click delete-fn}]) 
+                          categories)]
+    [layout-admin 
+     [modals]
+     [query-form]
+     [table-admin {:columns columns
+                   :datasources data-sources
+                   :pagination pagination}]]))

@@ -226,78 +226,72 @@
         delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])
         q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
-    (layout-dash
-     [:div {:class css/main-container}
-      ;; page title
-      [:h4 {:class css/page-title} "Tags"]
-
+    [layout-dash
       ;; page query form
-      [:form
-       [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
-        [:div {:class "grid grid-cols-4 gap-3"}
-         [:div {:class "max-w-10 flex"}
-          (text-input-backend {:label "Name："
-                               :type "text"
-                               :id "name"
-                               :on-blur #(when-let [v (f-util/get-trim-value %)]
-                                           (swap! filter str " name lk " v))})]]
-        [:div {:class "felx inline-flex justify-center items-center w-full"}
-         (btn {:on-click #(re-frame/dispatch [::query-tags @q-data])
-               :class css/buton-purple} "Query")
-         (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
-               :class css/button-green} "New")]]]
+     [:form
+      [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
+       [:div {:class "grid grid-cols-4 gap-3"}
+        [:div {:class "max-w-10 flex"}
+         (text-input-backend {:label "Name："
+                              :type "text"
+                              :id "name"
+                              :on-blur #(when-let [v (f-util/get-trim-value %)]
+                                          (swap! filter str " name lk " v))})]]
+       [:div {:class "felx inline-flex justify-center items-center w-full"}
+        (btn {:on-click #(re-frame/dispatch [::query-tags @q-data])
+              :class css/buton-purple} "Query")
+        (btn {:on-click #(re-frame/dispatch [::show-add-modal true])
+              :class css/button-green} "New")]]]
 
       ;; modals
-      [:div
-       [modals/modal  {:id "new-tag"
-                       :show new-modal-show?
-                       :title "Add Tag"
-                       :on-close #(re-frame/dispatch [::show-add-modal false])}
-        [add-form]]
-       [modals/modal  {:id "update-tag"
-                       :show? edit-modal-show?
-                       :title "Update Tag"
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-update-modal false]))}
-        [edit-form]]
-       [modals/modal  {:id "Delete-Tag"
-                       :show? delete-modal-show?
-                       :title "Delete Tag"
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-delete-modal false]))}
-        [delete-form]]]
-      ;; hr
-      [:div {:class "h-px my-4 bg-blue-500 border-1 dark:bg-blue-700"}]
+     [:div
+      [modals/modal  {:id "new-tag"
+                      :show new-modal-show?
+                      :title "Add Tag"
+                      :on-close #(re-frame/dispatch [::show-add-modal false])}
+       [add-form]]
+      [modals/modal  {:id "update-tag"
+                      :show? edit-modal-show?
+                      :title "Update Tag"
+                      :on-close #(do
+                                   (re-frame/dispatch [::clean-current])
+                                   (re-frame/dispatch [::show-update-modal false]))}
+       [edit-form]]
+      [modals/modal  {:id "Delete-Tag"
+                      :show? delete-modal-show?
+                      :title "Delete Tag"
+                      :on-close #(do
+                                   (re-frame/dispatch [::clean-current])
+                                   (re-frame/dispatch [::show-delete-modal false]))}
+       [delete-form]]]
 
       ;; data table
-      [:div
-       (let [{:keys [tags opts total]} @(re-frame/subscribe [::tags-list])
-             page (:page opts)
-             page-size (:page-size opts)]
-         (table-dash
-          [:tr
-           [th-dash "Name"]
-           [th-dash "Description"]
-           [th-dash "操作"]]
-          (for [c tags]
-            [:tr {:class css-list-table-tbody-tr}
-             [td-dash (:name c)]
-             [td-dash (:description c)]
-             [td-dash
-              [:<>
-               [edit-button {:on-click #(do (re-frame/dispatch [::get-tag (:id c)])
-                                            (re-frame/dispatch [::show-update-modal true]))}
-                "Edit"]
-               [:span " | "]
-               [delete-button {:on-click #(do
-                                            (re-frame/dispatch [::get-tag (:id c)])
-                                            (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]]) 
-          (when (pos-int? total)
-            (page-dash {:page page
-                        :page-size page-size
-                        :total total
-                        :opts opts
-                        :url ::query-tags}))))]])))
+     [:div
+      (let [{:keys [tags opts total]} @(re-frame/subscribe [::tags-list])
+            page (:page opts)
+            page-size (:page-size opts)]
+        (table-dash
+         [:tr
+          [th-dash "Name"]
+          [th-dash "Description"]
+          [th-dash "操作"]]
+         (for [c tags]
+           [:tr {:class css-list-table-tbody-tr}
+            [td-dash (:name c)]
+            [td-dash (:description c)]
+            [td-dash
+             [:<>
+              [edit-button {:on-click #(do (re-frame/dispatch [::get-tag (:id c)])
+                                           (re-frame/dispatch [::show-update-modal true]))}
+               "Edit"]
+              [:span " | "]
+              [delete-button {:on-click #(do
+                                           (re-frame/dispatch [::get-tag (:id c)])
+                                           (re-frame/dispatch [::show-delete-modal true]))}
+               "Del"]]]]) 
+         (when (pos-int? total)
+           (page-dash {:page page
+                       :page-size page-size
+                       :total total
+                       :opts opts
+                       :url ::query-tags}))))]]))

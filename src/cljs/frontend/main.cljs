@@ -32,12 +32,6 @@
     :debug true
     :login-status nil
     :login-user nil
-    :modal {:show? false}
-    :category nil
-    :tag nil
-    :article nil
-    :comment nil
-    :user nil
     :blog nil}))
 
 (re-frame/reg-event-fx
@@ -80,6 +74,16 @@
  (fn [route]
    (apply rfe/push-state route)))
 
+(re-frame/reg-event-db
+ ::f-state/init-current
+ (fn [db [_ current]]
+   (assoc-in db [:current-route :current] current)))
+
+(re-frame/reg-event-db
+ ::f-state/clean-current
+ (fn [db [_ _]]
+   (assoc-in db [:current-route :current] nil)))
+
 (def routes
   ["/"
    ["" {:name ::f-state/home
@@ -96,37 +100,36 @@
 
    ["dashboard" {:name ::f-state/dashboard
                  :view dashboard/index
-                 :link-text "dashboard"
+                 :link-text "Dashboard"
                  :controllers [{:start (fn [& params] 
-                                         (re-frame/dispatch [::f-state/init :dashboard])
                                          (js/console.log (str "Entering dashboard, params: " params)))
                                 :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
 
    ["categories" {:name ::f-state/categories
                   :view category/index
-                  :link-text "categories"
+                  :link-text "Categories"
                   :controllers [{:start (fn [& params] 
-                                          (re-frame/dispatch [::f-state/init :category])
+                                          (re-frame/dispatch [::f-state/init-modal nil]) 
                                           (js/console.log (str "Entering categories, params: " params)))
                                  :stop (fn [& params] 
-                                         (re-frame/dispatch [::f-state/init :category])
+                                         (re-frame/dispatch [::f-state/init-modal nil])
                                          (js/console.log (str "Leaving categories, params: " params)))}]}]
 
    ["tags" {:name ::f-state/tags
             :view tag/index
-            :link-text "tags"
+            :link-text "Tags"
             :controllers [{:start (fn [& params] 
-                                    (re-frame/dispatch [::f-state/init :tag])
+                                    (re-frame/dispatch [::f-state/init-modal nil])
                                     (js/console.log (str "Entering tags, params: " params)))
                            :stop (fn [& params] 
-                                   (re-frame/dispatch [::f-state/init :tag])
+                                   (re-frame/dispatch [::f-state/init-modal nil])
                                    (js/console.log (str "Leaving tags, params: " params)))}]}] 
    
    ["articles"
-
+    
     ["" {:name ::f-state/articles
          :view article/index
-         :link-text "articles"
+         :link-text "Articles"
          :controllers [{:start (fn [& params]
                                  (re-frame/dispatch [::f-state/init :article])
                                  (js/console.log (str "Entering articles, params: " params)))
@@ -134,14 +137,14 @@
     
     ["/comments" {:name ::f-state/articles-comments
                           :view article-comment/index
-                          :link-text "articles-comments"
+                          :link-text "Articles-Comments"
                           :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
                                          :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]]
    
    
    ["users" {:name ::f-state/users
              :view user/index
-             :link-text "users"
+             :link-text "Users"
              :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
                             :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]])
 

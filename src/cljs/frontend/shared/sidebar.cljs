@@ -24,7 +24,7 @@
               :aria-label "Sidebar"}
       [:div {:class "flex items-center justify-center mt-8"}
        [:div {:class "flex items-center"}
-        [:span {:class "mx-2 text-2xl font-semibold text-white"} "Dashboard"]]] 
+        [:span {:class "mx-2 text-2xl font-semibold text-white"} "Admin"]]] 
       
       [:ul {:class "mt-10"} 
        [:li>a {:class css-sidebar-li-a-top

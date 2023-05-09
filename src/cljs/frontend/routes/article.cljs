@@ -8,8 +8,7 @@
               [frontend.shared.form-input :refer [checkbox-input select-input
                                                   text-input
                                                   text-input-backend textarea]]
-              [frontend.shared.layout :refer [admin-layout layout-dash
-                                              list-data]]
+              [frontend.shared.layout :refer [layout-dash]]
               [frontend.shared.modals :as modals]
               [frontend.shared.page :refer [page-dash]]
               [frontend.shared.tables :refer [css-list-table-tbody-tr
@@ -37,7 +36,7 @@
  (fn [{:keys [db]} [_ show?]]
    {:db (-> db
             (assoc-in [:article :new-modal-show?] show?))
-    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
+    :fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]}))
 
 (re-frame/reg-sub
  ::edit-modal-show?
@@ -49,7 +48,7 @@
  (fn [{:keys [db]} [_ show?]]
    {:db (-> db
             (assoc-in [:article :edit-modal-show?] show?))
-    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
+    :fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]}))
 
 (re-frame/reg-sub
  ::push-modal-show?
@@ -61,7 +60,7 @@
  (fn [{:keys [db]} [_ show?]]
    {:db (-> db
             (assoc-in [:article :push-modal-show?] show?))
-    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
+    :fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]}))
 
 (re-frame/reg-sub
  ::delete-modal-show?
@@ -73,7 +72,7 @@
  (fn [{:keys [db]} [_ show?]]
    {:db (-> db
              (assoc-in [:article :delete-modal-show?] show?))
-    :fx [[:dispatch [::f-state/set-modal-show? show?]]]}))
+    :fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]}))
 
 (re-frame/reg-sub
  ::articles-list
@@ -196,14 +195,6 @@
   (if (or (nil? v) (str/blank? v))
     (reset! name-error "名称不能为空")
     (reset! name-error nil)))
-
-(defn edit-layout [title children]
-  (layout-dash
-   [:section {:class "bg-white dark:bg-gray-900 overflow-y-auto"}
-    [:div {:class "py-2 px-2 mx-auto max-w-2xl lg:py-8"}
-     [:h2 {:class "mb-2 text-xl font-bold text-gray-900 dark:text-white"}
-      title]
-     children]]))
 
 (defn new-form [] 
   (let [{:keys [id title summary detail]} @(re-frame/subscribe [::article-current])
@@ -344,101 +335,141 @@
        [new-button {:on-click #(re-frame/dispatch [::show-new-modal true])}
         "New"]]]]))
 
-(defn index []
+(defn modals []
+  ;; modals
   (let [new-modal-show? @(re-frame/subscribe [::new-modal-show?])
         edit-modal-show? @(re-frame/subscribe [::edit-modal-show?])
         push-modal-show? @(re-frame/subscribe [::push-modal-show?])
-        delete-modal-show? @(re-frame/subscribe [::delete-modal-show?]) 
-        ]
-    [layout-dash
-     [:div {:class css/main-container}
-      ;; page title
-      [:h4 {:class css/page-title} "Articles"]
+        delete-modal-show? @(re-frame/subscribe [::delete-modal-show?])]
+    [:div
 
-      ;; page query form
-      [form]
+     [modals/modal  {:id "new-article"
+                     :title "New article"
+                     :show? new-modal-show?
+                     :on-close #(do
+                                  (re-frame/dispatch [::clean-current])
+                                  (re-frame/dispatch [::show-new-modal false]))}
+      [new-form]]
+     [modals/modal  {:id "update-article"
+                     :title "Update article"
+                     :show? edit-modal-show?
+                     :on-close #(do
+                                  (re-frame/dispatch [::clean-current])
+                                  (re-frame/dispatch [::show-edit-modal false]))}
+      [edit-form]]
+     [modals/modal  {:id "push-article"
+                     :title "Push article"
+                     :show? push-modal-show?
+                     :on-close #(do
+                                  (re-frame/dispatch [::clean-current])
+                                  (re-frame/dispatch [::show-push-modal false]))}
+      [push-form]]
+     [modals/modal  {:id "Delete-article"
+                     :title "Delete article"
+                     :show? delete-modal-show?
+                     :on-close #(do
+                                  (re-frame/dispatch [::clean-current])
+                                  (re-frame/dispatch [::show-delete-modal false]))}
+      [delete-form]]]))
 
-      ;; modals
-      [:div
+(defn list-table []
+  (let [{:keys [articles opts total]} @(re-frame/subscribe [::articles-list])
+        page (:page opts)
+        page-size (:page-size opts)]
+    (table-dash
+     [:tr
+      [th-dash "ID"]
+      [th-dash "Title"]
+      [th-dash "Author"]
+      [th-dash "Like-count"]
+      [th-dash "Read-count"]
+      [th-dash "Comment-count"]
+      [th-dash "Create-time"]
+      [th-dash "Top"]
+      [th-dash "操作"]]
+     (for [{:keys [id] :as c} articles]
+       [:tr {:class css-list-table-tbody-tr}
+        [td-dash id]
+        [td-dash (:title c)]
+        [td-dash (:author c)]
+        [td-dash (:like-count c)]
+        [td-dash (:read-count c)]
+        [td-dash (:comment-count c)]
+        [td-dash (:create-time c)]
+        [td-dash (:top-flag c)]
+        [td-dash
+         [:<>
+          [edit-button {:on-click #(do
+                                     (re-frame/dispatch [::get-article id])
+                                     (re-frame/dispatch [::show-edit-modal true]))}
+           "Edit"]
+          [:span " | "]
+          [edit-button {:on-click #(do
+                                     (re-frame/dispatch [::get-article id])
+                                     (re-frame/dispatch [::category/query-categories {:page-size 100}])
+                                     (re-frame/dispatch [::show-push-modal true]))}
+           "Push"]
+          [:span " | "]
+          [delete-button {:on-click #(do
+                                       (re-frame/dispatch [::get-article (:id c)])
+                                       (re-frame/dispatch [::show-delete-modal true]))}
+           "Del"]]]])
+     [page-dash {:page page
+                 :page-size page-size
+                 :total total
+                 :opts opts
+                 :url ::query-articles}])))
 
-       [modals/modal  {:id "new-article"
-                       :title "New article"
-                       :show? new-modal-show?
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-new-modal false]))}
-        [new-form]]
-       [modals/modal  {:id "update-article"
-                       :title "Update article"
-                       :show? edit-modal-show?
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-edit-modal false]))}
-        [edit-form]]
-       [modals/modal  {:id "push-article"
-                       :title "Push article"
-                       :show? push-modal-show?
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-push-modal false]))}
-        [push-form]]
-       [modals/modal  {:id "Delete-article"
-                       :title "Delete article"
-                       :show? delete-modal-show?
-                       :on-close #(do
-                                    (re-frame/dispatch [::clean-current])
-                                    (re-frame/dispatch [::show-delete-modal false]))}
-        [delete-form]]]
-      ;; hr
-      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]
-
-      ;; data table
-      [:div
-       (let [{:keys [articles opts total]} @(re-frame/subscribe [::articles-list])
-             page (:page opts)
-             page-size (:page-size opts)]
-         (table-dash
-          [:tr
-           [th-dash "ID"]
-           [th-dash "Title"]
-           [th-dash "Author"]
-           [th-dash "Like-count"]
-           [th-dash "Read-count"]
-           [th-dash "Comment-count"]
-           [th-dash "Create-time"]
-           [th-dash "Top"]
-           [th-dash "操作"]]
-          (for [{:keys [id] :as c} articles]
-            [:tr {:class css-list-table-tbody-tr}
-             [td-dash id]
-             [td-dash (:title c)]
-             [td-dash (:author c)]
-             [td-dash (:like-count c)]
-             [td-dash (:read-count c)]
-             [td-dash (:comment-count c)]
-             [td-dash (:create-time c)]
-             [td-dash (:top-flag c)]
-             [td-dash
-              [:<>
-               [edit-button {:on-click #(do
-                                          (re-frame/dispatch [::get-article id])
-                                          (re-frame/dispatch [::show-edit-modal true]))}
-                "Edit"]
-               [:span " | "]
-               [edit-button {:on-click #(do
-                                          (re-frame/dispatch [::get-article id])
-                                          (re-frame/dispatch [::category/query-categories {:page-size 100}])
-                                          (re-frame/dispatch [::show-push-modal true]))}
-                "Push"]
-               [:span " | "]
-               [delete-button {:on-click #(do
-                                            (re-frame/dispatch [::get-article (:id c)])
-                                            (re-frame/dispatch [::show-delete-modal true]))}
-                "Del"]]]])
-          [page-dash {:page page
-                      :page-size page-size
-                      :total total
-                      :opts opts
-                      :url ::query-articles}]))]]]))
+(defn index []
+  [layout-dash
+   form
+   modals
+   [:div
+    (let [{:keys [articles opts total]} @(re-frame/subscribe [::articles-list])
+          page (:page opts)
+          page-size (:page-size opts)]
+      (table-dash
+       [:tr
+        [th-dash "ID"]
+        [th-dash "Title"]
+        [th-dash "Author"]
+        [th-dash "Like-count"]
+        [th-dash "Read-count"]
+        [th-dash "Comment-count"]
+        [th-dash "Create-time"]
+        [th-dash "Top"]
+        [th-dash "操作"]]
+       (for [{:keys [id] :as c} articles]
+         [:tr {:class css-list-table-tbody-tr}
+          [td-dash id]
+          [td-dash (:title c)]
+          [td-dash (:author c)]
+          [td-dash (:like-count c)]
+          [td-dash (:read-count c)]
+          [td-dash (:comment-count c)]
+          [td-dash (:create-time c)]
+          [td-dash (:top-flag c)]
+          [td-dash
+           [:<>
+            [edit-button {:on-click #(do
+                                       (re-frame/dispatch [::get-article id])
+                                       (re-frame/dispatch [::show-edit-modal true]))}
+             "Edit"]
+            [:span " | "]
+            [edit-button {:on-click #(do
+                                       (re-frame/dispatch [::get-article id])
+                                       (re-frame/dispatch [::category/query-categories {:page-size 100}])
+                                       (re-frame/dispatch [::show-push-modal true]))}
+             "Push"]
+            [:span " | "]
+            [delete-button {:on-click #(do
+                                         (re-frame/dispatch [::get-article (:id c)])
+                                         (re-frame/dispatch [::show-delete-modal true]))}
+             "Del"]]]])
+       [page-dash {:page page
+                   :page-size page-size
+                   :total total
+                   :opts opts
+                   :url ::query-articles}]))]])
 
 

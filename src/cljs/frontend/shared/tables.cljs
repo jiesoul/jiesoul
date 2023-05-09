@@ -1,4 +1,7 @@
-(ns frontend.shared.tables)
+(ns frontend.shared.tables 
+  (:require [frontend.shared.buttons :refer [btn]]
+            [frontend.shared.page :refer [page-dash]]
+            [reagent.core :as r]))
 
 (def css-list "relative overflow-x-auto shadow-md sm:rounded-lg w-full")
 (def css-list-table "w-full p-1 border-collapse border border-gray-100 text-sm text-center text-gray-500 dark:text-gray-400")
@@ -28,4 +31,27 @@
     [:tbody {:class css-list-table-tbody}
      tbody]]
    page])
+
+(defn table-admin [{:keys [columns datasources pagination]}]
+  [:div {:class css-list}
+   [:table {:class css-list-table}
+    [:thead {:class css-list-table-thead} 
+     (for [{:keys [data-index title key]} columns]
+       [:th {:class css-list-table-thead-tr-th
+             :data-index data-index
+             :key key} title])]
+    [:tbody {:class css-list-table-tbody}
+     (for [ds datasources]
+       [:tr {:class css-list-table-tbody-tr}
+        (for [{:keys [key]} columns]
+          [:td {:class css-list-table-tbody-tr-td}
+           (if (= key :tags)
+             [:div 
+              (for [{:keys [class title on-click]} (:tags ds)]
+                [:<>
+                 [btn {:class class
+                       :on-click (on-click ds)} title]
+                 [:span " | "]])]
+             (key ds))])])]
+    [page-dash pagination]]])
 

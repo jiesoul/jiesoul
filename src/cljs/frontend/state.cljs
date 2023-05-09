@@ -17,7 +17,7 @@
    (:modal-backdrop-show? db)))
 
 (re-frame/reg-sub
- ::modal-show?
+ ::modal-back-show?
  (fn [db] 
    (:modal-show? db)))
 
@@ -35,3 +35,8 @@
  ::debug
  (fn [db]
    (:debug db)))
+
+(re-frame/reg-sub
+ ::result
+ (fn [db]
+   (get-in db [:current-route :result])))

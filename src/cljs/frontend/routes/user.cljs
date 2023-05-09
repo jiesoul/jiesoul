@@ -3,5 +3,5 @@
 
 (defn index
   []
-  (layout-dash
-   [:<>]))
+  [layout-dash
+   [:<>]])
