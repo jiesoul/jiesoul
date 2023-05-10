@@ -24,8 +24,8 @@
          start-page (let [p (- page page-no)] (if (> p 0) p 1))
          end-page (let [p (+ page page-no)] (if (> p total-pages) total-pages p))
          prev-page (if (<= page 1) 1 (dec page))
-         next-page (if (< page total-pages) (inc page) total-pages)]
-     [:div 
+         next-page (if (< page total-pages) (inc page) total-pages)] 
+     [:tfoot 
       [:nav {:class "flex items-center justify-between pt-4"}
        [:span {:class "text-sm font-normal text-gray-500 dark:text-gray-400"}
         "Showing "
@@ -52,9 +52,9 @@
         (when (< end-page total-pages)
           [:li {:key total-pages}
            [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page total-pages)])
-                       :class css-page-no} total-pages]])
+                     :class css-page-no} total-pages]])
         [:li {:key "next-page"}
          [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page next-page)])
-                     :class css-page-no
-                     :disabled (if (>= page total-pages) true false)}
-         (svg/chevron-right)]]]]])))
+                   :class css-page-no
+                   :disabled (if (>= page total-pages) true false)}
+          (svg/chevron-right)]]]]])))

@@ -12,9 +12,8 @@
 
 (defn query-articles [{:keys [db]} opts]
   (log/debug "Query articles " opts)
-  (if-let [data (article-db/query db opts)]
-    (resp-util/ok data)
-    (resp-util/not-found "not found")))
+  (let [data (article-db/query db opts)]
+    (resp-util/ok data)))
 
 (defn create-article! [{:keys [db]} article]
   (log/debug "Creatge article " article)
@@ -28,7 +27,7 @@
 (defn get-article [{:keys [db]} id]
   (log/debug "Get article " id)
   (let [article (article-db/get-by-id db id)]
-    (resp-util/ok {:article article})))
+    (resp-util/ok article)))
 
 (defn update-article! [{:keys [db]} article]
   (log/debug "Update article " article)
@@ -43,35 +42,38 @@
 (defn get-comments-by-article-id [{:keys [db]} article-id]
   (log/debug "Get comments by article id " article-id)
   (let [comments (article-comment-db/get-comments-by-article-id db article-id)]
-    (resp/response {:status :ok 
-                    :comments comments})))
+    (resp-util/ok comments)))
 
 (defn query-articles-comments [{:keys [db]} opt]
   (log/debug "Query articles comments " opt)
   (let [articles-comments (article-comment-db/query db opt)]
-    (resp/response {:status :ok
-                    :data {:articles-comments articles-comments}})))
+    (resp-util/ok articles-comments)))
 
 (defn get-articles-comments-by-id [{:keys [db]} id]
   (log/debug "Get article comment " id)
   (let [article-comment (article-comment-db/get-by-id db id)]
-    (resp/response {:status :ok 
-                    :data {:article-comment article-comment}})))
+    (resp-util/ok article-comment)))
 
 (defn delete-articles-comments-by-id [{:keys [db]} id]
   (log/debug "Delete article comment " id)
   (let [_ (article-comment-db/delete! db id)]
-    (resp/response {:status :ok})))
+    (resp-util/ok {})))
 
 (defn delete-articles-comments-by-ids [{:keys [db]} id-set]
   (log/debug "Delete article comment " id-set)
   (let [_ (article-comment-db/delete-by-id-set! db id-set)]
-    (resp/response {:status :ok})))
+    (resp-util/ok {})))
 
 (defn push! [{:keys [db]} article]
-  (let [push-time (java.time.Instant/now)
-        result (article-db/push! db (assoc article :push_date push-time))]
-    (resp-util/ok {})))
+  (let [old-article (article-db/get-by-id db (:id article))]
+    (if (= (:push-flag old-article) 1) 
+      (resp-util/bad-request "Aritcle been pushed")
+      (let [
+            push-time (java.time.Instant/now)
+            result (article-db/push! db (assoc article 
+                                               :push_time push-time
+                                               :push_flag 1))]
+        (resp-util/ok {})))))
 
 (defn save-comment! [{:keys [db]} comment]
   (let [result (article-db/save-comment! db comment)]

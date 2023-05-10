@@ -75,7 +75,7 @@
     (when toasts
       [:div {:class "fixed top-5 right-5 z-50 w-full max-w-xs"} 
        (for [{:keys [id type content timeout]} toasts] 
-         [:div {:id (str "toast-" id)
+         [:div {:key (str "toast-" id)
                 :class css-toast-base
                 :role "alert"}
           [:div {:class (case type

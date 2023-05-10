@@ -75,14 +75,19 @@
    (apply rfe/push-state route)))
 
 (re-frame/reg-event-db
- ::f-state/init-current
- (fn [db [_ current]]
-   (assoc-in db [:current-route :current] current)))
+ ::f-state/init-current-route-result
+ (fn [db [_ data]]
+   (assoc-in db [:current-route :result] data)))
 
 (re-frame/reg-event-db
- ::f-state/clean-current
+ ::f-state/init-current-route-edit
+ (fn [db [_ current]]
+   (assoc-in db [:current-route :edit] current)))
+
+(re-frame/reg-event-db
+ ::f-state/clean-current-route-edit
  (fn [db [_ _]]
-   (assoc-in db [:current-route :current] nil)))
+   (assoc-in db [:current-route :edit] nil)))
 
 (def routes
   ["/"
@@ -131,7 +136,7 @@
          :view article/index
          :link-text "Articles"
          :controllers [{:start (fn [& params]
-                                 (re-frame/dispatch [::f-state/init :article])
+                                 (re-frame/dispatch [::category/get-all-categories])
                                  (js/console.log (str "Entering articles, params: " params)))
                         :stop (fn [& params] (js/console.log (str "Leaving articles, params: " params)))}]}]
     

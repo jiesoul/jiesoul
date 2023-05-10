@@ -11,7 +11,7 @@
         users (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) :as c from users " ws)] wv)
         total (sql/query db t-sql)]
-    {:users users 
+    {:list (map #(dissoc % :password) users) 
      :total total
      :opts opts}))
 

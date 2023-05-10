@@ -14,7 +14,7 @@
           t-sql (into [(str "select count(1) as c from category " ws)] wv)
           _ (log/info "total categories sql: " t-sql)
           total (:c (first (sql/query db t-sql)))] 
-      {:categories categories 
+      {:list categories 
        :total total
        :opts opts})
     (catch java.sql.SQLException se 

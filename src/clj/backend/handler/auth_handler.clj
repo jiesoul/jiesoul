@@ -17,7 +17,7 @@
     (if (and user (buddy-hashers/check password (:password user)))
       (let [token (create-user-token db (:id user))]
         (resp-util/ok  {:token token
-                         :user (dissoc user :password)}))
+                        :user (dissoc user :password)}))
 
       (resp-util/not-found "用户名或密码错误"))))
 

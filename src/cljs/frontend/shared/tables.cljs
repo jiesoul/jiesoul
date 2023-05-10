@@ -36,10 +36,11 @@
   [:div {:class css-list}
    [:table {:class css-list-table}
     [:thead {:class css-list-table-thead} 
-     (for [{:keys [data-index title key]} columns]
-       [:th {:class css-list-table-thead-tr-th
-             :data-index data-index
-             :key key} title])]
+     [:tr
+      (for [{:keys [data-index title key]} columns]
+        [:th {:class css-list-table-thead-tr-th
+              :data-index data-index
+              :key key} title])]]
     [:tbody {:class css-list-table-tbody}
      (for [ds datasources]
        [:tr {:class css-list-table-tbody-tr}
@@ -50,7 +51,7 @@
               (for [{:keys [class title on-click]} (:tags ds)]
                 [:<>
                  [btn {:class class
-                       :on-click (on-click ds)} title]
+                       :on-click on-click} title]
                  [:span " | "]])]
              (key ds))])])]
     [page-dash pagination]]])

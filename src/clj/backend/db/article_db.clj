@@ -3,7 +3,9 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log] 
+            [backend.db.tag-db :as tag-db]
+            [clojure.string :as str]))
 
 (defn query [db opts]
   (let [[ws wv] (du/opt-to-sql opts)
@@ -13,7 +15,7 @@
         articles (sql/query db q-sql {:builder-fn rs/as-unqualified-kebab-maps})
         t-sql (into [(str "select count(1) as c from article " ws)] wv)
         total (:c (first (sql/query db t-sql)))]
-    {:articles articles
+    {:list articles
      :total total
      :opts opts}))
 
@@ -27,14 +29,25 @@
           )))
     (catch java.sql.SQLException se (throw (ex-info "insert article: " se)))))
 
-(defn update! [db {:keys [id detail] :as article}]
+(defn update! [db {:keys [id detail] :as article}] 
   (jdbc/with-transaction [tx db]
-    (sql/update! tx :article_detail (select-keys detail [:content_md]) {:article_id id})
-    (sql/update! tx :article (select-keys article [:title :summary]) {:id id})))
+    (sql/update! tx :article_detail detail {:article_id id})
+    (sql/update! tx :article (dissoc article :detail) {:id id})))
 
-(defn push! [db { :keys [id category_id] :as article}]
+(defn push! [db { :keys [id tags] :as article}]
   (jdbc/with-transaction [tx db]
-    (sql/update! tx :article (select-keys article [:push_date :top_flag :tags :category_id]) {:id id})))
+    (sql/update! tx :article article {:id id})
+    (when-not (str/blank? tags) 
+      (log/debug "create tag " tags)
+      (loop [t (str/split tags #" ")]
+        (if (seq t)
+          (let [name (first t)
+                result (tag-db/get-by-name tx name)]
+            (if (seq result) 
+              (recur (rest t))
+              (do (tag-db/create! tx {:name name})
+                  (recur (rest t)))))
+          nil)))))
 
 (defn save-comment! [db comment]
   (jdbc/with-transaction [tx db]
@@ -54,8 +67,7 @@
   (jdbc/with-transaction [tx db]
     (let [article (sql/get-by-id tx :article id {:builder-fn rs/as-unqualified-kebab-maps})
           _ (log/debug "article: " article)
-          detail (get-detail-by-article-id tx id)
-          ]
+          detail (get-detail-by-article-id tx id)]
       (assoc article :detail (first detail)))))
 
 

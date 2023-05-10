@@ -12,5 +12,6 @@ CREATE TABLE article
     category_id INT DEFAULT 0,           -- 分类
     push_time DATETIME,                 -- 发布时间
     push_flag INT DEFAULT 0,
-    summary VARCHAR(1024)               -- 文章摘要
+    summary VARCHAR(1024),               -- 文章摘要
+    tags VARCHAR(1024)                   -- 标签
 );

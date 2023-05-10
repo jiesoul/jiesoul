@@ -7,9 +7,8 @@
 (defn query-users [env query]
   (log/debug "query users request params: "  query)
   (let [db (:db env)
-        users (user-db/query-users db query)]
-    (resp-util/ok {:users (map #(dissoc % :password) users)
-                   :query query})))
+        result (user-db/query-users db query)]
+    (resp-util/ok result)))
 
 (defn create-user! [env user]
   (log/debug "Create user " user)
@@ -36,7 +35,7 @@
   (let [db (:db env)
         user (user-db/get-user-by-id db id)]
     (if user
-      (resp-util/ok {:user (dissoc user :password)})
+      (resp-util/ok (dissoc user :password))
       (resp-util/not-found "无效的用户ID"))))
 
 (defn delete-user! [env id]

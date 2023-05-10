@@ -1,23 +1,24 @@
 (ns backend.webserver
-  (:require [backend.middleware.auth-middleware :as auth-mw]
+  (:require [backend.handler.article-handler :as article-handler]
+            [backend.handler.auth-handler :as auth-handler]
+            [backend.handler.category-handler :as category-handler]
+            [backend.handler.tag-handler :as tag-handler]
+            [backend.handler.user-handler :as user-handler]
+            [backend.middleware :refer [exception-middleware
+                                        wrap-cors-middeleware]]
+            [backend.middleware.auth-middleware :as auth-mw]
+            [backend.util.req-uitl :as req-util]
+            [clojure.spec.alpha :as s]
+            [clojure.tools.logging :as log]
             [muuntaja.core :as mu-core]
             [reitit.coercion.spec]
-            [clojure.spec.alpha :as s] 
             [reitit.ring :as reitit-ring]
             [reitit.ring.coercion :as reitit-coercion]
             [reitit.ring.middleware.dev]
             [reitit.ring.middleware.muuntaja :as reitit-muuntaja]
             [reitit.ring.middleware.parameters :as reitit-parameters]
             [reitit.swagger :as reitit-swagger]
-            [reitit.swagger-ui :as reitit-swagger-ui]
-            [backend.middleware :refer [exception-middleware wrap-cors]]
-            [backend.util.req-uitl :as req-util]
-            [backend.handler.auth-handler :as auth-handler]
-            [backend.handler.category-handler :as category-handler]
-            [backend.handler.user-handler :as user-handler]
-            [backend.handler.tag-handler :as tag-handler]
-            [backend.handler.article-handler :as article-handler]
-            [clojure.tools.logging :as log]))
+            [reitit.swagger-ui :as reitit-swagger-ui]))
 
 ;; (defn make-response [response-value]
 ;;   (if (= (:ret response-value) :ok)
@@ -209,15 +210,15 @@
                                (let [id (req-util/parse-path req :id)]
                                  (category-handler/get-category env id)))}
 
-              :put {:summary "Update a category"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}
-                                 :body {:category ::CategoryUpdate}}
-                    
-                    :handler (fn [req]
-                               (let [category (req-util/parse-body req :category)]
-                                 (category-handler/update-category! env category)))}
+              :patch {:summary "Update a category"
+                      :middleware [[auth-mw/wrap-auth env "user"]]
+                      :parameters {:header {:authorization ::token}
+                                   :path {:id pos-int?}
+                                   :body {:category ::CategoryUpdate}}
+
+                      :handler (fn [req]
+                                 (let [category (req-util/parse-body req :category)]
+                                   (category-handler/update-category! env category)))}
 
               :delete {:summary "Delete a category"
                        :middleware [[auth-mw/wrap-auth env "user"]]
@@ -394,7 +395,8 @@
    (reitit-ring/ring-handler
     (reitit-ring/router routes {:data {:muuntaja mu-core/instance
                                        :coercion reitit.coercion.spec/coercion
-                                       :middleware [reitit-swagger/swagger-feature
+                                       :middleware [wrap-cors-middeleware
+                                                    reitit-swagger/swagger-feature
                                                     reitit-parameters/parameters-middleware
                                                     reitit-muuntaja/format-negotiate-middleware
                                                     reitit-muuntaja/format-response-middleware 
@@ -402,10 +404,8 @@
                                                     ;; coercing response bodys
                                                     reitit-coercion/coerce-response-middleware
                                                     ;; coercing request parameters
-                                                    reitit-coercion/coerce-request-middleware
-                                                    ;; 跨站
-                                                    wrap-cors
-                                                    exception-middleware
+                                                    reitit-coercion/coerce-request-middleware 
+                                                    exception-middleware 
                                                     ]}})
 
     (reitit-ring/routes

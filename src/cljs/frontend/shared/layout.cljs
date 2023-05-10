@@ -1,15 +1,13 @@
 (ns frontend.shared.layout
   (:require [frontend.routes.login :refer [login]]
-            [frontend.shared.buttons :refer [default-button new-button]]
             [frontend.shared.css :as css]
             [frontend.shared.footer :refer [footer-home]]
             [frontend.shared.header :refer [header-dash nav-home]]
-            [frontend.shared.modals :refer [modal-back]] 
+            [frontend.shared.modals :as modals :refer [modal-back]] 
             [frontend.shared.sidebar :refer [sidebar-dash]] 
             [frontend.shared.toasts :refer [toasts]]
             [frontend.state :as f-state]
-            [re-frame.core :as re-frame]
-            [frontend.shared.modals :as modals]))
+            [re-frame.core :as re-frame]))
 
 (defn layout-dash [children]
   (let [token @(re-frame/subscribe [::f-state/token])]

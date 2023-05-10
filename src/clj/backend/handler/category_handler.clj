@@ -21,7 +21,7 @@
 (defn get-category [{:keys [db]} id]
   (log/debug "Get category " id)
   (let [category (category-db/get-by-id db id)]
-    (resp-util/ok {:category category})))
+    (resp-util/ok category)))
 
 (defn update-category! [{:keys [db]} category]
   (log/debug "Update category " category)

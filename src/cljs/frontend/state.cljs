@@ -7,6 +7,16 @@
    (:current-route db)))
 
 (re-frame/reg-sub
+ ::current-route-result
+ (fn [db]
+   (get-in db [:current-route :result])))
+
+(re-frame/reg-sub
+ ::current-route-edit
+ (fn [db]
+   (get-in db [:current-route :edit])))
+
+(re-frame/reg-sub
  ::token
  (fn [db]
    (:token db)))
@@ -36,7 +46,3 @@
  (fn [db]
    (:debug db)))
 
-(re-frame/reg-sub
- ::result
- (fn [db]
-   (get-in db [:current-route :result])))

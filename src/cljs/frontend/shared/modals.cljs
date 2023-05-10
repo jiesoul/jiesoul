@@ -25,28 +25,27 @@
    (assoc-in db [:current-route :modal :backdrop-show?] state)))
 
 (re-frame/reg-sub
- ::f-state/add-modal-show?
+ ::f-state/new-modal-show?
  (fn [db]
-   (get-in db [:current-route :modal :add-modal-show?])))
+   (get-in db [:current-route :modal :new-modal-show?])))
 
 (re-frame/reg-event-fx
- ::f-state/show-add-modal
+ ::f-state/show-new-modal
  (fn [{:keys [db]} [_ show?]]
    {:fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]
-    :db (-> db
-            (assoc-in [:current-route :modal :add-modal-show?] show?))}))
+    :db (assoc-in db [:current-route :modal :new-modal-show?] show?)}))
 
 (re-frame/reg-sub
- ::f-state/update-modal-show?
+ ::f-state/edit-modal-show?
  (fn [db]
-   (get-in db [:current-route :modal :update-modal-show?])))
+   (get-in db [:current-route :modal :edit-modal-show?])))
 
 (re-frame/reg-event-fx
- ::f-state/show-update-modal
+ ::f-state/show-edit-modal
  (fn [{:keys [db]} [_ show?]]
    {:fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]
     :db (-> db
-            (assoc-in [:current-route :modal :update-modal-show?] show?))}))
+            (assoc-in [:current-route :modal :edit-modal-show?] show?))}))
 
 (re-frame/reg-sub
  ::f-state/delete-modal-show?
@@ -56,7 +55,6 @@
 (re-frame/reg-event-fx
  ::f-state/show-delete-modal
  (fn [{:keys [db]} [_ show?]]
-   (f-util/clog "show delete modal: " show?)
    {:fx [[:dispatch [::f-state/set-modal-backdrop-show? show?]]]
     :db (-> db
             (assoc-in [:current-route :modal :delete-modal-show?] show?))}))

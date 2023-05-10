@@ -2,7 +2,8 @@
   (:require [backend.util.db-util :as du]
             [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.string :as str]))
 
 (defn query [db opts]
   (let [[ws wv] (du/opt-to-sql opts)
@@ -13,7 +14,7 @@
         t-sql (into [(str "select count(1) as c from tag " ws)] wv)
         _ (log/info "Count tags: " t-sql)
         total (:c (first (sql/query db t-sql)))] 
-    {:tags tags
+    {:list tags
      :total total
      :opts opts}))
 
@@ -28,3 +29,6 @@
 
 (defn get-by-id [db id]
   (sql/get-by-id db :tag id {:builder-fn rs/as-unqualified-maps}))
+
+(defn get-by-name [db name]
+  (sql/find-by-keys db :tag {:name name}))

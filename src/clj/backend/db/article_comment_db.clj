@@ -12,7 +12,7 @@
         total (-> (sql/query db t-sql)
               first
               :c)]
-    {:article-comments article-comments
+    {:list article-comments
      :total total
      :opts opts}))
 

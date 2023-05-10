@@ -16,7 +16,7 @@
 (defn get-tag [{:keys [db]} id]
   (log/debug "Get tag " id)
   (let [tag (tag-db/get-by-id db id)]
-    (resp-util/ok {:tag tag})))
+    (resp-util/ok tag)))
 
 (defn update-tag! [{:keys [db]} tag]
   (log/debug "Update tag " tag)
