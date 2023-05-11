@@ -3,16 +3,16 @@
             [frontend.shared.page :refer [page-dash]]
             [reagent.core :as r]))
 
-(def css-list "relative overflow-x-auto shadow-md sm:rounded-lg w-full")
+(def css-list "relative shadow-md sm:rounded-lg w-full")
 (def css-list-table "w-full p-1 border-collapse border border-gray-100 text-sm text-center text-gray-500 dark:text-gray-400")
 (def css-list-table-thead "text-base text-gray-700 dark:text-gray-400")
 (def css-list-table-thead-tr "")
-(def css-list-table-thead-tr-th "px-1 py-1 border-gray-500 bg-gray-50 text-base leading-4 
+(def css-list-table-thead-tr-th "p-1 border border-gray-500 bg-gray-50 text-base leading-4 
                                  font-blod text-gray-500 tracking-wider")
 
 (def css-list-table-tbody "bg-white")
-(def css-list-table-tbody-tr "bg-white border dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200")
-(def css-list-table-tbody-tr-td "px-1 py-1 whitespace-no-wrap border-gray-200")
+(def css-list-table-tbody-tr "bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200")
+(def css-list-table-tbody-tr-td "px-2 py-2 border whitespace-no-wrap border-gray-200")
 
 (defn th-dash [children]
   [:th {:class css-list-table-thead-tr-th} children])
@@ -44,15 +44,15 @@
     [:tbody {:class css-list-table-tbody}
      (for [ds datasources]
        [:tr {:class css-list-table-tbody-tr}
-        (for [{:keys [key]} columns]
-          [:td {:class css-list-table-tbody-tr-td}
-           (if (= key :tags)
+        (for [{:keys [key format]} columns]
+          [:td {:class css-list-table-tbody-tr-td} 
+           (if (= key :works)
              [:div 
-              (for [{:keys [class title on-click]} (:tags ds)]
+              (for [{:keys [class title on-click]} (:works ds)]
                 [:<>
                  [btn {:class class
                        :on-click on-click} title]
                  [:span " | "]])]
-             (key ds))])])]
-    [page-dash pagination]]])
+             (key ds))])])]] 
+   [page-dash pagination]])
 

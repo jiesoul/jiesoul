@@ -25,36 +25,35 @@
          end-page (let [p (+ page page-no)] (if (> p total-pages) total-pages p))
          prev-page (if (<= page 1) 1 (dec page))
          next-page (if (< page total-pages) (inc page) total-pages)] 
-     [:tfoot 
-      [:nav {:class "flex items-center justify-between pt-4"}
-       [:span {:class "text-sm font-normal text-gray-500 dark:text-gray-400"}
-        "Showing "
-        [:span {:class "font-semibold text-gray-900 dark:text-white"}
-         (str start "-" (if (< end total) end total))]
-        " of "
-        [:span {:class "font-semibold text-gray-900 dark:text-white"}
-         total]]
-       [:ul {:class "inline-flex items-center -space-x-px"}
-        [:li {:key "prev-page"}
-         [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page prev-page)])
-                   :disabled (if (<= page 1) true false)
-                   :class css-page-no}
-          (svg/chevron-left)]]
-        (when (> start-page 1)
-          [:li {:key 1}
-           [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page 1)])
-                     :class css-page-no} "1"]])
-        (for [p (range start-page (inc end-page))]
-          [:li {:key p}
-           [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page p)])
-                     :disabled (if (= page p) true false)
-                     :class (if (= page p) css-page-no-current css-page-no)} p]])
-        (when (< end-page total-pages)
-          [:li {:key total-pages}
-           [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page total-pages)])
-                     :class css-page-no} total-pages]])
-        [:li {:key "next-page"}
-         [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page next-page)])
-                   :class css-page-no
-                   :disabled (if (>= page total-pages) true false)}
-          (svg/chevron-right)]]]]])))
+     [:nav {:class "flex items-center justify-between pt-4 pb-4"}
+      [:span {:class "text-sm font-normal text-gray-500 dark:text-gray-400"}
+       "Showing "
+       [:span {:class "font-semibold text-gray-900 dark:text-white"}
+        (str start "-" (if (< end total) end total))]
+       " of "
+       [:span {:class "font-semibold text-gray-900 dark:text-white"}
+        total]]
+      [:ul {:class "inline-flex items-center -space-x-px"}
+       [:li {:key "prev-page"}
+        [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page prev-page)])
+                  :disabled (if (<= page 1) true false)
+                  :class css-page-no}
+         (svg/chevron-left)]]
+       (when (> start-page 1)
+         [:li {:key 1}
+          [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page 1)])
+                    :class css-page-no} "1"]])
+       (for [p (range start-page (inc end-page))]
+         [:li {:key p}
+          [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page p)])
+                    :disabled (if (= page p) true false)
+                    :class (if (= page p) css-page-no-current css-page-no)} p]])
+       (when (< end-page total-pages)
+         [:li {:key total-pages}
+          [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page total-pages)])
+                    :class css-page-no} total-pages]])
+       [:li {:key "next-page"}
+        [:button {:on-click #(re-frame/dispatch [url (assoc query-params :page next-page)])
+                  :class css-page-no
+                  :disabled (if (>= page total-pages) true false)}
+         (svg/chevron-right)]]]])))

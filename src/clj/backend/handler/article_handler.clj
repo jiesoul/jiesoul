@@ -17,7 +17,7 @@
 
 (defn create-article! [{:keys [db]} article]
   (log/debug "Creatge article " article)
-  (let [create-time (java.time.Instant/now)
+  (let [create-time (java.time.LocalDateTime/now)
         id (gen-id)
         _ (article-db/create! db (-> article
                                      (assoc :create_time create-time
@@ -68,8 +68,7 @@
   (let [old-article (article-db/get-by-id db (:id article))]
     (if (= (:push-flag old-article) 1) 
       (resp-util/bad-request "Aritcle been pushed")
-      (let [
-            push-time (java.time.Instant/now)
+      (let [push-time (java.time.LocalDateTime/now)
             result (article-db/push! db (assoc article 
                                                :push_time push-time
                                                :push_flag 1))]

@@ -15,7 +15,8 @@
               [frontend.util :as f-util]
               [re-frame.core :as re-frame]
               [reagent.core :as r]
-              [frontend.routes.article :as article]))
+              [frontend.routes.article :as article] 
+              ["moment" :as moment]))
 
 (def name-error (r/atom nil))
 
@@ -211,20 +212,19 @@
 
 (defn push-form []
   (fn []
-    (let [{:keys [id title summary detail]} @(re-frame/subscribe [::f-state/current-route-edit]) 
+    (let [categories @(re-frame/subscribe [::f-state/current-route-categories])
+          {:keys [id title summary detail]} @(re-frame/subscribe [::f-state/current-route-edit]) 
           article (r/atom {:id id
                            :top_flag 0  
                            :category_id 0
-                           :tags ""})
-          categories @(re-frame/subscribe [::f-state/current-route-categories])
+                           :tags ""}) 
           tags (r/cursor article [:tags])
           top-flag (r/cursor article [:top_flag])
           category-id (r/cursor article [:category_id])] 
       [:form
        [:div {:class "flex-l flex-col"}
         [:p "Title: " title]
-        [:p "Summary: " summary]
-        [:p "Content: " (:content-md detail)]
+        [:p "Summary: " summary] 
         [checkbox-input {:class "pt-2"
                          :name "top_flag"
                          :label "Top"
@@ -249,7 +249,8 @@
         
         [:div {:class "flex justify-center items-center space-x-4 mt-4"}
          [new-button {:on-click #(re-frame/dispatch [::push-article @article])}
-          "Psuh"]]]])))
+          "Psuh"]]]
+          [:p "Content: " (:content-md detail)]])))
 
 (defn delete-form []
   (let [current (re-frame/subscribe [::f-state/current-route-edit])
@@ -266,7 +267,8 @@
 
 (defn query-form []
   (let [q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
-        filter (r/cursor q-data [:filter])]
+        filter (r/cursor q-data [:filter])
+        _ (f-util/clog "moment: " (moment "2023-05-08T06:22:51.792024300Z"))]
     [:form
      [:div {:class "flex-1 flex-col my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"}
       [:div {:class "grid grid-cols-4 gap-3"}
@@ -289,7 +291,6 @@
         push-modal-show? @(re-frame/subscribe [::f-state/push-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::f-state/delete-modal-show?])]
     [:div
-
      [modals/modal  {:id "new-article"
                      :title "New article"
                      :show? new-modal-show?
@@ -307,8 +308,7 @@
      [modals/modal  {:id "push-article"
                      :title "Push article"
                      :show? push-modal-show?
-                     :on-close #(do
-                                  (re-frame/dispatch [::category/get-all-categories])
+                     :on-close #(do 
                                   (re-frame/dispatch [::f-state/clean-current-route-edit])
                                   (re-frame/dispatch [::f-state/show-push-modal false]))}
       [push-form]]
@@ -323,13 +323,13 @@
 (def columns [{:key :id :title "ID"}
               {:key :title :title "Title"}
               {:key :author :title "Author"}
-              {:key :create-time :title "Create Time"}
+              {:key :create-time :title "Create Time" :format :time}
               {:key :like-count :title "Likes"}
               {:key :comment-count :title "Comments"}
               {:key :read-count :title "Reads"}
               {:key :top-flag :title "Top"}
               {:key :push-flag :title "Push"}
-              {:key :push-time :title "Push Time"}
+              {:key :push-time :title "Push Time" :format :time}
               {:key :tags :title "Tags"}
               {:key :works :title "Work"}])
 
@@ -344,13 +344,17 @@
                                                                 (re-frame/dispatch [::get-article (:id d)])
                                                                 (re-frame/dispatch [::f-state/show-delete-modal true]))}]))
 
+(defn format-time [{:keys [create-time push-time] :as d} moment]
+  
+  (let [ct (moment create-time)]
+    (assoc d :create-time (str ct) :push-time (str (moment push-time "yyyy")))))
+
 (defn index []
   (let [{:keys [list total opts]} @(re-frame/subscribe [::f-state/current-route-result])
         pagination (assoc opts :total total :query-params opts :url ::query-categories)
-        data-sources (map #(work-btns %) list)
-        _ (f-util/clog "date-sources: " data-sources)]
+        data-sources (map #(format-time (work-btns %) moment) list)]
     [layout-admin
-     [modals]     
+     [modals]
      [query-form]
      [table-admin {:columns columns
                    :datasources data-sources

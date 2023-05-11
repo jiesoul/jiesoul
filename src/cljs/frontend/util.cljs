@@ -1,7 +1,10 @@
 (ns frontend.util
   (:require [cljs.pprint]
             [clojure.string :as str]
-            [reitit.frontend.easy :as rfe]))
+            [reitit.frontend.easy :as rfe]
+            ["moment" :as moment]))
+
+;; (def dtf (java.time.format.DateTimeFormatter/ofPattern "yyyyMMddHHmmssSSSSS"))
 
 (defn href
   "Return relative url for given route. Url can be used in HTML links"

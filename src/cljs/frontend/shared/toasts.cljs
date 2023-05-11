@@ -28,7 +28,7 @@
 
 (def MAX-TOASTS 5)
 (def MAX-TIMEOUT 5000)
-(def TIMEOUT 4)
+(def TIMEOUT 3)
 
 (re-frame/reg-sub
  ::toasts
@@ -74,7 +74,7 @@
   (let [toasts @(re-frame/subscribe [::toasts])]
     (when toasts
       [:div {:class "fixed top-5 right-5 z-50 w-full max-w-xs"} 
-       (for [{:keys [id type content timeout]} toasts] 
+       (for [{:keys [id type content]} toasts] 
          [:div {:key (str "toast-" id)
                 :class css-toast-base
                 :role "alert"}
