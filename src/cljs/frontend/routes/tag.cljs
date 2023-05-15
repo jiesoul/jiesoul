@@ -1,8 +1,8 @@
 (ns frontend.routes.tag 
   (:require [clojure.string :as str]
             [frontend.http :as f-http]
-            [frontend.shared.buttons :refer [btn css-delete css-edit
-                                             new-button red-button]]
+            [frontend.shared.buttons :refer [btn css-delete delete-button
+                                             edit-button new-button red-button]]
             [frontend.shared.css :as css]
             [frontend.shared.form-input :refer [text-input-backend]]
             [frontend.shared.layout :refer [layout-admin]]
@@ -162,22 +162,26 @@
                                 (re-frame/dispatch [::delete-tag (:id @current)]))}
        "Delete"]]]))
 
-(defn works-btns [d]
-  (assoc d :works [{:class css-edit :title "Edit" :on-click #(do
-                                                              (re-frame/dispatch [::get-tag (:id d)])
-                                                              (re-frame/dispatch [::f-state/show-edit-modal true]))}
-                  {:class css-delete :title "Del" :on-click #(do
-                                                               (re-frame/dispatch [::get-tag (:id d)])
-                                                               (re-frame/dispatch [::f-state/show-delete-modal true]))}]))
+(defn action-btns [d]
+  [:div 
+   [edit-button {:on-click #(do
+                              (re-frame/dispatch [::get-tag (:id d)])
+                              (re-frame/dispatch [::f-state/show-edit-modal true]))}
+    "Edit"]
+   [:span " | "]
+   [delete-button {:on-click #(do
+                                (re-frame/dispatch [::get-tag (:id d)])
+                                (re-frame/dispatch [::f-state/show-delete-modal true]))}
+    "Del"]])
 
 (def columns [{:key :name :title "Name"}
               {:key :description :title "Description"}
-              {:key :works :title "Work"}])
+              {:key :operation :title "Actions" :render action-btns}])
 
 (defn index []
   (let [{:keys [list total opts]} @(re-frame/subscribe [::f-state/current-route-result])
         pagination (assoc opts :total total :query-params opts :url ::query-tags)
-        data-sources (map #(works-btns %) list)
+        data-sources list
         new-modal-show? @(re-frame/subscribe [::f-state/new-modal-show?])
         edit-modal-show? @(re-frame/subscribe [::f-state/edit-modal-show?])
         delete-modal-show? @(re-frame/subscribe [::f-state/delete-modal-show?])

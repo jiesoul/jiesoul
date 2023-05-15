@@ -1,10 +1,10 @@
 (ns frontend.main
-  (:require [clojure.spec.alpha :as s]
-            [day8.re-frame.http-fx]
+  (:require [day8.re-frame.http-fx]
             [frontend.routes.article :as article]
             [frontend.routes.article-comment :as article-comment]
             [frontend.routes.category :as category]
             [frontend.routes.dashboard :as dashboard]
+            [frontend.routes.user-token :as user-token]
             [frontend.routes.index :as f-index]
             [frontend.routes.login :as f-login]
             [frontend.routes.tag :as tag]
@@ -130,28 +130,32 @@
                                    (re-frame/dispatch [::f-state/init-modal nil])
                                    (js/console.log (str "Leaving tags, params: " params)))}]}] 
    
-   ["articles"
-    
-    ["" {:name ::f-state/articles
-         :view article/index
-         :link-text "Articles"
-         :controllers [{:start (fn [& params]
-                                 (re-frame/dispatch [::category/get-all-categories])
-                                 (js/console.log (str "Entering articles, params: " params)))
-                        :stop (fn [& params] (js/console.log (str "Leaving articles, params: " params)))}]}]
-    
-    ["/comments" {:name ::f-state/articles-comments
+   ["articles" {:name ::f-state/articles
+                :view article/index
+                :link-text "Articles"
+                :controllers [{:start (fn [& params]
+                                        (re-frame/dispatch [::category/get-all-categories])
+                                        (js/console.log (str "Entering articles, params: " params)))
+                               :stop (fn [& params] (js/console.log (str "Leaving articles, params: " params)))}]}]
+   
+   ["articles-comments" {:name ::f-state/articles-comments
                           :view article-comment/index
                           :link-text "Articles-Comments"
                           :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
-                                         :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]]
+                                         :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
    
    
    ["users" {:name ::f-state/users
              :view user/index
              :link-text "Users"
              :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
-                            :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]])
+                            :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+   
+   ["user-token" {:name ::f-state/user-tokens
+                  :view user-token/index
+                  :link-text "Users Tokens"
+                  :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                                 :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]])
 
 (defn on-navigate [new-match]
   (f-util/clog "on-navigate, new-match" new-match)

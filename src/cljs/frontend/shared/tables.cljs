@@ -1,10 +1,9 @@
 (ns frontend.shared.tables 
-  (:require [frontend.shared.buttons :refer [btn]]
-            [frontend.shared.page :refer [page-dash]]
-            [reagent.core :as r]))
+  (:require [frontend.shared.page :refer [page-dash]] 
+            [frontend.util :as f-util]))
 
-(def css-list "relative shadow-md sm:rounded-lg w-full")
-(def css-list-table "w-full p-1 border-collapse border border-gray-100 text-sm text-center text-gray-500 dark:text-gray-400")
+(def css-list "relative shadow-md sm:rounded-lg w-full whitespace-nowrap overflow-x-auto")
+(def css-list-table "w-full p-2 overflow-x-auto border-collapse border border-gray-100 text-sm text-center text-gray-500 dark:text-gray-400")
 (def css-list-table-thead "text-base text-gray-700 dark:text-gray-400")
 (def css-list-table-thead-tr "")
 (def css-list-table-thead-tr-th "p-1 border border-gray-500 bg-gray-50 text-base leading-4 
@@ -37,22 +36,20 @@
    [:table {:class css-list-table}
     [:thead {:class css-list-table-thead} 
      [:tr
-      (for [{:keys [data-index title key]} columns]
-        [:th {:class css-list-table-thead-tr-th
-              :data-index data-index
-              :key key} title])]]
+      (for [{:keys [data-index title key] :as column} columns]
+        [:th (merge {:class css-list-table-thead-tr-th
+                     :data-index data-index
+                     :key key} column) title])]]
     [:tbody {:class css-list-table-tbody}
      (for [ds datasources]
        [:tr {:class css-list-table-tbody-tr}
-        (for [{:keys [key format]} columns]
-          [:td {:class css-list-table-tbody-tr-td} 
-           (if (= key :works)
-             [:div 
-              (for [{:keys [class title on-click]} (:works ds)]
-                [:<>
-                 [btn {:class class
-                       :on-click on-click} title]
-                 [:span " | "]])]
-             (key ds))])])]] 
+        (for [{:keys [key render format] :as column} columns]
+          [:td {:class css-list-table-tbody-tr-td
+                :key (key ds)}
+           (let [v (key ds)
+                 v (if format (format v) v)]
+             (if-not render
+               v
+               (render ds)))])])]] 
    [page-dash pagination]])
 

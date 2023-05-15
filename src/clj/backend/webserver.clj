@@ -4,6 +4,7 @@
             [backend.handler.category-handler :as category-handler]
             [backend.handler.tag-handler :as tag-handler]
             [backend.handler.user-handler :as user-handler]
+            [backend.handler.user-token-handler :as user-token-handler]
             [backend.middleware :refer [exception-middleware
                                         wrap-cors-middeleware]]
             [backend.middleware.auth-middleware :as auth-mw]
@@ -135,6 +136,17 @@
 
      ["/logout" {:post {:summary "user logout"
                         :handler (auth-handler/logout env)}}]]
+    
+    ["/users-tokens"
+     {:swagger {:tags ["User Tokens"]}}
+     ["" {:get {:summary "Query users tokens"
+                :middleware [[auth-mw/wrap-auth env "user"]]
+                :parameters {:header {:authorization ::token}
+                             :query ::query}
+                :handler (fn [req]
+                           (let [query (req-util/parse-query req)]
+                             (user-token-handler/query-users-tokens env query)))}}]]
+
 
     ["/users" 
      {:swagger {:tags ["User"]}}
@@ -181,6 +193,9 @@
                              :handler (fn [req]
                                         (let [update-password (req-util/parse-body req :update-password)]
                                           (user-handler/update-user-password! env update-password)))}}]]
+    
+     
+
 
     ["/categories" 
      {:swagger {:tags ["Category"]}}
@@ -338,7 +353,7 @@
                                          (let [comment (req-util/parse-body req :comment)]
                                            (article-handler/save-comment! env comment)))}}]]
     
-    ["/aricles/comments" 
+    ["/articles-comments" 
      {:swagger {:tags ["Articles Comments"]}}
 
      ["" {:get {:summary "Query all articles comments"

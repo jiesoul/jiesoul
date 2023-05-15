@@ -1,9 +1,10 @@
 (ns frontend.routes.article
-    (:require [clojure.string :as str]
+    (:require ["moment" :as moment]
+              [clojure.string :as str]
               [frontend.http :as f-http]
-              [frontend.routes.category :as category]
-              [frontend.shared.buttons :refer [css-delete css-edit
-                                               default-button new-button red-button]]
+              [frontend.routes.article :as article]
+              [frontend.shared.buttons :refer [default-button delete-button
+                                               edit-button new-button red-button]]
               [frontend.shared.form-input :refer [checkbox-input select-input
                                                   text-input
                                                   text-input-backend textarea]]
@@ -14,9 +15,7 @@
               [frontend.state :as f-state]
               [frontend.util :as f-util]
               [re-frame.core :as re-frame]
-              [reagent.core :as r]
-              [frontend.routes.article :as article] 
-              ["moment" :as moment]))
+              [reagent.core :as r]))
 
 (def name-error (r/atom nil))
 
@@ -266,7 +265,7 @@
        "Delete"]]]))
 
 (defn query-form []
-  (let [q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
+  (let [q-data (r/atom {:page-size 10 :page 1 :filter "" :sort "create_time DESC"})
         filter (r/cursor q-data [:filter])
         _ (f-util/clog "moment: " (moment "2023-05-08T06:22:51.792024300Z"))]
     [:form
@@ -320,39 +319,44 @@
                                   (re-frame/dispatch [::f-state/show-delete-modal false]))}
       [delete-form]]]))
 
+(defn actions [d] 
+  (let [push-flag (:push-flag d)]
+    [:div 
+     [edit-button {:on-click #(do
+                                (re-frame/dispatch [::get-article (:id d)])
+                                (re-frame/dispatch [::f-state/show-edit-modal true]))}
+      "Edit"]
+     (when (zero? push-flag)
+       [:<> 
+        [:span " | "]
+        [edit-button {:on-click #(do
+                                   (re-frame/dispatch [::get-article (:id d)])
+                                   (re-frame/dispatch [::f-state/show-push-modal true]))}
+         "Push"] 
+        [:span " | "]
+        [delete-button {:on-click #(do
+                                     (re-frame/dispatch [::get-article (:id d)])
+                                     (re-frame/dispatch [::f-state/show-delete-modal true]))}
+         "Del"]])]))
+
 (def columns [{:key :id :title "ID"}
               {:key :title :title "Title"}
               {:key :author :title "Author"}
-              {:key :create-time :title "Create Time" :format :time}
+              {:key :create-time :title "Create Time" :format f-util/format-time}
               {:key :like-count :title "Likes"}
               {:key :comment-count :title "Comments"}
               {:key :read-count :title "Reads"}
               {:key :top-flag :title "Top"}
               {:key :push-flag :title "Push"}
-              {:key :push-time :title "Push Time" :format :time}
+              {:key :push-time :title "Push Time" :format f-util/format-time}
+              {:key :operation :title "Actioin" :render actions}
               {:key :tags :title "Tags"}
-              {:key :works :title "Work"}])
-
-(defn work-btns [d]
-  (assoc d :works [{:class css-edit :title "Edit" :on-click #(do
-                                                               (re-frame/dispatch [::get-article (:id d)])
-                                                               (re-frame/dispatch [::f-state/show-edit-modal true]))}
-                   {:class css-edit :title "Push" :on-click #(do
-                                                               (re-frame/dispatch [::get-article (:id d)])
-                                                               (re-frame/dispatch [::f-state/show-push-modal true]))}
-                   {:class css-delete :title "Del" :on-click #(do
-                                                                (re-frame/dispatch [::get-article (:id d)])
-                                                                (re-frame/dispatch [::f-state/show-delete-modal true]))}]))
-
-(defn format-time [{:keys [create-time push-time] :as d} moment]
-  
-  (let [ct (moment create-time)]
-    (assoc d :create-time (str ct) :push-time (str (moment push-time "yyyy")))))
+              {:key :summary :title "Summary"}])
 
 (defn index []
   (let [{:keys [list total opts]} @(re-frame/subscribe [::f-state/current-route-result])
         pagination (assoc opts :total total :query-params opts :url ::query-categories)
-        data-sources (map #(format-time (work-btns %) moment) list)]
+        data-sources list]
     [layout-admin
      [modals]
      [query-form]

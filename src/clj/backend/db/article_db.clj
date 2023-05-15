@@ -9,8 +9,9 @@
 
 (defn query [db opts]
   (let [[ws wv] (du/opt-to-sql opts)
+        ss (du/opt-to-sort opts)
         [ps pv] (du/opt-to-page opts) 
-        q-sql (into [(str "select * from article " ws ps)] (into wv pv))
+        q-sql (into [(str "select * from article " ss ws ps)] (into wv pv))
         _ (log/debug "query sql: " q-sql)
         articles (sql/query db q-sql {:builder-fn rs/as-unqualified-kebab-maps})
         t-sql (into [(str "select count(1) as c from article " ws)] wv)

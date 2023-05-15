@@ -7,8 +7,9 @@
 
 (defn query [db opts]
   (let [[ws wv] (du/opt-to-sql opts)
+        ss (du/opt-to-sort opts)
         [ps pv] (du/opt-to-page opts)
-        q-sql (into [(str "select * from tag " ws ps)] (into wv pv))
+        q-sql (into [(str "select * from tag " ss ws ps)] (into wv pv))
         _ (log/info "query tags: " q-sql)
         tags (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) as c from tag " ws)] wv)

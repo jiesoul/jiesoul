@@ -63,3 +63,8 @@
 (defn my-parseInt
   [s]
   (js/parseInt s 10))
+
+(defn format-time [time]
+  (if-not time
+    ""
+    (.format (moment time) "YYYY-MM-DD HH:mm:ss")))

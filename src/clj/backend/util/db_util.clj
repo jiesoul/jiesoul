@@ -1,6 +1,7 @@
 (ns backend.util.db-util 
   (:require [clojure.string :as str]
-            [next.jdbc.result-set :as rs]))
+            [next.jdbc.result-set :as rs]
+            [clojure.tools.logging :as log]))
 
 (extend-protocol rs/ReadableColumn
   java.sql.Date
@@ -88,14 +89,12 @@
     cq))
 
 (defn opt-to-sql [opts]
-  (let [{:keys [filter sort]} (opt-convert opts)
+  (let [{:keys [filter]} (opt-convert opts)
         [s v] ["" []]
         [s v] (if filter
                 [(str s " where " (first filter)) (into v (second filter))]
                 [s v])
-        [s v] (if sort
-                [(str s " order by ? ") (conj v sort)]
-                [s v])]
+        _ (log/debug "opt to sql: [" s v "]")]
     [s v]))
 
 (defn opt-to-page [opt]
@@ -103,3 +102,8 @@
     (if page
       [(str " limit ? offset ? ") (into [] page)]
       ["" []])))
+
+(defn opt-to-sort [opt]
+  (if-let [sort (not-blank (:sort opt))]
+    (str " order by " sort) 
+    ""))

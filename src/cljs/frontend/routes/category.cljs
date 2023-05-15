@@ -3,7 +3,7 @@
             [frontend.http :as f-http]
             [frontend.routes.category :as category]
             [frontend.shared.buttons :refer [btn css-delete css-edit
-                                             new-button
+                                             delete-button edit-button new-button
                                              red-button]]
             [frontend.shared.css :as css]
             [frontend.shared.form-input :refer [text-input-backend]]
@@ -228,23 +228,29 @@
                 :class css/button-green} "New"]]]]
      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]]))
 
+(defn action-fn [d]
+  [:div 
+   [edit-button {:class css-edit
+                 :on-click #(do
+                              (re-frame/dispatch [::get-category (:id d)])
+                              (re-frame/dispatch [::f-state/show-edit-modal true]))}
+    "Edit"]
+   [:span " | "]
+   [delete-button {:on-click #(do
+                                (re-frame/dispatch [::get-category (:id d)])
+                                (re-frame/dispatch [::f-state/show-delete-modal true]))}
+    "Del"]])
+
 (def columns [{:key :name :title "Name"}
               {:key :description :title "Description"}
-              {:key :works :title "Works"}])
+              {:key :operation :title "Actions" :render action-fn}])
 
-(defn ds-fn [d]
-  (assoc d :works [{:class css-edit :title "Edit" :on-click #(do
-                                                              (re-frame/dispatch [::get-category (:id d)])
-                                                              (re-frame/dispatch [::f-state/show-edit-modal true]))}
-                  {:class css-delete :title "Del" :on-click #(do
-                                                               (re-frame/dispatch [::get-category (:id d)])
-                                                               (re-frame/dispatch [::f-state/show-delete-modal true]))}]))
+
 
 (defn index [] 
   (let [{:keys [list total opts]} @(re-frame/subscribe [::f-state/current-route-result]) 
         pagination (assoc opts :total total :query-params opts :url ::query-categories) 
-        data-sources (map #(ds-fn %) list)
-        _ (f-util/clog "date-sources: " data-sources)]
+        data-sources list]
     [layout-admin 
      [modals]
      [query-form]
