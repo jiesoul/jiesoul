@@ -1,11 +1,12 @@
 (ns backend.db.article-db
-  (:require [backend.util.db-util :as du]
+  (:require [backend.db.article-tag-db :as article-tag-db]
+            [backend.db.tag-db :as tag-db]
+            [backend.util.db-util :as du]
+            [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
-            [next.jdbc.sql :as sql]
-            [clojure.tools.logging :as log] 
-            [backend.db.tag-db :as tag-db]
-            [clojure.string :as str]))
+            [next.jdbc.sql :as sql]))
 
 (defn query [db opts]
   (let [[ws wv] (du/opt-to-sql opts)
@@ -26,29 +27,32 @@
       (let [detail (assoc detail :article_id id)]
         (jdbc/with-transaction [tx con]
           (sql/insert! tx :article (dissoc article :detail))
-        (sql/insert! tx :article_detail detail)
-          )))
+          (sql/insert! tx :article_detail detail))))
     (catch java.sql.SQLException se (throw (ex-info "insert article: " se)))))
 
 (defn update! [db {:keys [id detail] :as article}] 
-  (jdbc/with-transaction [tx db]
+  (jdbc/with-transaction [tx db] 
     (sql/update! tx :article_detail detail {:article_id id})
     (sql/update! tx :article (dissoc article :detail) {:id id})))
 
 (defn push! [db { :keys [id tags] :as article}]
+  (log/debug "push article: " article)
   (jdbc/with-transaction [tx db]
-    (sql/update! tx :article article {:id id})
-    (when-not (str/blank? tags) 
-      (log/debug "create tag " tags)
-      (loop [t (str/split tags #" ")]
-        (if (seq t)
-          (let [name (first t)
-                result (tag-db/get-by-name tx name)]
-            (if (seq result) 
-              (recur (rest t))
-              (do (tag-db/create! tx {:name name})
-                  (recur (rest t)))))
-          nil)))))
+    (sql/update! tx :article article {:id id}) 
+    (article-tag-db/delete-by-article-id tx id)
+    (let [tag-names (str/split tags #" ")
+          _ (log/debug "tag-names: " tag-names)]
+      (when (seq tag-names) 
+        (loop [t tag-names
+               tag-ids []]
+          (if (seq t)
+            (let [name (first t)
+                  tag (tag-db/get-by-name tx name)
+                  _ (log/debug "tag: " tag)
+                  id (if (seq tag) (:id (first tag)) (tag-db/create! tx {:name name}))
+                  _ (log/debug "tag id: " id)] 
+              (recur (rest t) (conj tag-ids id)))
+            (article-tag-db/create-multi! tx id tag-ids)))))))
 
 (defn save-comment! [db comment]
   (jdbc/with-transaction [tx db]

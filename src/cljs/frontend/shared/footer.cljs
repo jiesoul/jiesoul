@@ -1,4 +1,6 @@
-(ns frontend.shared.footer)
+(ns frontend.shared.footer
+  (:require [frontend.state :as f-state]
+            [re-frame.core :as re-frame]))
 
 (defn footer-home []
   [:footer {:class "w-full bg-white p-8"}

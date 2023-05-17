@@ -39,13 +39,13 @@
       (for [{:keys [data-index title key] :as column} columns]
         [:th (merge {:class css-list-table-thead-tr-th
                      :data-index data-index
-                     :key key} column) title])]]
+                     :key key} 
+                    (select-keys [:key :class] column)) title])]]
     [:tbody {:class css-list-table-tbody}
      (for [ds datasources]
        [:tr {:class css-list-table-tbody-tr}
         (for [{:keys [key render format] :as column} columns]
-          [:td {:class css-list-table-tbody-tr-td
-                :key (key ds)}
+          [:td {:class css-list-table-tbody-tr-td}
            (let [v (key ds)
                  v (if format (format v) v)]
              (if-not render

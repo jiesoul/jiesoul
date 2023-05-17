@@ -10,7 +10,7 @@
             [frontend.shared.layout :refer [layout-admin]]
             [frontend.shared.modals :as  modals]
             [frontend.shared.tables :refer [table-admin]]
-            [frontend.shared.toasts :as toasts]
+            [frontend.shared.toasts :as toasts] 
             [frontend.state :as f-state]
             [frontend.util :as f-util]
             [re-frame.core :as re-frame]
@@ -24,17 +24,17 @@
    (get-in db [:current-route :categories])))
 
 (re-frame/reg-event-db
- ::get-all-categories-ok
+ ::f-state/get-all-categories-ok
  (fn [db [_ resp]]
-   (assoc-in db [:current-route :categories] (:list (:data resp)))))
+   (assoc-in db [:current-route :categories] (:data resp))))
 
 (re-frame/reg-event-fx
- ::get-all-categories
+ ::f-state/get-all-categories
  (fn [{:keys [db]} [_ _]]
    (f-http/http-get db
-                    (f-http/api-uri "/categories")
-                    {:page 1 :page-size 10000}
-                    ::get-all-categories-ok)))
+                    (f-http/api-uri "/public/categories") 
+                    {}
+                    ::f-state/get-all-categories-ok)))
 
 (re-frame/reg-event-fx
  ::query-categories-ok

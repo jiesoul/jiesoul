@@ -44,5 +44,5 @@
 (defn layout-home [children]
   [:div {:class "flex flex-col mx-auto w-full"}
    [nav-home]
-   children
+   [:<> children]
    [footer-home]])

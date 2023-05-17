@@ -2,8 +2,7 @@
   (:require [backend.util.db-util :as du]
             [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]
-            [clojure.tools.logging :as log]
-            [clojure.string :as str]))
+            [clojure.tools.logging :as log]))
 
 (defn query [db opts]
   (let [[ws wv] (du/opt-to-sql opts)
@@ -22,6 +21,9 @@
 (defn create! [db tag]
   (sql/insert! db :tag tag))
 
+(defn create-mutil! [db tags]
+  (sql/insert! db :tag tags {:return-keys true}))
+
 (defn update! [db tag]
   (sql/update! db :tag tag {:id (:id tag)}))
 
@@ -33,3 +35,6 @@
 
 (defn get-by-name [db name]
   (sql/find-by-keys db :tag {:name name}))
+
+(defn get-all-tags [db]
+  (sql/query db ["select * from tag"] {:builder-fn rs/as-unqualified-kebab-maps}))

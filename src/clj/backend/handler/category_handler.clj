@@ -32,3 +32,7 @@
   (log/debug "Delete category " id)
   (let [_ (category-db/delete! db id)]
     (resp-util/ok {})))
+
+(defn get-all-categories [{:keys [db]} query]
+  (let [result (category-db/get-all-category db)]
+    (resp-util/ok result)))

@@ -133,8 +133,7 @@
    ["articles" {:name ::f-state/articles
                 :view article/index
                 :link-text "Articles"
-                :controllers [{:start (fn [& params]
-                                        (re-frame/dispatch [::category/get-all-categories])
+                :controllers [{:start (fn [& params] 
                                         (js/console.log (str "Entering articles, params: " params)))
                                :stop (fn [& params] (js/console.log (str "Leaving articles, params: " params)))}]}]
    

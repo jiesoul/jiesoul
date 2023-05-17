@@ -2,7 +2,7 @@
     (:require ["moment" :as moment]
               [clojure.string :as str]
               [frontend.http :as f-http]
-              [frontend.routes.article :as article]
+              [frontend.routes.article :as article] 
               [frontend.shared.buttons :refer [default-button delete-button
                                                edit-button new-button red-button]]
               [frontend.shared.form-input :refer [checkbox-input select-input
@@ -104,7 +104,7 @@
 (re-frame/reg-event-fx
  ::push-article
  (fn [{:keys [db]} [_ article]]
-   (f-util/clog "update article: " article)
+   (f-util/clog "push article: " article)
    (f-http/http-patch db
                       (f-http/api-uri "/articles/" (:id article) "/push")
                       {:article article}
@@ -209,47 +209,47 @@
          [new-button {:on-click #(re-frame/dispatch [::update-article @article])}
           "Save"]]]])))
 
-(defn push-form []
-  (fn []
-    (let [categories @(re-frame/subscribe [::f-state/current-route-categories])
-          {:keys [id title summary detail]} @(re-frame/subscribe [::f-state/current-route-edit]) 
-          article (r/atom {:id id
-                           :top_flag 0  
-                           :category_id 0
-                           :tags ""}) 
-          tags (r/cursor article [:tags])
-          top-flag (r/cursor article [:top_flag])
-          category-id (r/cursor article [:category_id])] 
-      [:form
-       [:div {:class "flex-l flex-col"}
-        [:p "Title: " title]
-        [:p "Summary: " summary] 
-        [checkbox-input {:class "pt-2"
-                         :name "top_flag"
-                         :label "Top"
-                         :on-change #(reset! top-flag (f-util/get-value %))}]
+(defn push-form [] 
+  (let [categories @(re-frame/subscribe [::f-state/current-route-categories])
+        {:keys [id title summary detail tags]} @(re-frame/subscribe [::f-state/current-route-edit]) 
+        article (r/atom {:id id
+                         :top_flag 0  
+                         :category_id 0
+                         :tags tags}) 
+        tags (r/cursor article [:tags])
+        top-flag (r/cursor article [:top_flag])
+        category-id (r/cursor article [:category_id])] 
+    [:form
+     [:div {:class "flex-l flex-col"}
+      [:p "Title: " title]
+      [:p "Summary: " summary] 
+      [checkbox-input {:class "pt-2"
+                       :name "top_flag"
+                       :label "Top"
+                       :on-change #(reset! top-flag (f-util/get-value %))}]
 
-        [text-input {:class "pt-2"
-                     :placeholder "Tags"
-                     :name "tags"
+      [text-input {:class "pt-2"
+                   :placeholder "Tags"
+                   :name "tags"
+                   :default-value @tags
+                   :required ""
+                   :on-change #(reset! tags (f-util/get-value %))}]
+
+      [select-input {:class "pt-2"
+                     :placeholder "Category"
                      :required ""
-                     :on-change #(reset! tags (f-util/get-value %))}]
-
-        [select-input {:class "pt-2"
-                       :placeholder "Category"
-                       :required ""
-                       :name "category"
-                       :on-change #(reset! category-id (f-util/get-value %))}
-         [:option {:value 0
-                   :key 0} "select category"]
-         (for [c categories]
-           [:option {:value (:id c)
-                     :key (:id c)} (:name c)])]
-        
-        [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-         [new-button {:on-click #(re-frame/dispatch [::push-article @article])}
-          "Psuh"]]]
-          [:p "Content: " (:content-md detail)]])))
+                     :name "category"
+                     :on-change #(reset! category-id (f-util/get-value %))}
+       [:option {:value 0
+                 :key 0} "select category"]
+       (for [c categories]
+         [:option {:value (:id c)
+                   :key (:id c)} (:name c)])]
+      
+      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
+       [new-button {:on-click #(re-frame/dispatch [::push-article @article])}
+        "Psuh"]]]
+     [:p "Content: " (:content-md detail)]]))
 
 (defn delete-form []
   (let [current (re-frame/subscribe [::f-state/current-route-edit])
@@ -330,6 +330,7 @@
        [:<> 
         [:span " | "]
         [edit-button {:on-click #(do
+                                   (re-frame/dispatch [::f-state/get-all-categories])
                                    (re-frame/dispatch [::get-article (:id d)])
                                    (re-frame/dispatch [::f-state/show-push-modal true]))}
          "Push"] 

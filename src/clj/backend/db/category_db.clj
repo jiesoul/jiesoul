@@ -37,5 +37,7 @@
   (sql/get-by-id db :category id {:builder-fn rs/as-unqualified-kebab-maps}))
 
 (defn find-by-name [db name]
-  (let [c (sql/find-by-keys db :category {:name name} {:builder-fn rs/as-unqualified-kebab-maps})]
-    c))
+  (sql/find-by-keys db :category {:name name} {:builder-fn rs/as-unqualified-kebab-maps}))
+
+(defn get-all-category [db]
+  (sql/query db ["select * from category"] {:builder-fn rs/as-unqualified-kebab-maps}))

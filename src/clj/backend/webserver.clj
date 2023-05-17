@@ -122,9 +122,32 @@
                       :url "/swagger.json"})}}]
    
    ["/api/v1"
+    ;; public api
+    ["/public"
 
-      ;; backend api
-    ["" 
+     ["/categoryies"
+      {:swagger {:tags ["Public Category"]}}
+
+      ["" {:get {:summary "get all categories"
+                 :parameters {:query ::query}
+                 :handler (fn [req]
+                            (let [query (req-util/parse-query req)]
+                              (category-handler/get-all-categories env query)))}}]]
+
+     ["/tags"
+      {:swagger {:tags ["Public Tag"]}}
+
+      ["" {:get {:summary "get hot tags"
+                 :parameters {:query ::query}
+                 :handler (fn [req]
+                            (tag-handler/get-all-tags env))}}]]
+
+     ["/articles"
+      {:swagger {:tags ["Public Article"]}}]]
+
+
+    ;; admin api
+    [""
      {:swagger {:tags ["Auth"]}}
      ["/login" {:post {:summary "login to the web site"
                        :parameters {:body {:username ::username
@@ -136,7 +159,7 @@
 
      ["/logout" {:post {:summary "user logout"
                         :handler (auth-handler/logout env)}}]]
-    
+
     ["/users-tokens"
      {:swagger {:tags ["User Tokens"]}}
      ["" {:get {:summary "Query users tokens"
@@ -148,7 +171,7 @@
                              (user-token-handler/query-users-tokens env query)))}}]]
 
 
-    ["/users" 
+    ["/users"
      {:swagger {:tags ["User"]}}
 
      ["" {:get {:summary "Query users"
@@ -193,11 +216,11 @@
                              :handler (fn [req]
                                         (let [update-password (req-util/parse-body req :update-password)]
                                           (user-handler/update-user-password! env update-password)))}}]]
-    
-     
 
 
-    ["/categories" 
+
+
+    ["/categories"
      {:swagger {:tags ["Category"]}}
 
      ["" {:get {:summary "Query categories"
@@ -352,8 +375,8 @@
                               :handler (fn [req]
                                          (let [comment (req-util/parse-body req :comment)]
                                            (article-handler/save-comment! env comment)))}}]]
-    
-    ["/articles-comments" 
+
+    ["/articles-comments"
      {:swagger {:tags ["Articles Comments"]}}
 
      ["" {:get {:summary "Query all articles comments"
@@ -363,7 +386,7 @@
                 :handler (fn [req]
                            (let [query (req-util/parse-query req)]
                              (article-handler/query-articles-comments env query)))}}]
-     
+
      ["/:id" {:get {:summary "Get a article comment"
                     :middleware [[auth-mw/wrap-auth env "user"]]
                     :parameters {:header {:authorization ::token}
@@ -371,7 +394,7 @@
                     :handler (fn [req]
                                (let [id (req-util/parse-path req :id)]
                                  (article-handler/get-articles-comments-by-id env id)))}
-              
+
               :delete {:summary "Delete a article comment"
                        :middleware [[auth-mw/wrap-auth env "user"]]
                        :parameters {:header {:authorization ::token}
@@ -383,7 +406,7 @@
 
       ;; ["/files"
       ;;  {:swagger {:tags ["files"]}}
-    
+
       ;;  ["/upload" {:post {:summary "upload a file"
       ;;                     :parameters {:multipart {:file reitit-multipart/temp-file-part}
       ;;                                  :headers {:authorization ::token}}
@@ -391,7 +414,7 @@
       ;;                     :handler (fn [{{{:keys [file]} :multipart} :parameters}]
       ;;                                {:status 200
       ;;                                 :body {:file file}})}}]
-    
+
       ;;  ["/download" {:get {:summary "downloads a file"
       ;;                      :swagger {:produces ["image/png"]}
       ;;                      :parameters {:headers {:authorization ::token}}

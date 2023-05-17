@@ -27,3 +27,9 @@
   (log/debug "Delete tag " id)
   (let [_ (tag-db/delete! db id)]
     (resp-util/ok {})))
+
+(defn get-all-tags [{:keys [db]}]
+  (let [rs (tag-db/get-all-tags db)]))
+
+(defn get-hot-tags [{:keys [db]} query]
+  )
