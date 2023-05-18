@@ -46,3 +46,8 @@
  (fn [db]
    (:debug db)))
 
+(re-frame/reg-sub
+ ::current-route-categories
+ (fn [db _]
+   (get-in db [:current-route :categories])))
+

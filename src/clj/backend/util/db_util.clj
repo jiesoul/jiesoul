@@ -15,13 +15,6 @@
   (read-column-by-index [^java.sql.Timestamp v _2 _3]
     (.toInstant v)))
 
-(defn kebab-map [m]
-  )
-
-(defn as-kebab-maps [rs opts]
-  (let [kebab #(str/replace % #"_" "-")]
-    (rs/as-modified-maps rs (assoc opts :qualifier-fn kebab :label-fn kebab))))
-
 (defn populate 
   [_ db-type]
   (let [auto-key (if (= "sqlite" db-type)

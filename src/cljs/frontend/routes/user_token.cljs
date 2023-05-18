@@ -22,7 +22,7 @@
  (fn [{:keys [db]} [_ data]]
    (f-util/clog "query user tokens: " data)
    (f-http/http-get db
-                    (f-http/api-uri "/users-tokens")
+                    (f-http/api-uri "/admin/users-tokens")
                     data
                     ::query-user-tokens-ok)))
 

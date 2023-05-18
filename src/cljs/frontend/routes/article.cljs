@@ -1,15 +1,15 @@
 (ns frontend.routes.article
     (:require ["moment" :as moment]
               [clojure.string :as str]
-              [frontend.http :as f-http]
-              [frontend.routes.article :as article] 
+              [frontend.http :as f-http] 
+              [frontend.routes.category :as category]
               [frontend.shared.buttons :refer [default-button delete-button
                                                edit-button new-button red-button]]
               [frontend.shared.form-input :refer [checkbox-input select-input
                                                   text-input
                                                   text-input-backend textarea]]
               [frontend.shared.layout :refer [layout-admin]]
-              [frontend.shared.modals :as modals]
+              [frontend.shared.modals :as modals] 
               [frontend.shared.tables :refer [table-admin]]
               [frontend.shared.toasts :as toasts]
               [frontend.state :as f-state]
@@ -42,7 +42,7 @@
  (fn [{:keys [db]} [_ data]]
    (f-util/clog "query articles: " data)
    (f-http/http-get db
-                    (f-http/api-uri "/articles")
+                    (f-http/api-uri "/admin/articles")
                     data
                     ::query-articles-ok)))
 
@@ -58,7 +58,7 @@
  (fn [{:keys [db]} [_ article]]
    (f-util/clog "add article: " article)
    (f-http/http-post db
-                     (f-http/api-uri "/articles")
+                     (f-http/api-uri "/admin/articles")
                      {:article article}
                      ::add-article-ok)))
 
@@ -73,7 +73,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Get a article: " id)
    (f-http/http-get db
-                    (f-http/api-uri "/articles/" id)
+                    (f-http/api-uri "/admin/articles/" id)
                     {}
                     ::get-article-ok)))
 
@@ -89,7 +89,7 @@
  (fn [{:keys [db]} [_ article]]
    (f-util/clog "update article: " article)
    (f-http/http-patch db
-                      (f-http/api-uri "/articles/" (:id article))
+                      (f-http/api-uri "/admin/articles/" (:id article))
                       {:article article}
                       ::update-article-ok)))
 
@@ -106,7 +106,7 @@
  (fn [{:keys [db]} [_ article]]
    (f-util/clog "push article: " article)
    (f-http/http-patch db
-                      (f-http/api-uri "/articles/" (:id article) "/push")
+                      (f-http/api-uri "/admin/articles/" (:id article) "/push")
                       {:article article}
                       ::push-article-ok)))
 
@@ -125,7 +125,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Delete article")
    (f-http/http-delete db
-                       (f-http/api-uri "/articles/" id)
+                       (f-http/api-uri "/admin/articles/" id)
                        {}
                        ::delete-article-ok)))
 
@@ -330,7 +330,7 @@
        [:<> 
         [:span " | "]
         [edit-button {:on-click #(do
-                                   (re-frame/dispatch [::f-state/get-all-categories])
+                                   (re-frame/dispatch [::category/get-all-categories])
                                    (re-frame/dispatch [::get-article (:id d)])
                                    (re-frame/dispatch [::f-state/show-push-modal true]))}
          "Push"] 

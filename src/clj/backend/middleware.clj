@@ -6,16 +6,18 @@
 (defn wrap-cors-middeleware
   "Wrap the server response with new headers to allow Cross Origin."
   [handler]
-  (wrap-cors handler 
-             :access-control-allow-origin [#".*"]
-             :access-control-allow-methods [:get :put :post :delete :patch :options]))
+  ;; (wrap-cors handler 
+  ;;            :access-control-allow-origin [*]
+  ;;            :access-control-allow-methods [:get :put :post :delete :patch :options])
+  
+    (fn [request]
+      (let [response (handler request)]
+        (-> response
+            (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
+            (assoc-in [:headers "Access-Control-Allow-Headers"] "*")
+            (assoc-in [:headers "Access-Control-Allow-Methods"] "GET,PUT,POST,DELET,PATCH,OPTIONS")))))
 
-  ;; (fn [request]
-  ;;   (let [response (handler request)]
-  ;;     (-> response
-  ;;         (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
-  ;;         (assoc-in [:headers "Access-Control-Allow-Headers"] "*")
-  ;;         (assoc-in [:headers "Access-Control-Allow-Methods"] "GET,PUT,POST,DELET,PATCH,OPTIONS"))))
+
 
 
 (derive ::error ::exception)

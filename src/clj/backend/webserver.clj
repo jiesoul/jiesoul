@@ -122,31 +122,28 @@
                       :url "/swagger.json"})}}]
    
    ["/api/v1"
-    ;; public api
-    ["/public"
+    ;; public api 
+    
+    ["/categoryies"
+     {:swagger {:tags ["Public Category"]}}
 
-     ["/categoryies"
-      {:swagger {:tags ["Public Category"]}}
+     ["" {:get {:summary "get all categories"
+                :handler (fn [req]
+                           (category-handler/get-all-categories env))}}]]
 
-      ["" {:get {:summary "get all categories"
-                 :parameters {:query ::query}
-                 :handler (fn [req]
-                            (let [query (req-util/parse-query req)]
-                              (category-handler/get-all-categories env query)))}}]]
+    ["/tags"
+     {:swagger {:tags ["Public Tag"]}}
 
-     ["/tags"
-      {:swagger {:tags ["Public Tag"]}}
+     ["" {:get {:summary "get hot tags"
+                :parameters {:query ::query}
+                :handler (fn [req]
+                           (tag-handler/get-all-tags env))}}]]
 
-      ["" {:get {:summary "get hot tags"
-                 :parameters {:query ::query}
-                 :handler (fn [req]
-                            (tag-handler/get-all-tags env))}}]]
-
-     ["/articles"
-      {:swagger {:tags ["Public Article"]}}]]
+    ["/articles"
+     {:swagger {:tags ["Public Article"]}}]
 
 
-    ;; admin api
+    ;; admin api 
     [""
      {:swagger {:tags ["Auth"]}}
      ["/login" {:post {:summary "login to the web site"
@@ -159,45 +156,36 @@
 
      ["/logout" {:post {:summary "user logout"
                         :handler (auth-handler/logout env)}}]]
+    
+    ["/admin"
 
-    ["/users-tokens"
-     {:swagger {:tags ["User Tokens"]}}
-     ["" {:get {:summary "Query users tokens"
-                :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
-                :handler (fn [req]
-                           (let [query (req-util/parse-query req)]
-                             (user-token-handler/query-users-tokens env query)))}}]]
+     ["/users"
+      {:swagger {:tags ["User"]}}
 
+      ["" {:get {:summary "Query users"
+                 :middleware [[auth-mw/wrap-auth env "user"]]
+                 :parameters {:header {:authorization ::token}
+                              :query ::query}
+                 :handler (fn [req]
+                            (let [query (req-util/parse-query req)]
+                              (user-handler/query-users env query)))}}]
 
-    ["/users"
-     {:swagger {:tags ["User"]}}
+      ["/:id" {:get {:summary "Get a user"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path {:id pos-int?}}
+                     :handler (fn [req]
+                                (let [id (req-util/parse-path req :id)]
+                                  (user-handler/get-user env id)))}
 
-     ["" {:get {:summary "Query users"
-                :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
-                :handler (fn [req]
-                           (let [query (req-util/parse-query req)]
-                             (user-handler/query-users env query)))}}]
-
-     ["/:id" {:get {:summary "Get a user"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}}
-                    :handler (fn [req]
-                               (let [id (req-util/parse-path req :id)]
-                                 (user-handler/get-user env id)))}
-
-              :put {:summary "Update a user"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}
-                                 :body {:user ::UserUpdate}}
-                    :handler (fn [req]
-                               (let [user (req-util/parse-body req :user)]
-                                 (user-handler/update-user! env user)))}
+               :put {:summary "Update a user"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path {:id pos-int?}
+                                  :body {:user ::UserUpdate}}
+                     :handler (fn [req]
+                                (let [user (req-util/parse-body req :user)]
+                                  (user-handler/update-user! env user)))}
 
                 ;; :delete {:summary "Delete a user"
                 ;;          :middleware [[auth-mw/wrap-auth env "user"]]
@@ -206,207 +194,214 @@
                 ;;          :handler (fn [req]
                 ;;                     (let [id (req-util/parse-path req :id)]
                 ;;                       (user-handler/delete-user! env id)))}
-              }]
+               }]
 
-     ["/:id/password" {:put {:summary "Update a user passwrod"
-                             :middleware [[auth-mw/wrap-auth env "user"]]
-                             :parameters {:header {:authorization ::token}
-                                          :path {:id pos-int?}
-                                          :body {:update-password ::UserPassword}}
-                             :handler (fn [req]
-                                        (let [update-password (req-util/parse-body req :update-password)]
-                                          (user-handler/update-user-password! env update-password)))}}]]
-
-
-
-
-    ["/categories"
-     {:swagger {:tags ["Category"]}}
-
-     ["" {:get {:summary "Query categories"
-                :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
-                :handler (fn [req]
-                           (let [query (req-util/parse-query req)]
-                             (category-handler/query-categories env query)))}
-
-          :post {:summary "New a category"
+      ["/:id/password" {:put {:summary "Update a user passwrod"
+                              :middleware [[auth-mw/wrap-auth env "user"]]
+                              :parameters {:header {:authorization ::token}
+                                           :path {:id pos-int?}
+                                           :body {:update-password ::UserPassword}}
+                              :handler (fn [req]
+                                         (let [update-password (req-util/parse-body req :update-password)]
+                                           (user-handler/update-user-password! env update-password)))}}]]
+     ["/users-tokens"
+      {:swagger {:tags ["User Tokens"]}}
+      ["" {:get {:summary "Query users tokens"
                  :middleware [[auth-mw/wrap-auth env "user"]]
                  :parameters {:header {:authorization ::token}
-                              :body {:category ::CategoryAdd}}
+                              :query ::query}
                  :handler (fn [req]
-                            (let [category (req-util/parse-body req :category)]
-                              (category-handler/create-category! env category)))}}]
+                            (let [query (req-util/parse-query req)]
+                              (user-token-handler/query-users-tokens env query)))}}]]
 
 
-     ["/:id" {:get {:summary "Get a category"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path   {:id pos-int?}}
-                    :handler (fn [req]
-                               (let [id (req-util/parse-path req :id)]
-                                 (category-handler/get-category env id)))}
+     ["/categories"
+      {:swagger {:tags ["Category"]}}
 
-              :patch {:summary "Update a category"
-                      :middleware [[auth-mw/wrap-auth env "user"]]
-                      :parameters {:header {:authorization ::token}
-                                   :path {:id pos-int?}
-                                   :body {:category ::CategoryUpdate}}
-
-                      :handler (fn [req]
-                                 (let [category (req-util/parse-body req :category)]
-                                   (category-handler/update-category! env category)))}
-
-              :delete {:summary "Delete a category"
-                       :middleware [[auth-mw/wrap-auth env "user"]]
-                       :parameters {:header {:authorization ::token}
-                                    :path {:id pos-int?}}
-                       :handler (fn [req]
-                                  (let [id (req-util/parse-path req :id)]
-                                    (category-handler/delete-category! env id)))}}]]
-
-    ["/tags"
-     {:swagger {:tags ["Tag"]}}
-
-     ["" {:get {:summary "Query tags"
-                :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
-                :handler (fn [req]
-                           (let [opt (req-util/parse-query req)]
-                             (tag-handler/query-tags env opt)))}
-
-          :post {:summary "New a tag"
+      ["" {:get {:summary "Query categories"
                  :middleware [[auth-mw/wrap-auth env "user"]]
                  :parameters {:header {:authorization ::token}
-                              :body {:tag ::TagAdd}}
+                              :query ::query}
                  :handler (fn [req]
-                            (let [tag (req-util/parse-body req :tag)]
-                              (tag-handler/create-tag! env tag)))}}]
+                            (let [query (req-util/parse-query req)]
+                              (category-handler/query-categories env query)))}
+
+           :post {:summary "New a category"
+                  :middleware [[auth-mw/wrap-auth env "user"]]
+                  :parameters {:header {:authorization ::token}
+                               :body {:category ::CategoryAdd}}
+                  :handler (fn [req]
+                             (let [category (req-util/parse-body req :category)]
+                               (category-handler/create-category! env category)))}}]
 
 
-     ["/:id" {:get {:summary "Get a tag"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}}
-                    :handler (fn [req]
-                               (let [id (req-util/parse-path req :id)]
-                                 (tag-handler/get-tag env id)))}
+      ["/:id" {:get {:summary "Get a category"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path   {:id pos-int?}}
+                     :handler (fn [req]
+                                (let [id (req-util/parse-path req :id)]
+                                  (category-handler/get-category env id)))}
 
-              :put {:summary "Update a tag"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}
-                                 :body {:tag ::TagUpdate}}
-                    :handler (fn [req]
-                               (let [tag (req-util/parse-body req :tag)]
-                                 (tag-handler/update-tag! env tag)))}
-
-              :delete {:summary "Delete a tag"
+               :patch {:summary "Update a category"
                        :middleware [[auth-mw/wrap-auth env "user"]]
                        :parameters {:header {:authorization ::token}
-                                    :path {:id pos-int?}}
+                                    :path {:id pos-int?}
+                                    :body {:category ::CategoryUpdate}}
+
                        :handler (fn [req]
-                                  (let [id (req-util/parse-path req :id)]
-                                    (tag-handler/delete-tag! env id)))}}]]
+                                  (let [category (req-util/parse-body req :category)]
+                                    (category-handler/update-category! env category)))}
 
-    ["/articles"
-     {:swagger {:tags ["Article"]}}
+               :delete {:summary "Delete a category"
+                        :middleware [[auth-mw/wrap-auth env "user"]]
+                        :parameters {:header {:authorization ::token}
+                                     :path {:id pos-int?}}
+                        :handler (fn [req]
+                                   (let [id (req-util/parse-path req :id)]
+                                     (category-handler/delete-category! env id)))}}]]
 
-     ["" {:get {:summary "Query articles"
-                :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
-                :handler (fn [req]
-                           (let [opt (req-util/parse-query req)]
-                             (article-handler/query-articles env opt)))}
+     ["/tags"
+      {:swagger {:tags ["Tag"]}}
 
-          :post {:summary "New a article"
+      ["" {:get {:summary "Query tags"
                  :middleware [[auth-mw/wrap-auth env "user"]]
-                 :parameters {:header {:authorization ::token}}
+                 :parameters {:header {:authorization ::token}
+                              :query ::query}
                  :handler (fn [req]
-                            (log/debug  "new a article req: " (:body-params req))
-                            (let [article (req-util/parse-body req :article)]
-                              (article-handler/create-article! env article)))}}]
+                            (let [opt (req-util/parse-query req)]
+                              (tag-handler/query-tags env opt)))}
+
+           :post {:summary "New a tag"
+                  :middleware [[auth-mw/wrap-auth env "user"]]
+                  :parameters {:header {:authorization ::token}
+                               :body {:tag ::TagAdd}}
+                  :handler (fn [req]
+                             (let [tag (req-util/parse-body req :tag)]
+                               (tag-handler/create-tag! env tag)))}}]
 
 
-     ["/:id" {:get {:summary "Get a article"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id string?}}
-                    :handler (fn [req]
-                               (let [id (req-util/parse-path req :id)]
-                                 (article-handler/get-article env id)))}
+      ["/:id" {:get {:summary "Get a tag"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path {:id pos-int?}}
+                     :handler (fn [req]
+                                (let [id (req-util/parse-path req :id)]
+                                  (tag-handler/get-tag env id)))}
 
-              :patch {:summary "Update a article"
-                      :middleware [[auth-mw/wrap-auth env "user"]]
-                      :parameters {:header {:authorization ::token}
-                                   :path {:id string?}}
-                      :handler (fn [req]
-                                 (let [article (req-util/parse-body req :article)]
-                                   (article-handler/update-article! env article)))}
+               :put {:summary "Update a tag"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path {:id pos-int?}
+                                  :body {:tag ::TagUpdate}}
+                     :handler (fn [req]
+                                (let [tag (req-util/parse-body req :tag)]
+                                  (tag-handler/update-tag! env tag)))}
 
-              :delete {:summary "Delete a article"
+               :delete {:summary "Delete a tag"
+                        :middleware [[auth-mw/wrap-auth env "user"]]
+                        :parameters {:header {:authorization ::token}
+                                     :path {:id pos-int?}}
+                        :handler (fn [req]
+                                   (let [id (req-util/parse-path req :id)]
+                                     (tag-handler/delete-tag! env id)))}}]]
+
+     ["/articles"
+      {:swagger {:tags ["Article"]}}
+
+      ["" {:get {:summary "Query articles"
+                 :middleware [[auth-mw/wrap-auth env "user"]]
+                 :parameters {:header {:authorization ::token}
+                              :query ::query}
+                 :handler (fn [req]
+                            (let [opt (req-util/parse-query req)]
+                              (article-handler/query-articles env opt)))}
+
+           :post {:summary "New a article"
+                  :middleware [[auth-mw/wrap-auth env "user"]]
+                  :parameters {:header {:authorization ::token}}
+                  :handler (fn [req]
+                             (log/debug  "new a article req: " (:body-params req))
+                             (let [article (req-util/parse-body req :article)]
+                               (article-handler/create-article! env article)))}}]
+
+
+      ["/:id" {:get {:summary "Get a article"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path {:id string?}}
+                     :handler (fn [req]
+                                (let [id (req-util/parse-path req :id)]
+                                  (article-handler/get-article env id)))}
+
+               :patch {:summary "Update a article"
                        :middleware [[auth-mw/wrap-auth env "user"]]
                        :parameters {:header {:authorization ::token}
                                     :path {:id string?}}
                        :handler (fn [req]
-                                  (let [id (req-util/parse-path req :id)]
-                                    (article-handler/delete-article! env id)))}}]
+                                  (let [article (req-util/parse-body req :article)]
+                                    (article-handler/update-article! env article)))}
 
-     ["/:id/push" {:patch {:summary "Query the comments of a article"
-                           :middleware [[auth-mw/wrap-auth env "user"]]
-                           :parameters {:header {:authorization ::token}
-                                        :path {:id string?}}
-                           :handler (fn [req]
-                                      (let [article (req-util/parse-body req :article)]
-                                        (article-handler/push! env article)))}}]
+               :delete {:summary "Delete a article"
+                        :middleware [[auth-mw/wrap-auth env "user"]]
+                        :parameters {:header {:authorization ::token}
+                                     :path {:id string?}}
+                        :handler (fn [req]
+                                   (let [id (req-util/parse-path req :id)]
+                                     (article-handler/delete-article! env id)))}}]
 
-     ["/:id/comments" {:get {:summary "Query the comments of a article"
-                             :middleware [[auth-mw/wrap-auth env "user"]]
-                             :parameters {:header {:authorization ::token}
-                                          :path {:id string?}}
-                             :handler (fn [req]
-                                        (let [article-id (req-util/parse-path req :id)]
-                                          (article-handler/get-comments-by-article-id env article-id)))}
-                       :post {:summary "add a comments of the article"
-                              :parameters {:path {:id string?}}
+      ["/:id/push" {:patch {:summary "Query the comments of a article"
+                            :middleware [[auth-mw/wrap-auth env "user"]]
+                            :parameters {:header {:authorization ::token}
+                                         :path {:id string?}}
+                            :handler (fn [req]
+                                       (let [article (req-util/parse-body req :article)]
+                                         (article-handler/push! env article)))}}]
+
+      ["/:id/comments" {:get {:summary "Query the comments of a article"
+                              :middleware [[auth-mw/wrap-auth env "user"]]
+                              :parameters {:header {:authorization ::token}
+                                           :path {:id string?}}
                               :handler (fn [req]
-                                         (let [comment (req-util/parse-body req :comment)]
-                                           (article-handler/save-comment! env comment)))}}]]
+                                         (let [article-id (req-util/parse-path req :id)]
+                                           (article-handler/get-comments-by-article-id env article-id)))}
+                        :post {:summary "add a comments of the article"
+                               :parameters {:path {:id string?}}
+                               :handler (fn [req]
+                                          (let [comment (req-util/parse-body req :comment)]
+                                            (article-handler/save-comment! env comment)))}}]]
 
-    ["/articles-comments"
-     {:swagger {:tags ["Articles Comments"]}}
+     ["/articles-comments"
+      {:swagger {:tags ["Articles Comments"]}}
 
-     ["" {:get {:summary "Query all articles comments"
-                :middleware [[auth-mw/wrap-auth env "user"]]
-                :parameters {:header {:authorization ::token}
-                             :query ::query}
-                :handler (fn [req]
-                           (let [query (req-util/parse-query req)]
-                             (article-handler/query-articles-comments env query)))}}]
+      ["" {:get {:summary "Query all articles comments"
+                 :middleware [[auth-mw/wrap-auth env "user"]]
+                 :parameters {:header {:authorization ::token}
+                              :query ::query}
+                 :handler (fn [req]
+                            (let [query (req-util/parse-query req)]
+                              (article-handler/query-articles-comments env query)))}}]
 
-     ["/:id" {:get {:summary "Get a article comment"
-                    :middleware [[auth-mw/wrap-auth env "user"]]
-                    :parameters {:header {:authorization ::token}
-                                 :path {:id pos-int?}}
-                    :handler (fn [req]
-                               (let [id (req-util/parse-path req :id)]
-                                 (article-handler/get-articles-comments-by-id env id)))}
+      ["/:id" {:get {:summary "Get a article comment"
+                     :middleware [[auth-mw/wrap-auth env "user"]]
+                     :parameters {:header {:authorization ::token}
+                                  :path {:id pos-int?}}
+                     :handler (fn [req]
+                                (let [id (req-util/parse-path req :id)]
+                                  (article-handler/get-articles-comments-by-id env id)))}
 
-              :delete {:summary "Delete a article comment"
-                       :middleware [[auth-mw/wrap-auth env "user"]]
-                       :parameters {:header {:authorization ::token}
-                                    :path {:id pos-int?}}
-                       :handler (fn [req]
-                                  (let [id (req-util/parse-path req :id)]
-                                    (article-handler/delete-articles-comments-by-id env id)))}}]]
+               :delete {:summary "Delete a article comment"
+                        :middleware [[auth-mw/wrap-auth env "user"]]
+                        :parameters {:header {:authorization ::token}
+                                     :path {:id pos-int?}}
+                        :handler (fn [req]
+                                   (let [id (req-util/parse-path req :id)]
+                                     (article-handler/delete-articles-comments-by-id env id)))}}]]]
 
 
       ;; ["/files"
       ;;  {:swagger {:tags ["files"]}}
-
+    
       ;;  ["/upload" {:post {:summary "upload a file"
       ;;                     :parameters {:multipart {:file reitit-multipart/temp-file-part}
       ;;                                  :headers {:authorization ::token}}
@@ -414,7 +409,7 @@
       ;;                     :handler (fn [{{{:keys [file]} :multipart} :parameters}]
       ;;                                {:status 200
       ;;                                 :body {:file file}})}}]
-
+    
       ;;  ["/download" {:get {:summary "downloads a file"
       ;;                      :swagger {:produces ["image/png"]}
       ;;                      :parameters {:headers {:authorization ::token}}
@@ -431,20 +426,20 @@
   [routes]
   (-> 
    (reitit-ring/ring-handler
-    (reitit-ring/router routes {:data {:muuntaja mu-core/instance
-                                       :coercion reitit.coercion.spec/coercion
-                                       :middleware [wrap-cors-middeleware
-                                                    reitit-swagger/swagger-feature
-                                                    reitit-parameters/parameters-middleware
-                                                    reitit-muuntaja/format-negotiate-middleware
-                                                    reitit-muuntaja/format-response-middleware 
-                                                    reitit-muuntaja/format-request-middleware
+    (reitit-ring/router routes
+                         {:data {:muuntaja mu-core/instance
+                                 :coercion reitit.coercion.spec/coercion
+                                 :middleware [wrap-cors-middeleware
+                                              reitit-swagger/swagger-feature
+                                              reitit-parameters/parameters-middleware
+                                              reitit-muuntaja/format-negotiate-middleware
+                                              reitit-muuntaja/format-response-middleware
+                                              reitit-muuntaja/format-request-middleware
                                                     ;; coercing response bodys
-                                                    reitit-coercion/coerce-response-middleware
+                                              reitit-coercion/coerce-response-middleware
                                                     ;; coercing request parameters
-                                                    reitit-coercion/coerce-request-middleware 
-                                                    exception-middleware 
-                                                    ]}})
+                                              reitit-coercion/coerce-request-middleware
+                                              exception-middleware]}})
 
     (reitit-ring/routes
     ;;  (reitit-swagger-ui/create-swagger-ui-handler {:path "/api-docs/v1"})

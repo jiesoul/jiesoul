@@ -26,7 +26,7 @@
  (fn [{:keys [db]} [_ data]]
    (f-util/clog "query articles-comments: " data)
    (f-http/http-get db
-                    (f-http/api-uri "/articles-comments")
+                    (f-http/api-uri "/admin/articles-comments")
                     data
                     ::query-articles-comments-ok)))
 
@@ -56,7 +56,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Get a article-comments")
    (f-http/http-get db
-                    (f-http/api-uri "/article-commentss-comments/" id)
+                    (f-http/api-uri "/admin/article-commentss-comments/" id)
                     {}
                     ::get-article-comments-ok)))
 
@@ -80,7 +80,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Delete article-comments")
    (f-http/http-delete db
-                       (f-http/api-uri "/article-commentss-comments/" id)
+                       (f-http/api-uri "/admin/article-commentss-comments/" id)
                        {}
                        ::delete-article-comments-ok)))
 

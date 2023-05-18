@@ -40,19 +40,20 @@
   (jdbc/with-transaction [tx db]
     (sql/update! tx :article article {:id id}) 
     (article-tag-db/delete-by-article-id tx id)
-    (let [tag-names (str/split tags #" ")
-          _ (log/debug "tag-names: " tag-names)]
-      (when (seq tag-names) 
-        (loop [t tag-names
-               tag-ids []]
-          (if (seq t)
-            (let [name (first t)
-                  tag (tag-db/get-by-name tx name)
-                  _ (log/debug "tag: " tag)
-                  id (if (seq tag) (:id (first tag)) (tag-db/create! tx {:name name}))
-                  _ (log/debug "tag id: " id)] 
-              (recur (rest t) (conj tag-ids id)))
-            (article-tag-db/create-multi! tx id tag-ids)))))))
+    (when-not (str/blank? tags)
+      (let [tag-names (str/split tags #" ")
+            _ (log/debug "tag-names: " tag-names)]
+        (when (seq tag-names)
+          (loop [t tag-names
+                 tag-ids []]
+            (if (seq t)
+              (let [name (first t)
+                    tag (tag-db/get-by-name tx name)
+                    _ (log/debug "tag: " tag)
+                    id (if (seq tag) (:id (first tag)) (tag-db/create! tx {:name name}))
+                    _ (log/debug "tag id: " id)] 
+                (recur (rest t) (conj tag-ids id)))
+              (article-tag-db/create-multi! tx id tag-ids))))))))
 
 (defn save-comment! [db comment]
   (jdbc/with-transaction [tx db]

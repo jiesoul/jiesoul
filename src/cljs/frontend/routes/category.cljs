@@ -18,36 +18,30 @@
 
 (def name-error (r/atom nil))
 
-(re-frame/reg-sub
- ::f-state/current-route-categories
- (fn [db _]
-   (get-in db [:current-route :categories])))
-
 (re-frame/reg-event-db
- ::f-state/get-all-categories-ok
+ ::get-all-categories-ok
  (fn [db [_ resp]]
    (assoc-in db [:current-route :categories] (:data resp))))
 
 (re-frame/reg-event-fx
- ::f-state/get-all-categories
- (fn [{:keys [db]} [_ _]]
+ ::get-all-categories
+ (fn [{:keys [db]} [_ data]]
    (f-http/http-get db
-                    (f-http/api-uri "/public/categories") 
-                    {}
-                    ::f-state/get-all-categories-ok)))
+                    (f-http/api-uri "/categories") 
+                    data
+                    ::get-all-categories-ok)))
 
-(re-frame/reg-event-fx
+(re-frame/reg-event-db
  ::query-categories-ok
- (fn [{:keys [db]} [_ resp]]
-   {:db db 
-    :fx [[:dispatch [::f-state/init-current-route-result (:data resp)]]]}))
+ (fn [db [_ resp]]
+   (assoc-in db [:current-route :result] (:data resp))))
 
 (re-frame/reg-event-fx
  ::query-categories
  (fn [{:keys [db]} [_ data]]
    (f-util/clog "query categories: " data)
    (f-http/http-get db
-                    (f-http/api-uri "/categories")
+                    (f-http/api-uri "/admin/categories")
                     data
                     ::query-categories-ok)))
 
@@ -63,7 +57,7 @@
  (fn [{:keys [db]} [_ category]]
    (f-util/clog "add category: " category) 
    (f-http/http-post db 
-                     (f-http/api-uri "/categories") 
+                     (f-http/api-uri "/admin/categories") 
                      {:category category} 
                      ::add-category-ok)))
 
@@ -78,7 +72,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Get a Category: " id)
    (f-http/http-get db
-                    (f-http/api-uri "/categories/" id) 
+                    (f-http/api-uri "/admin/categories/" id) 
                     {} 
                     ::get-category-ok)))
 
@@ -94,7 +88,7 @@
  (fn [{:keys [db]} [_ category]]
    (f-util/clog "update category: " category)
    (f-http/http-patch db
-                      (f-http/api-uri "/categories/" (:id category))
+                      (f-http/api-uri "/admin/categories/" (:id category))
                       {:category category}
                       ::update-category-ok)))
 
@@ -112,7 +106,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Delete Category")
    (f-http/http-delete db 
-                       (f-http/api-uri "/categories/" id) 
+                       (f-http/api-uri "/admin/categories/" id) 
                        {} 
                        ::delete-category-ok)))
 

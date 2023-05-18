@@ -27,7 +27,7 @@
  (fn [{:keys [db]} [_ data]]
    (f-util/clog "query tags: " data)
    (f-http/http-get db
-                    (f-http/api-uri "/tags")
+                    (f-http/api-uri "/admin/tags")
                     data
                     ::query-tags-ok)))
 
@@ -43,7 +43,7 @@
  (fn [{:keys [db]} [_ tag]]
    (f-util/clog "add tag: " tag)
    (f-http/http-post db
-                     (f-http/api-uri "/tags")
+                     (f-http/api-uri "/admin/tags")
                      {:tag tag}
                      ::new-tag-ok)))
 
@@ -58,7 +58,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Get a tag")
    (f-http/http-get db
-                    (f-http/api-uri "/tags/" id)
+                    (f-http/api-uri "/admin/tags/" id)
                     {}
                     ::get-tag-ok)))
 
@@ -74,7 +74,7 @@
  (fn [{:keys [db]} [_ tag]]
    (f-util/clog "update tag: " tag)
    (f-http/http-put db
-                    (f-http/api-uri "/tags/" (:id tag))
+                    (f-http/api-uri "/admin/tags/" (:id tag))
                     {:tag tag}
                     ::update-tag-ok)))
 
@@ -92,7 +92,7 @@
  (fn [{:keys [db]} [_ id]]
    (f-util/clog "Delete tag")
    (f-http/http-delete db
-                       (f-http/api-uri "/tags/" id)
+                       (f-http/api-uri "/admin/tags/" id)
                        {}
                        ::delete-tag-ok)))
 

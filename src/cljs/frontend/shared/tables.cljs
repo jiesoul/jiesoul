@@ -45,7 +45,8 @@
      (for [ds datasources]
        [:tr {:class css-list-table-tbody-tr}
         (for [{:keys [key render format] :as column} columns]
-          [:td {:class css-list-table-tbody-tr-td}
+          [:td {:class css-list-table-tbody-tr-td
+                :key (str key ":" (key ds))}
            (let [v (key ds)
                  v (if format (format v) v)]
              (if-not render
