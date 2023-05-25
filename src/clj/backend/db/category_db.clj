@@ -9,7 +9,7 @@
     (let [[ws wv] (du/opt-to-sql opts)
           ss (du/opt-to-sort opts)
           [ps pv] (du/opt-to-page opts)
-          q-sql (into [(str "select * from category " ss ws ps)] (into wv pv))
+          q-sql (into [(str "select * from category "  ws ss ps)] (into wv pv))
           _ (log/info "query categories sql: " q-sql)
           categories (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
           t-sql (into [(str "select count(1) as c from category " ws)] wv)

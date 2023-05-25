@@ -14,8 +14,8 @@
       (let [response (handler request)]
         (-> response
             (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
-            (assoc-in [:headers "Access-Control-Allow-Headers"] "*")
-            (assoc-in [:headers "Access-Control-Allow-Methods"] "GET,PUT,POST,DELET,PATCH,OPTIONS")))))
+            (assoc-in [:headers "Access-Control-Allow-Headers"] "Content-Type, Authorization")
+            (assoc-in [:headers "Access-Control-Allow-Methods"] "GET,PUT,POST,DELET,PATCH,OPTIONS,HEADERS")))))
 
 
 

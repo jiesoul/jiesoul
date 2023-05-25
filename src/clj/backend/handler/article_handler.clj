@@ -15,6 +15,18 @@
   (let [data (article-db/query db opts)]
     (resp-util/ok data)))
 
+(defn get-pushed-articles [{:keys [db]} opts]
+  (let [data (article-db/get-pushed db opts)]
+    (resp-util/ok data)))
+
+(defn get-pushed-articles-by-year [{:keys [db]} year]
+  (let [data (article-db/get-pushed-by-year db year)]
+    (resp-util/ok {(keyword year) data})))
+
+(defn get-article-archive [{:keys [db]} req]
+  (let [data (article-db/get-archive db)]
+    (resp-util/ok data)))
+
 (defn create-article! [{:keys [db]} article]
   (log/debug "Creatge article " article)
   (let [create-time (java.time.LocalDateTime/now)

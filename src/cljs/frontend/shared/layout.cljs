@@ -42,7 +42,7 @@
       [login])))
 
 (defn layout-home [children]
-  [:div {:class "flex flex-col mx-auto w-full"}
+  [:div {:class "mx-auto w-full flex flex-col items-center justify-between"}
    [nav-home]
-   [:<> children]
+   children
    [footer-home]])

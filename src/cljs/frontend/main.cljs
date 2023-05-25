@@ -31,8 +31,7 @@
     :token nil
     :debug true
     :login-status nil
-    :login-user nil
-    :blog nil}))
+    :login-user nil}))
 
 (re-frame/reg-event-fx
  ::f-state/load-localstore
@@ -91,12 +90,33 @@
 
 (def routes
   ["/"
+   ;; home page
    ["" {:name ::f-state/home
         :view f-index/home-page
         :link-text "Home"
-        :controllers [{:start (fn [& params] (js/console.log (str "Entering home page, params:" params)))
+        :controllers [{:start (fn [& params]
+                                (re-frame/dispatch [::article/get-pushed-articles])
+                                (js/console.log (str "Entering home page, params:" params)))
                        :stop (fn [& params] (js/console.log (str "Leaving home page, params: " params)))}]}]
+   
+   ["articles/:id" {:name ::f-state/article-view
+                    :view article/view
+                    :parameters {:path {:id string?}}
+                    :controllers [{:parameters {:path [:id]}
+                                   :start (fn [& {:keys [path] :as params}] 
+                                            (f-util/clog (str "Entering article view page, params: " params))
+                                            (re-frame/dispatch [::article/get-view-article (:id path)]))
+                                   :stop (fn [& params]
+                                           )}]}]
+   
+   ["archive" {:name ::f-state/archive
+               :view f-index/archive-page
+               :link-text "Archive"
+               :controllers [{:start (fn [& params] 
+                                       (re-frame/dispatch [::article/get-archives]))
+                              :stop (fn [& params] )}]}]
 
+   ;; admin page
    ["login" {:name ::f-state/login
              :view f-login/login
              :link-text "Login"
@@ -139,10 +159,10 @@
                                :stop (fn [& params] (js/console.log (str "Leaving articles, params: " params)))}]}]
    
    ["articles-comments" {:name ::f-state/articles-comments
-                          :view article-comment/index
-                          :link-text "Articles-Comments"
-                          :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
-                                         :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
+                         :view article-comment/index
+                         :link-text "Articles-Comments"
+                         :controllers [{:start (fn [& params] (js/console.log (str "Entering dashboard, params: " params)))
+                                        :stop (fn [& params] (js/console.log (str "Leaving login, params: " params)))}]}]
    
    
    ["users" {:name ::f-state/users

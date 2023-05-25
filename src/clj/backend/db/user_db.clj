@@ -8,7 +8,7 @@
   (let [[ws wv] (du/opt-to-sql opts)
         ss (du/opt-to-sort opts)
         [ps pv] (du/opt-to-page opts)
-        q-sql (into [(str "select * from users " ss ws ps)] (into wv pv))
+        q-sql (into [(str "select * from users "  ws ss ps)] (into wv pv))
         users (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) :as c from users " ws)] wv)
         total (sql/query db t-sql)]

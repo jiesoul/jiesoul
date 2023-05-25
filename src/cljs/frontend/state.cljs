@@ -51,3 +51,8 @@
  (fn [db _]
    (get-in db [:current-route :categories])))
 
+(re-frame/reg-sub
+ ::home-articles
+ (fn [db _]
+   (get-in db [:current-route :articles])))
+

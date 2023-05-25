@@ -104,7 +104,7 @@
 
 (defn new-form []
   (let [edit (r/atom {:name ""
-                      :deacription ""})
+                      :description ""})
         name (r/cursor edit [:name])
         description (r/cursor edit [:description])]
     [:form
@@ -187,11 +187,10 @@
         delete-modal-show? @(re-frame/subscribe [::f-state/delete-modal-show?])
         q-data (r/atom {:page-size 10 :page 1 :filter "" :sort ""})
         filter (r/cursor q-data [:filter])]
-    [layout-admin
-     
+    [layout-admin 
      [:div
       [modals/modal  {:key "new-tag"
-                      :show new-modal-show?
+                      :show? new-modal-show?
                       :title "Add Tag"
                       :on-close #(re-frame/dispatch [::f-state/show-new-modal false])}
        [new-form]]

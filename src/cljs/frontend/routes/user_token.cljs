@@ -45,7 +45,8 @@
               :class css/buton-purple} "Query"]]]]
      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]]))
 
-(def columns [{:key :user-id :title "user-id"}
+(def columns [{:key :user-id :title "User Id"}
+              {:key :token :title "Token"}
               {:key :create-time :title "Create Time" :format f-util/format-time}
               {:key :expires-time :title "Expires Time" :format f-util/format-time}])
 

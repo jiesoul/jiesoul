@@ -43,7 +43,7 @@
 (defmethod ig/init-key :backend/jetty [_ {:keys [port join? env]}]
   (log/debug "Enter ig/init-key :backend/jetty")
   (-> (ws/handler (ws/routes env))
-   (jetty/run-jetty {:port port :join? join?})))
+      (jetty/run-jetty {:port port :join? join?})))
 
 (defmethod ig/halt-key! :backend/jetty [_ server]
   (log/debug "Enter ig/halt-key! :backend/jetty")

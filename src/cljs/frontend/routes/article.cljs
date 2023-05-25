@@ -1,15 +1,15 @@
 (ns frontend.routes.article
     (:require ["moment" :as moment]
               [clojure.string :as str]
-              [frontend.http :as f-http] 
-              [frontend.routes.category :as category]
+              [frontend.http :as f-http]
               [frontend.shared.buttons :refer [default-button delete-button
                                                edit-button new-button red-button]]
               [frontend.shared.form-input :refer [checkbox-input select-input
                                                   text-input
                                                   text-input-backend textarea]]
-              [frontend.shared.layout :refer [layout-admin]]
-              [frontend.shared.modals :as modals] 
+              [frontend.shared.layout :refer [layout-admin layout-home]]
+              [frontend.shared.modals :as modals]
+              [frontend.shared.page :refer [home-pagation]]
               [frontend.shared.tables :refer [table-admin]]
               [frontend.shared.toasts :as toasts]
               [frontend.state :as f-state]
@@ -18,6 +18,66 @@
               [reagent.core :as r]))
 
 (def name-error (r/atom nil))
+
+(re-frame/reg-event-db
+ ::get-archives-articles-ok
+ (fn [db [_ resp]]
+   (f-util/clog "Get view archives articles ok: " resp)
+   (assoc-in db [:current-route :result :archive] (:data resp))))
+
+(re-frame/reg-event-fx
+ ::get-archives-articles
+ (fn [{:keys [db]} year]
+   (f-util/clog "Get view archives articles: ")
+   (f-http/http-get db
+                    (f-http/api-uri "/archives/articles/" year)
+                    {}
+                    ::get-archives-articles-ok)))
+
+(re-frame/reg-event-db
+ ::get-archives-ok
+ (fn [db [_ resp]]
+   (f-util/clog "Get view archives articles ok: " resp)
+   (assoc-in db [:current-route :result :archive] (:data resp))))
+
+(re-frame/reg-event-fx
+ ::get-archives
+ (fn [{:keys [db]} _]
+   (f-util/clog "Get view archives articles: ")
+   (f-http/http-get db
+                    (f-http/api-uri "/archives/articles/")
+                    {}
+                    ::get-archives-ok)))
+
+
+(re-frame/reg-event-db
+ ::get-view-article-ok
+ (fn [db [_ resp]]
+   (f-util/clog "get view article ok: " resp)
+   (assoc-in db [:current-route :result] (:data resp))))
+
+(re-frame/reg-event-fx
+ ::get-view-article
+ (fn [{:keys [db]} [_ id]]
+   (f-util/clog "Get view article: " id)
+   (f-http/http-get db
+                    (f-http/api-uri "/articles/" id)
+                    {}
+                    ::get-view-article-ok)))
+
+(re-frame/reg-event-db
+ ::get-pushed-articles-ok
+ (fn [db [_ resp]]
+   (assoc-in db [:current-route :articles] (:data resp))))
+
+(re-frame/reg-event-fx
+ ::get-pushed-articles
+ (fn [{:keys [db]} [_ data]]
+   (f-util/clog "query articles: " data)
+   (f-http/http-get db
+                    (f-http/api-uri "/articles")
+                    data
+                    ::get-pushed-articles-ok)))
 
 (re-frame/reg-sub
  ::f-state/push-modal-show?
@@ -170,44 +230,43 @@
        [new-button {:on-click #(re-frame/dispatch [::add-article @article])}
         "Save"]]]]))
 
-(defn edit-form []
-  (fn []
-    (let [{:keys [id title summary detail]} @(re-frame/subscribe [::f-state/current-route-edit])
-          article (r/atom {:id id 
-                           :title title 
-                           :summary summary
-                           :push_flag 0
-                           :push_time nil
-                           :detail {:article_id (:article-id detail)
-                                    :content_md (:content-md detail)}})
-          title-edit (r/cursor article [:title])
-          summary-edit (r/cursor article [:summary])
-          content-edit (r/cursor article [:detail :content_md])]
-      [:form
-       [:div {:class "flex-l flex-col"}
-        [text-input {:class "pt-2"
-                     :placeholder "Title"
-                     :name "title"
-                     :required ""
-                     :default-value title
-                     :on-change #(reset! title-edit (f-util/get-value %))}]
-
-        [textarea {:class "pt-4"
-                   :placeholder "Summary"
-                   :name "summary"
+(defn edit-form [] 
+  (let [{:keys [id title summary detail]} @(re-frame/subscribe [::f-state/current-route-edit])
+        article (r/atom {:id id 
+                         :title title 
+                         :summary summary
+                         :push_flag 0
+                         :push_time nil
+                         :detail {:article_id id
+                                  :content_md (:content-md detail)}})
+        title-edit (r/cursor article [:title])
+        summary-edit (r/cursor article [:summary])
+        content-edit (r/cursor article [:detail :content_md])]
+    [:form
+     [:div {:class "flex-l flex-col"}
+      [text-input {:class "pt-2"
+                   :placeholder "Title"
+                   :name "title"
                    :required ""
-                   :default-value summary
-                   :on-change #(reset! summary-edit (f-util/get-value %))}]
+                   :default-value title
+                   :on-change #(reset! title-edit (f-util/get-value %))}]
 
-        [textarea {:class "pt-4"
-                   :placeholder "Content"
-                   :rows 8
-                   :name "content"
-                   :default-value (:content-md detail)
-                   :on-change #(reset! content-edit (f-util/get-trim-value %))}]
-        [:div {:class "flex justify-center items-center space-x-4 mt-4"}
-         [new-button {:on-click #(re-frame/dispatch [::update-article @article])}
-          "Save"]]]])))
+      [textarea {:class "pt-4"
+                 :placeholder "Summary"
+                 :name "summary"
+                 :required ""
+                 :default-value summary
+                 :on-change #(reset! summary-edit (f-util/get-value %))}]
+
+      [textarea {:class "pt-4"
+                 :placeholder "Content"
+                 :rows 8
+                 :name "content"
+                 :default-value (:content-md detail)
+                 :on-change #(reset! content-edit (f-util/get-trim-value %))}]
+      [:div {:class "flex justify-center items-center space-x-4 mt-4"}
+       [new-button {:on-click #(re-frame/dispatch [::update-article @article])}
+        "Save"]]]]))
 
 (defn push-form [] 
   (let [categories @(re-frame/subscribe [::f-state/current-route-categories])
@@ -216,9 +275,9 @@
                          :top_flag 0  
                          :category_id 0
                          :tags tags}) 
-        tags (r/cursor article [:tags])
-        top-flag (r/cursor article [:top_flag])
-        category-id (r/cursor article [:category_id])] 
+        tags-edit (r/cursor article [:tags])
+        top-flag-edit (r/cursor article [:top_flag])
+        category-id-edit (r/cursor article [:category_id])] 
     [:form
      [:div {:class "flex-l flex-col"}
       [:p "Title: " title]
@@ -226,20 +285,18 @@
       [checkbox-input {:class "pt-2"
                        :name "top_flag"
                        :label "Top"
-                       :on-change #(reset! top-flag (f-util/get-value %))}]
+                       :on-change #(reset! top-flag-edit (f-util/get-value %))}]
 
       [text-input {:class "pt-2"
                    :placeholder "Tags"
                    :name "tags"
-                   :default-value @tags
-                   :required ""
-                   :on-change #(reset! tags (f-util/get-value %))}]
+                   :default-value tags
+                   :on-change #(reset! tags-edit (f-util/get-value %))}]
 
       [select-input {:class "pt-2"
-                     :placeholder "Category"
-                     :required ""
+                     :placeholder "Category" 
                      :name "category"
-                     :on-change #(reset! category-id (f-util/get-value %))}
+                     :on-change #(reset! category-id-edit (f-util/get-value %))}
        [:option {:value 0
                  :key 0} "select category"]
        (for [c categories]
@@ -330,7 +387,6 @@
        [:<> 
         [:span " | "]
         [edit-button {:on-click #(do
-                                   (re-frame/dispatch [::category/get-all-categories])
                                    (re-frame/dispatch [::get-article (:id d)])
                                    (re-frame/dispatch [::f-state/show-push-modal true]))}
          "Push"] 
@@ -364,5 +420,40 @@
      [table-admin {:columns columns
                    :datasources data-sources
                    :pagination pagination}]]))
+
+(defn view []
+  (let [{:keys [id title create-time tags detail]} @(re-frame/subscribe [::f-state/current-route-result])]
+    [layout-home
+     [:div {:class "mt-16 mb-6 p-4 max-w-5xl w-full"}
+      [:h1 {:class "mb-2 text-2xl text-center font-bold tracking-tight text-gray-900 dark:text-whit"} title]
+      [:p {:class "mb-6 line-clamp-3 text-center"} (f-util/format-time create-time)]
+      [:div {:class "mb-6 items-left"} 
+       (:content-md detail)]
+      [:div {:class "mb-6"} tags]]]))
+
+(defn articles-home []
+  (let [{:keys [list total opts]} @(re-frame/subscribe [::f-state/home-articles])] 
+    [:div {:class "container mt-16 p-4 max-w-5xl"}
+     (for [{:keys [id title summary create-time]} list]
+       [:a {:href (f-util/href ::f-state/article-view {:id id})
+            :class "block mb-6 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700"}
+        [:time {:class "line-clamp-3"} (f-util/format-time create-time)]
+        [:h5 {:class "mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"} title]
+        [:p {:class "font-normal mb-4 text-gray-700 dark:text-gray-400"} summary]])
+     [home-pagation (assoc opts :total total)]]))
+
+
+(defn articles-archive []
+  (let [{:keys [list total opts]} @(re-frame/subscribe [::f-state/home-articles])]
+    [:div {:class ""}
+     (for [{:keys [id title summary create-time]} list]
+       [:a {:href "#"
+            :class "block mb-6 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700"}
+        [:time {:class "line-clamp-3"} (f-util/format-time create-time)]
+        [:h5 {:class "mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"} title]
+        [:p {:class "font-normal mb-4 text-gray-700 dark:text-gray-400"} summary]])
+     [home-pagation (assoc opts :total total)]]))
+
+
 
 

@@ -3,7 +3,7 @@
             [re-frame.core :as re-frame]))
 
 (defn footer-home []
-  [:footer {:class "w-full bg-white p-8"}
+  [:footer {:class "w-full max-w-5xl bg-white p-8"}
    [:div {:class "flex flex-row flex-wrap items-center justify-center 
                   gap-y-6 gap-x-12 bg-white text-center md:justify-between"}
     [:ul {:class "flex flex-wrap items-center gap-y-2 gap-x-8"}

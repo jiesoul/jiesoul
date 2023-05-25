@@ -8,7 +8,7 @@
   (let [[ws wv] (du/opt-to-sql opts)
         ss (du/opt-to-sort opts)
         [ps pv] (du/opt-to-page opts)
-        q-sql (into [(str "select * from tag " ss ws ps)] (into wv pv))
+        q-sql (into [(str "select * from tag "  ws ss ps)] (into wv pv))
         _ (log/info "query tags: " q-sql)
         tags (sql/query db q-sql {:builder-fn rs/as-unqualified-maps})
         t-sql (into [(str "select count(1) as c from tag " ws)] wv)
@@ -19,7 +19,7 @@
      :opts opts}))
 
 (defn create! [db tag]
-  (sql/insert! db :tag tag))
+  (val (first (sql/insert! db :tag tag))))
 
 (defn create-mutil! [db tags]
   (sql/insert! db :tag tags {:return-keys true}))
@@ -34,7 +34,7 @@
   (sql/get-by-id db :tag id {:builder-fn rs/as-unqualified-maps}))
 
 (defn get-by-name [db name]
-  (sql/find-by-keys db :tag {:name name}))
+  (first (sql/find-by-keys db :tag {:name name})))
 
 (defn get-all-tags [db]
   (sql/query db ["select * from tag"] {:builder-fn rs/as-unqualified-kebab-maps}))

@@ -3,7 +3,8 @@
             [frontend.shared.css :as css]
             [frontend.state :as f-state]
             [re-frame.core :as re-frame]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [frontend.util :as f-util]))
 
 (def css-user-dropdown-li-a "block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white")
 (def user-dropdown-show? (r/atom true))
@@ -12,7 +13,7 @@
                     md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 
                     dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent")
 
-(def nav-home-link-current "block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent 
+(def nav-home-link-current "block py-2 pl-3 pr-4 text-white border-b bg-blue-700 rounded md:bg-transparent 
                             md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500")
 
 (defn user-dropdown []
@@ -54,34 +55,25 @@
 (defn nav-home []
   (let [current-route @(re-frame/subscribe [::f-state/current-route])
         link-text (get-in current-route [:data :link-text])]
-    [:nav {:class "bg-white border-gray-200 dark:bg-gray-900 z-10 fixed w-full"}
-     [:div {:class "max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"}
-      [:a {:href "/"
+    [:nav {:class "w-full shadow bg-white border-gray-200 dark:bg-gray-900 z-20 fixed"}
+     [:div {:class "max-w-5xl flex items-center justify-between mx-auto p-4"}
+      [:a {:href (f-util/href ::f-state/home)
            :class "flex items-center"}
        [:span {:class "self-center text-2xl font-semibold whitespace-nowrap dark:text-white"}
-        "Jiesoul"]]
-      [:button {:data-collapse-toggle "navbar-default"
-                :type "button"
-                :class "inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden 
-                        hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 
-                        dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                :aria-controls "navbar-default"
-                :aria-expanded "false"}
-       [:span {:class "sr-only"} "Open main menu"]]
-      
-      [:div {:class "hidden w-full md:block md:w-auto"
+        "Jiesoul"]] 
+      [:div {:class ""
              :id "navbar-default"}
        [:ul {:class "flex flex-row font-medium mt-0 mr-6 space-x-8 text-xl"}
         [:li 
          [:a {:class (if (= "Home" link-text) nav-home-link-current nav-home-link)
-              :href "#"}
-          "Home"]]
+              :href (f-util/href ::f-state/home)}
+          "主页"]]
         [:li 
-         [:a {:class (if (= "Articles" link-text) nav-home-link-current nav-home-link)
-              :href "#"}
-          "Articles"]]
+         [:a {:class (if (= "Archive" link-text) nav-home-link-current nav-home-link)
+              :href (f-util/href ::f-state/archive)}
+          "归档"]]
         [:li 
          [:a {:class (if (= "About" link-text) nav-home-link-current nav-home-link)
-              :href "#"}
-          "About"]]]]
+              :href (f-util/href ::f-state/about)}
+          "关于"]]]]
       ]]))

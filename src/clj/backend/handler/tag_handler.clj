@@ -8,10 +8,13 @@
   (let [data (tag-db/query db opts)]
     (resp-util/ok data)))
 
-(defn create-tag! [{:keys [db]} tag]
+(defn create-tag! [{:keys [db]} {:keys [name] :as tag}]
   (log/debug "Creatge tag " tag)
-  (let [_ (tag-db/create! db tag)]
-    (resp-util/ok {})))
+  (if-let [check (tag-db/get-by-name db name)]
+    (resp-util/bad-request (str "Tag: <" name "> has been created"))
+    (let [rs (tag-db/create! db tag)
+          _ (log/debug "result: " rs)]
+      (resp-util/ok {}))))
 
 (defn get-tag [{:keys [db]} id]
   (log/debug "Get tag " id)

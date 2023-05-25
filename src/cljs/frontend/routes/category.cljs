@@ -217,9 +217,9 @@
                                           (swap! filter str " name lk " v))})]]
        [:div {:class "felx inline-flex justify-center items-center w-full"}
         [btn {:on-click #(re-frame/dispatch [::query-categories @q-data])
-                :class css/buton-purple} "Query"]
+              :class css/buton-purple} "Query"]
         [btn {:on-click #(re-frame/dispatch [::f-state/show-new-modal true])
-                :class css/button-green} "New"]]]]
+              :class css/button-green} "New"]]]]
      [:div {:class "h-px my-4 bg-blue-500 border-0 dark:bg-blue-700"}]]))
 
 (defn action-fn [d]
